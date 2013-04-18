@@ -209,6 +209,28 @@ def create_master_price_dataframe(energy_prices, reserve_prices):
             
     return master_set
     
+def load_energy_offer_csv(csv_fname, date="TRADING_DATE", 
+                          period="TRADING_PERIOD", date_time="Date Time",
+                          quick_parse=True, date_time_index=False,
+                          title_columns=True):
+                          
+    en_offers = pd.read_csv(csv_fname):
+    if quick_parse:
+        en_offers = en_offers.le_mask(period, 48)
+        date_map = {x: parse(x) for x in en_offers[date].unique()}
+        en_offers[date_time] = en_offers.apply(map_date_period, date_map=date_map,
+            date=date, period=period)
+        en_offers = en_offers.sort(date_time)
+        
+        if date_time_index:
+            en_offers.index = en_offers[date_time]
+            
+    if title_columns:
+        col_dict = {x: x.replace('_', ' ').title() for x in en_offers.columns}
+        en_offers = en_offers.rename(columns=col_dict)
+        
+    return en_offers
+    
     
     
 if __name__ == '__main__':
