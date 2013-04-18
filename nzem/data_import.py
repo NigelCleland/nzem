@@ -19,7 +19,6 @@ from dateutil.parser import parse
 from pandas.tseries.offsets import Minute
 import nzem
 
-pd.DataFrame = nzem.masks.apply_masks()
 
 def execute_query(SQL, dbname="Electricity_Database", password="Hammertime",
     user="local_host", something=None):
@@ -95,7 +94,7 @@ def query_database(table, start_date=None, end_date=None, companies=None):
     
     
 def map_data(df, node_map=None, left_on="Grid Exit Point", right_on="Node",
-             map_reference="Island Name")
+             map_reference="Island Name"):
     """
     Will map a DataFrame using the given Nodal Map and return the merged
     DataFrame
@@ -116,7 +115,8 @@ def map_data(df, node_map=None, left_on="Grid Exit Point", right_on="Node",
     return df.merge(partial_map, left_on=left_on, right_on=right_on) 
     
 def load_reserve_prices(csv_name, tpid="Trading Period Id", date="Trading Date",
-                        period="Trading Period", date_time="Date Time"):
+                        period="Trading Period", date_time="Date Time", 
+                        date_time_index=False, title_columns=True):
     """
     Load reserve prices from a csv file and perform some basic data manipulations
     Assumes that the reserve prices have a unique trading period ID which should
@@ -129,15 +129,20 @@ def load_reserve_prices(csv_name, tpid="Trading Period Id", date="Trading Date",
         res_prices[date] = res_prices[tpid].apply(lambda x: str(x)[:-2])
         res_prices[period] = res_prices[tpid].apply(lambda x: int(str(x)[-2:]))
         res_prices = res_prices[res_prices[period] <= 48]
-        
         date_map = {x: parse(x) for x in res_prices[date].unique()}
         res_prices[date_time] = res_prices.apply(map_date_period, 
-                            date_map=date_map, date=date, period=period)
+                            date_map=date_map, date=date, period=period, axis=1)
         res_prices = res_prices.sort(date_time)
+        if date_time_index:
+            res_prices.index = res_prices[date_time]
     else:
         res_prices = pd.read_csv(csv_name)
         
-    return reserve_prices
+    if title_columns:
+        col_dict =- {x: x.replace('_', ' ').title() for x in res_prices.columns}
+        res_prices = res_prices.rename(columns=col_dict)
+        
+    return res_prices
     
     
 def map_date_period(series, date_map=None, date="Trading Date", 
@@ -152,7 +157,8 @@ def map_date_period(series, date_map=None, date="Trading Date",
         
 def load_energy_prices(csv_name, date="Trading Date", period="Trading Period",
                        tpid="Trading Period Id", date_time="Date Time",
-                       quick_parse=True):
+                       quick_parse=True, date_time_index=False, 
+                       title_columns=True):
     """
     Load the energy prices from the standard five node file and apply some
     modifications to the dates in order to facilitate later merging.
@@ -164,8 +170,15 @@ def load_energy_prices(csv_name, date="Trading Date", period="Trading Period",
         en_prices = en_prices.le_mask(period, 48)
         date_map = {x: parse(x) for x in en_prices[date].unique()}
         en_prices[date_time] = en_prices.apply(map_date_period,
-                    date_map=date_map, date=date, period=period)
+                    date_map=date_map, date=date, period=period, axis=1)
         en_prices = en_prices.sort(date_time)
+        if date_time_index:
+            en_prices.index = en_prices[date_time]
+            
+    if title_columns:
+        col_dict =- {x: x.replace('_', ' ').title() for x in en_prices.columns}
+        en_prices = en_prices.rename(columns=col_dict)
+        
         
     return en_prices
     
