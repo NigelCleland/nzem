@@ -257,7 +257,7 @@ def create_master_price_dataframe(energy_prices, reserve_prices):
     
 def load_energy_offer_csv(csv_fname, date="TRADING_DATE", 
                           period="TRADING_PERIOD", date_time="Date Time",
-                          quick_parse=True, date_time_index=False,
+                          quick_parse=False, date_time_index=False,
                           title_columns=True):
     """
     Will load energy offer data from a CSV file and apply modifications
@@ -279,12 +279,12 @@ def load_energy_offer_csv(csv_fname, date="TRADING_DATE",
     """
 
                           
-    en_offers = pd.read_csv(csv_fname):
+    en_offers = pd.read_csv(csv_fname)
     if quick_parse:
         en_offers = en_offers.le_mask(period, 48)
         date_map = {x: parse(x) for x in en_offers[date].unique()}
         en_offers[date_time] = en_offers.apply(map_date_period, date_map=date_map,
-            date=date, period=period)
+            date=date, period=period, axis=1)
         en_offers = en_offers.sort(date_time)
         
         if date_time_index:

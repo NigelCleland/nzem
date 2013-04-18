@@ -37,6 +37,6 @@ def apply_masks():
     pd.DataFrame.gen_mask = gen_mask
     
     return pd.DataFrame
-    
-if __name__ == '__main__':
-    pass
+        
+    if __name__ == '__main__':
+        pass
