@@ -17,6 +17,9 @@ import os
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 from pandas.tseries.offsets import Minute
+import nzem
+
+pd.DataFrame = nzem.masks.apply_masks()
 
 def execute_query(SQL, dbname="Electricity_Database", password="Hammertime",
     user="local_host", something=None):
@@ -136,6 +139,7 @@ def load_reserve_prices(csv_name, tpid="Trading Period Id", date="Trading Date",
         
     return reserve_prices
     
+    
 def map_date_period(series, date_map=None, date="Trading Date", 
                     period="Trading Period"):
                     
@@ -144,6 +148,7 @@ def map_date_period(series, date_map=None, date="Trading Date",
         return date_map[series[date]] + pmap(series[period])
     else:
         return parse(series[date]) + pmap(series[period])
+        
         
 def load_energy_prices(csv_name, date="Trading Date", period="Trading Period",
                        tpid="Trading Period Id", date_time="Date Time",
@@ -156,6 +161,7 @@ def load_energy_prices(csv_name, date="Trading Date", period="Trading Period",
     en_prices = pd.read_csv(csv_name)
     
     if quick_parse:
+        en_prices = en_prices.le_mask(period, 48)
         date_map = {x: parse(x) for x in en_prices[date].unique()}
         en_prices[date_time] = en_prices.apply(map_date_period,
                     date_map=date_map, date=date, period=period)
