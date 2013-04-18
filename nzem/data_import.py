@@ -129,7 +129,8 @@ def load_reserve_prices(csv_name, tpid="Trading Period Id", date="Trading Date",
         
         date_map = {x: parse(x) for x in res_prices[date].unique()}
         res_prices[date_time] = res_prices.apply(map_date_period, 
-                    date_map=date_map, date=date, period=period)
+                            date_map=date_map, date=date, period=period)
+        res_prices = res_prices.sort(date_time)
     else:
         res_prices = pd.read_csv(csv_name)
         
@@ -143,6 +144,25 @@ def map_date_period(series, date_map=None, date="Trading Date",
         return date_map[series[date]] + pmap(series[period])
     else:
         return parse(series[date]) + pmap(series[period])
+        
+def load_energy_prices(csv_name, date="Trading Date", period="Trading Period",
+                       tpid="Trading Period Id", date_time="Date Time",
+                       quick_parse=True):
+    """
+    Load the energy prices from the standard five node file and apply some
+    modifications to the dates in order to facilitate later merging.
+    """
+    
+    en_prices = pd.read_csv(csv_name)
+    
+    if quick_parse:
+        date_map = {x: parse(x) for x in en_prices[date].unique()}
+        en_prices[date_time] = en_prices.apply(map_date_period,
+                    date_map=date_map, date=date, period=period)
+        en_prices = en_prices.sort(date_time)
+        
+    return en_prices
+    
     
 if __name__ == '__main__':
     pass
