@@ -3,6 +3,7 @@ Determine whether constraints are active for a particular trading period
 """
 
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def HVDC_Constraint(series, energy_price_send="", energy_price_receive="",
                     res_price="", abs_tol=None, rel_tol=None, min_split=10):
@@ -39,5 +40,46 @@ def HVDC_Constraint(series, energy_price_send="", energy_price_receive="",
             return True if abs(split - rpr) <= rel_tol * epr_send else False
         else:
             raise ValueError("Either abs_tol or rel_tol must be specified")
+            
+def constraint_plot(master_set, island="NI", inverse=False, min_split=10):
+    """
+    Construct a scatter plot constrained vs unconstrained reserves
+    """
+    
+    cname = "%s Constraint" % island
+    rname = "%s Reserve Price" % island
+    ename = "Price Split"
+    
+    if inverse:
+        subset = master_set.le_mask(ename, min_split*-1)
+    else:
+        subset = master_set.ge_mask(ename, min_split)
+    
+    x1 = subset.eq_mask(cname, True)[ename]
+    y1 = subset.eq_mask(cname, True)[rname]
+    
+    x2 = subset.eq_mask(cname, False)[ename]
+    y2 = subset.eq_mask(cname, False)[rname]
+    
+    if inverse:
+        x1 = x1 * -1
+        x2 = x2 * -1
+    
+    fig, axes = plt.subplots(1, figsize=(16,9))
+    axes.scatter(x2, y2, marker='x', label="Unconstrained Periods", alpha=0.8, c='grey')
+    axes.scatter(x1, y1, marker='o', label="Constrained Periods", c='k')
+
+    axes.set_xlabel("%s Price Split [$/MWh]" % island)
+    axes.set_ylabel(rname + ' [$/MWh]')
+    axes.set_xlim(0, x1.max())
+    axes.set_ylim(0, y1.max())
+    axes.grid()
+    axes.grid(axis='y')
+    axes.legend()
+    
+    return fig, axes
+    
+if __name__ == '__main__':
+    pass
 
     
