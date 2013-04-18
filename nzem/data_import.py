@@ -122,6 +122,19 @@ def load_reserve_prices(csv_name, tpid="Trading Period Id", date="Trading Date",
     Assumes that the reserve prices have a unique trading period ID which should
     be manipulated
     
+    Parameters
+    ----------
+    tpid : Column name for the trading period ID
+    date : Column name for the trading date
+    period : Column name for the trading period
+    date_time : Column name for the date_time
+    date_time_index : Boolean, if true assign the date time column to the index
+    title_columns : Whether to rename the titles to be more human readable
+    
+    Returns
+    -------
+    res_prices : DataFrame containing the reserve price data
+    
     """
     
     if tpid:
@@ -147,6 +160,25 @@ def load_reserve_prices(csv_name, tpid="Trading Period Id", date="Trading Date",
     
 def map_date_period(series, date_map=None, date="Trading Date", 
                     period="Trading Period"):
+    """
+    Will map a trading date and a trading period together in order to form
+    a single consistent date time parameter
+    
+    Parameters
+    ----------
+    series : A single series containing information about the row
+    date_map : A dictionary containing mapping information regarding the 
+        dates, is used to preparse a single copy of each date as the parse
+        function tends to be very CPU intensive
+    date : The date column name
+    period : The period column name
+    
+    Returns
+    -------
+    Date Time : A single value of DataTime format containing the trading period
+                and trading date data as a combined date and time.
+    """
+    
                     
     pmap = lambda x: x * Minute(30)
     if date_map:
@@ -160,8 +192,22 @@ def load_energy_prices(csv_name, date="Trading Date", period="Trading Period",
                        quick_parse=True, date_time_index=False, 
                        title_columns=True):
     """
-    Load the energy prices from the standard five node file and apply some
-    modifications to the dates in order to facilitate later merging.
+    Will load energy price data from a CSV file and apply modifications
+    as necessary to it in order to return a usable data set
+    
+    Parameters
+    ----------
+    csv_fname : The name of the csv file containing the energy price data
+    date : The name of the column containing trading date information
+    period : The name of the column containing trading period information
+    date_time : The new Date Time column to be created
+    quick_parse : Boolean, determine whether to attempt to parse the dates
+    date_time_index : Whether to assign the new date time as the index
+    title_columns : Rename the columns to use a more human readable format
+    
+    Returns
+    -------
+    en_prices : Pandas DataFrame containing energy price data
     """
     
     en_prices = pd.read_csv(csv_name)
@@ -213,6 +259,25 @@ def load_energy_offer_csv(csv_fname, date="TRADING_DATE",
                           period="TRADING_PERIOD", date_time="Date Time",
                           quick_parse=True, date_time_index=False,
                           title_columns=True):
+    """
+    Will load energy offer data from a CSV file and apply modifications
+    as necessary to it in order to return a usable data set
+    
+    Parameters
+    ----------
+    csv_fname : The name of the csv file containing the energy offer data
+    date : The name of the column containing trading date information
+    period : The name of the column containing trading period information
+    date_time : The new Date Time column to be created
+    quick_parse : Boolean, determine whether to attempt to parse the dates
+    date_time_index : Whether to assign the new date time as the index
+    title_columns : Rename the columns to use a more human readable format
+    
+    Returns
+    -------
+    en_offers : Pandas DataFrame containing energy offer data
+    """
+
                           
     en_offers = pd.read_csv(csv_fname):
     if quick_parse:
