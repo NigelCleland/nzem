@@ -196,7 +196,7 @@ def create_master_price_dataframe(energy_prices, reserve_prices):
     
     # Begin merging to create a master data set...
     master_set = pd.DataFrame({"HAY2201 Price": gr_en_prices.ix["HAY2201"]})
-    for bus in en_prices["Bus Id"].unique():
+    for bus in energy_prices["Bus Id"].unique():
         if bus != "HAY2201":
             new_name = "%s Price" % bus
             master_set = master_set.merge(pd.DataFrame({new_name: gr_en_prices.ix[bus]}), left_index=True,
