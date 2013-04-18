@@ -28,12 +28,12 @@ def gen_mask(df, f):
     
 def apply_masks():
     
-    pd.DataFrame.eq_mask = equal_mask
+    pd.DataFrame.eq_mask = eq_mask
     pd.DataFrame.ge_mask = ge_mask
     pd.DataFrame.gt_mask = gt_mask
     pd.DataFrame.le_mask = le_mask
     pd.DataFrame.lt_mask = lt_mask
-    pd.DataFrame.ne_mask = noteq_mask
+    pd.DataFrame.ne_mask = ne_mask
     pd.DataFrame.gen_mask = gen_mask
     
     return pd.DataFrame
