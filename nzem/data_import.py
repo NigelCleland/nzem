@@ -139,7 +139,7 @@ def load_reserve_prices(csv_name, tpid="Trading Period Id", date="Trading Date",
         res_prices = pd.read_csv(csv_name)
         
     if title_columns:
-        col_dict =- {x: x.replace('_', ' ').title() for x in res_prices.columns}
+        col_dict = {x: x.replace('_', ' ').title() for x in res_prices.columns}
         res_prices = res_prices.rename(columns=col_dict)
         
     return res_prices
@@ -176,11 +176,39 @@ def load_energy_prices(csv_name, date="Trading Date", period="Trading Period",
             en_prices.index = en_prices[date_time]
             
     if title_columns:
-        col_dict =- {x: x.replace('_', ' ').title() for x in en_prices.columns}
+        col_dict = {x: x.replace('_', ' ').title() for x in en_prices.columns}
         en_prices = en_prices.rename(columns=col_dict)
         
         
     return en_prices
+    
+def create_master_price_dataframe(energy_prices, reserve_prices):
+    """
+    Will create a master price dataframe from the energy and reserve price
+    dataframes
+    """
+    
+    # Split the reserve prices
+    island_res_prices = reserve_prices.groupby(["Island Id", "Date Time"])["Price Sum"].sum()
+    
+    # Split the energy prices
+    gr_en_prices = energy_prices.groupby(["Bus Id", "Date Time"])["Price Sum"].sum()
+    
+    # Begin merging to create a master data set...
+    master_set = pd.DataFrame({"HAY2201 Price": gr_en_prices.ix["HAY2201"]})
+    for bus in en_prices["Bus Id"].unique():
+        if bus != "HAY2201":
+            new_name = "%s Price" % bus
+            master_set = master_set.merge(pd.DataFrame({new_name: gr_en_prices.ix[bus]}), left_index=True,
+                right_index=True)
+    
+    for island in ("NI", "SI"):
+        new_name = "%s Reserve Price" % island
+        master_set = master_set.merge(pd.DataFrame({new_name: 
+            island_res_prices.ix[island]}), left_index=True, right_index=True)
+            
+    return master_set
+    
     
     
 if __name__ == '__main__':
