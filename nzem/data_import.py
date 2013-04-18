@@ -15,6 +15,8 @@ import pandas as pd
 import psycopg2 as psy
 import os
 from datetime import datetime, timedelta
+from dateutil.parser import parse
+from pandas.tseries.offsets import Minute
 
 def execute_query(SQL, dbname="Electricity_Database", password="Hammertime",
     user="local_host", something=None):
@@ -109,6 +111,38 @@ def map_data(df, node_map=None, left_on="Grid Exit Point", right_on="Node",
         
     partial_map = node_map[[right_on, map_reference]]
     return df.merge(partial_map, left_on=left_on, right_on=right_on) 
+    
+def load_reserve_prices(csv_name, tpid="Trading Period Id", date="Trading Date",
+                        period="Trading Period", date_time="Date Time"):
+    """
+    Load reserve prices from a csv file and perform some basic data manipulations
+    Assumes that the reserve prices have a unique trading period ID which should
+    be manipulated
+    
+    """
+    
+    if tpid:
+        res_prices = pd.read_csv(csv_name)
+        res_prices[date] = res_prices[tpid].apply(lambda x: str(x)[:-2])
+        res_prices[period] = res_prices[tpid].apply(lambda x: int(str(x)[-2:]))
+        res_prices = res_prices[res_prices[period] <= 48]
+        
+        date_map = {x: parse(x) for x in res_prices[date].unique()}
+        res_prices[date_time] = res_prices.apply(map_date_period, 
+                    date_map=date_map, date=date, period=period)
+    else:
+        res_prices = pd.read_csv(csv_name)
+        
+    return reserve_prices
+    
+def map_date_period(series, date_map=None, date="Trading Date", 
+                    period="Trading Period"):
+                    
+    pmap = lambda x: x * Minute(30)
+    if date_map:
+        return date_map[series[date]] + pmap(series[period])
+    else:
+        return parse(series[date]) + pmap(series[period])
     
 if __name__ == '__main__':
     pass
