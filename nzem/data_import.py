@@ -12,7 +12,7 @@ e) Create a database from scratch
 
 # Module Imports
 import pandas as pd
-import psycopg2 as psy
+#import psycopg2 as psy
 import os
 from datetime import datetime, timedelta
 from dateutil.parser import parse

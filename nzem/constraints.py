@@ -79,6 +79,39 @@ def constraint_plot(master_set, island="NI", inverse=False, min_split=10):
     
     return fig, axes
     
+    
+def CCGT_Constraint(series, eprice="", oprice="", rprice="", abs_tol=None, 
+                    rel_tol=None, min_split=10):
+                    
+    ep = series[eprice]
+    op = series[oprice]
+    rp = series[rprice]
+    sp = ep - op
+    
+    if sp <= min_split:
+        return False
+    else:
+        return True if np.abs(sp - rp) <= abs_tol else False
+        
+def CCGT_Offer_Plot(df):
+    
+    fig, axes = plt.subplots(1, figsize=(16,9))
+    
+    df = df.eq_mask("CCGT Constraint", True)
+    
+    x = df["Offer Price Split"]
+    y = df["NI Reserve Price"]
+    
+    axes.scatter(x, y, marker='o', c='k')
+    axes.set_xlim(0, x.max())
+    axes.set_ylim(0, y.max())
+    axes.set_xlabel("Energy Price - Offer Price [$/MWh]")
+    axes.set_ylabel("North Island Reserve Price [$/MWh]")
+    axes.grid()
+    
+    return fig, axes
+    
+    
 if __name__ == '__main__':
     pass
 
