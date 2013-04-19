@@ -57,7 +57,7 @@ def load_inflow_data(csv_name=None, date="Trading Date", parse_dates=True,
     """
     
     if csv_name == None:
-        csv_name = os.get_cwd() + '/nzem/maps/Hydro_Inflow_Data.csv"
+        csv_name = os.get_cwd() + '/nzem/maps/Hydro_Inflow_Data.csv'
         
     inflow_levels = pd.read_csv(csv_name)
     if parse_dates:
@@ -67,6 +67,7 @@ def load_inflow_data(csv_name=None, date="Trading Date", parse_dates=True,
     
     inflow_levels = inflow_levels.sort(date)
     return inflow_levels
+
 
     
 
