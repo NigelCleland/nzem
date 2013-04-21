@@ -9,6 +9,7 @@ from dateutil.parser import parse
 from datetime import datetime, timedelta
 
 def parse_niwa_date(x):
+    """ Parse the custom niwa date format """
     d = datetime.strptime(x, "%d%b%y")
     return d if d.year <= 2020 else datetime(d.year - 100, d.month, d.day)
 
@@ -80,6 +81,10 @@ def load_inflow_data(csv_name=None, date="Trading Date", parse_dates=True,
     
     inflow_levels = inflow_levels.sort(date)
     return inflow_levels
+    
+    
+
+    
 
 
     
