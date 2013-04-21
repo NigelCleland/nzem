@@ -4,6 +4,7 @@ Determine whether constraints are active for a particular trading period
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 def HVDC_Constraint(series, energy_price_send="", energy_price_receive="",
                     res_price="", abs_tol=None, rel_tol=None, min_split=10):
@@ -110,6 +111,30 @@ def CCGT_Offer_Plot(df):
     axes.grid()
     
     return fig, axes
+    
+def constraint_cdf(df, island="NI", measure=""):
+    """
+    Construct a cumulative distribution function to measure the
+    occurrence of constraints against a measured variable.
+    
+    Parameters
+    ----------
+    df : The DataFrame to be measured
+    island : What island the constraint should be determined for
+    measure : The column it should be measured against
+    
+    Returns
+    -------
+    Series : A series containing the CDF for the function
+    """
+    
+    cname = " ".join([island, "Constraint"])
+    dfc = df.eq_mask(cname, True)[measure]
+    
+    binrange= np.arange(dfc.min(), dfc.max(), 1)
+    hi, be = np.histogram(dfc, binrange)
+    hi_norm = 1 - np.cumsum(1. * hi / hi.sum())
+    return pd.Series(hi_norm, index=be[:-1])
     
     
 if __name__ == '__main__':
