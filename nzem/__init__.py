@@ -4,3 +4,4 @@ from nzem.offer_curves import *
 from nzem.constraints import *
 from nzem.offer_analysis import *
 from nzem.hydrology import *
+from nzem.utilities import *
