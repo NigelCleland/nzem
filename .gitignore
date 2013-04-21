@@ -4,6 +4,7 @@
 *.md~
 *.txt~
 *.*~
+private_models
 
 # C extensions
 *.so
