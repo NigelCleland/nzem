@@ -6,9 +6,15 @@ import os
 import glob
 import nzem
 from dateutil.parser import parse
+from datetime import datetime, timedelta
+
+def parse_niwa_date(x):
+    d = datetime.strptime(x, "%d%b%y")
+    return d if d.year <= 2020 else datetime(d.year - 100, d.month, d.day)
+
 
 def load_hydro_data(csv_name=None, date="Trading Date", parse_dates=True,
-                    date_index=True):
+                    date_index=True, niwa_date=True):
     """
     Load the hydrology data with optional date and index handling.
     
@@ -25,11 +31,14 @@ def load_hydro_data(csv_name=None, date="Trading Date", parse_dates=True,
     """    
     
     if csv_name == None:
-        csv_name = os.getcwd() +  '/nzem/maps/Hydro_lake_Storage.csv'
+        csv_name = os.getcwd() +  '/nzem/maps/Hydro_Lake_Data.csv'
     
     lake_storage = pd.read_csv(csv_name)
     if parse_dates:
-        lake_storage[date] = lake_storage[date].apply(lambda x: parse(x))
+        if niwa_date:
+            lake_storage[date] = lake_storage[date].apply(parse_niwa_date)
+        else:
+            lake_storage[date] = lake_storage[date].apply(lambda x: parse(x))
     if date_index:
         lake_storage.index = lake_storage[date]
         
@@ -38,7 +47,7 @@ def load_hydro_data(csv_name=None, date="Trading Date", parse_dates=True,
     
     
 def load_inflow_data(csv_name=None, date="Trading Date", parse_dates=True,
-                     date_index=True):
+                     date_index=True, niwa_date=True):
     """
     Helper function to load the inflow data with optional initial data
     manipulation arguments
@@ -57,11 +66,15 @@ def load_inflow_data(csv_name=None, date="Trading Date", parse_dates=True,
     """
     
     if csv_name == None:
-        csv_name = os.get_cwd() + '/nzem/maps/Hydro_Inflow_Data.csv'
+        csv_name = os.getcwd() + '/nzem/maps/Hydro_Inflow_Data.csv'
         
     inflow_levels = pd.read_csv(csv_name)
     if parse_dates:
-        inflow_levels[date] = inflow_levels[date].apply(lambda x: parse(x))
+        if niwa_date:
+            inflow_levels[date] = inflow_levels[date].apply(parse_niwa_date)
+        else:
+            inflow_levels[date] = inflow_levels[date].apply(lambda x: parse(x))
+            
     if date_index:
         inflow_levels.index = inflow_levels[date]
     
