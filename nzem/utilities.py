@@ -1,6 +1,6 @@
 import pandas as pd
 
-def monthly_agg(df, stat_col, agg=None, **kargs):
+def ts_agg(df, stat_col, ts_agg=None, agg=None, **kargs):
     """ Perform statistics upon monthly data, applies the stat function
     Defaults to the mean
     
@@ -16,6 +16,9 @@ def monthly_agg(df, stat_col, agg=None, **kargs):
     monthly : Series containing monthly data
     """
 
-    g = df.groupby(lambda x: x.month)
+    g = df.groupby(ts_agg)
     return g[stat_col].aggregate(agg, **kargs) if agg else g[stat_col].mean()
+    
+    
+    
     
