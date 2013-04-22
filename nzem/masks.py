@@ -51,7 +51,7 @@ def bet_mask(df, key, values, inclusive=True):
 def mask(df, key, values, how=""):
     d = {"eq": df.eq_mask, "ne": df.ne_mask, "lt": df.lt_mask,
          "le": df.le_mask, "gt": df.gt_mask, "ge": df.ge_mask,
-         "in", df.in_eqmask}
+         "in": df.in_eqmask}
     return d[how](key, values)
     
 def apply_masks():
