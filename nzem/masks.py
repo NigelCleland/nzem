@@ -62,7 +62,36 @@ def apply_masks():
     pd.DataFrame.mixbool_mask = mixbool_mask
     pd.DataFrame.bet_mask = bet_mask
     
+    
     return pd.DataFrame
+    
+def seq_mask(s, value):
+    return s[s == value]
+    
+def sgt_mask(s, value):
+    return s[s > value]
+    
+def sge_mask(s, value):
+    return s[s >= value]
+    
+def sle_mask(s, value):
+    return s[s <= value]
+    
+def slt_mask(s, value):
+    return s[s < value]
+    
+def sne_mask(s, value):
+    return s[s != value]
+    
+def apply_series_masks():
+    pd.Series.eq_mask = seq_mask
+    pd.Series.gt_mask = sgt_mask
+    pd.Series.ge_mask = sge_mask
+    pd.Series.lt_mask = slt_mask
+    pd.Series.le_mask = sle_mask
+    pd.Series.ne_mask = sne_mask
+    
+    return pd.Series
         
-    if __name__ == '__main__':
+if __name__ == '__main__':
         pass
