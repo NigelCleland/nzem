@@ -173,11 +173,15 @@ def conditional_prob(df, island="NI", measure="", step=1, how='ge'):
 def cumul_frequency_assessment(s1, s2, binrange, how='ge'):
     """Iterate over a binrange and assess the conditional probability
     for different levels
+    
+    NOTE: This is quite slow, can definitely make algorithmic speed
+    improvements here but it's working so I'm leaving until another day
     """
     f = ( 1. * s1.mask(b, how=how).count() / s2.mask(b, how=how).count() 
           for b in binrange)
     return pd.Series(f, index=binrange)
         
+
     
     
 if __name__ == '__main__':
