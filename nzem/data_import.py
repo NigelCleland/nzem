@@ -297,6 +297,30 @@ def load_energy_offer_csv(csv_fname, date="TRADING_DATE",
     return en_offers
     
     
+def load_demand_data(csv_name=None, quick_parse=True, date_time_index=True,
+    date="Trading Date", period="Trading Period", title_columns=True,
+    date_time="Date Time"):
+        
+    if csv_name == None:
+        csv_name = "/home/nigel/Python_Tests/island_demand_data.csv"
+        
+    demand = pd.read_csv(csv_name)
+    if quick_parse:
+        demand = demand.le_mask(period, 48)
+        date_map = {x: parse(x) for x in demand[date].unique()}
+        demand[date_time] = demand.apply(map_date_period, date_map=date_map,
+            date=date, period=period, axis=1)
+        
+        if date_time_index:
+            demand.index = demand[date_time]
+            
+    if title_columns:
+        col_dict = {x: x.replace('_', ' ').title() for x in demand.columns}
+        demand = demand.rename(columns=col_dict)
+        
+    return demand.sort_index()
+    
+    
     
 if __name__ == '__main__':
     pass
