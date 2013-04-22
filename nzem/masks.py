@@ -47,6 +47,12 @@ def bet_mask(df, key, values, inclusive=True):
         return df.ge_mask(key, values[0]).le_mask(key, values[1])
     else:
         return df.gt_mask(key, values[0]).lt_mask(key, values[1])
+        
+def mask(df, key, values, how=""):
+    d = {"eq": df.eq_mask, "ne": df.ne_mask, "lt": df.lt_mask,
+         "le": df.le_mask, "gt": df.gt_mask, "ge": df.ge_mask,
+         "in", df.in_eqmask}
+    return d[how](key, values)
     
 def apply_masks():
     
@@ -61,6 +67,7 @@ def apply_masks():
     pd.DataFrame.mix_eqmask = mix_eqmask
     pd.DataFrame.mixbool_mask = mixbool_mask
     pd.DataFrame.bet_mask = bet_mask
+    pd.DataFrame.mask = mask
     
     
     return pd.DataFrame
@@ -83,6 +90,11 @@ def slt_mask(s, value):
 def sne_mask(s, value):
     return s[s != value]
     
+def smask(s, value, how=""):
+    d = {"ge": s.ge_mask, "le": s.le_mask, "eq": s.eq_mask, "lt": s.lt_mask,
+         "gt": s.gt_mask, "ne": s.ne_mask}
+    return d[how](value)
+    
 def apply_series_masks():
     pd.Series.eq_mask = seq_mask
     pd.Series.gt_mask = sgt_mask
@@ -90,6 +102,7 @@ def apply_series_masks():
     pd.Series.lt_mask = slt_mask
     pd.Series.le_mask = sle_mask
     pd.Series.ne_mask = sne_mask
+    pd.Series.mask = smask
     
     return pd.Series
         
