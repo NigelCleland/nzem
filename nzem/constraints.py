@@ -163,7 +163,7 @@ def conditional_prob(df, island="NI", measure="", step=1, how='ge'):
     dfa = df[measure]
     dfc = df.eq_mask(cname, True)[measure]  
     
-    binrange = np.arange(dfa.min(), dfa.max(), step)
+    binrange = np.arange(dfa.min(), dfa.max()+step, step)
     
     cp = cumul_frequency_assessment(dfc, dfa, binrange, how=how)
     return cp.sort_index()
