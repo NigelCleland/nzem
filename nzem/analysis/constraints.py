@@ -110,79 +110,8 @@ def CCGT_Offer_Plot(df):
     axes.set_ylabel("North Island Reserve Price [$/MWh]")
     axes.grid()
     
-    return fig, axes
-    
-def constraint_cdf(df, island="NI", measure=""):
-    """
-    Construct a cumulative distribution function to measure the
-    occurrence of constraints against a measured variable.
-    
-    Parameters
-    ----------
-    df : The DataFrame to be measured
-    island : What island the constraint should be determined for
-    measure : The column it should be measured against
-    
-    Returns
-    -------
-    Series : A series containing the CDF for the function
-    """
-    
-    cname = " ".join([island, "Constraint"])
-    dfc = df.eq_mask(cname, True)[measure]
-    
-    binrange= np.arange(dfc.min(), dfc.max(), 1)
-    hi, be = np.histogram(dfc, binrange)
-    hi_norm = 1 - np.cumsum(1. * hi / hi.sum())
-    return pd.Series(hi_norm, index=be[:-1])
-    
-def conditional_prob(df, island="NI", measure="", step=1, how='ge'):
-    """
-    Construct a conditional probability distribution using cumulative functions
-    the how method may be specified (ge, lt, le, eq, gt, ne) to see the 
-    conditional probability of a particular measure given constraints.
-    
-    E.g. Determine P(Constraint | Measure) for a range of measures.
-    
-    Parameters
-    ----------
-    df : The dataframe for which te conditional probability is desired
-    island : What island the constraint should be tested for
-    measure : What measure should be assessed
-    step : Step size of measure to be used
-    how : Which method ot apply to the cumulative frequency assessment
-    
-    Returns
-    -------
-    conditional_probability : The conditional probability given that
-        the how condition has been met on the measure
-    """
-    
-    
-    cname = " ".join([island, "Constraint"])
-    dfa = df[measure]
-    dfc = df.eq_mask(cname, True)[measure]  
-    
-    binrange = np.arange(dfa.min(), dfa.max()+step, step)
-    
-    cp = cumul_frequency_assessment(dfc, dfa, binrange, how=how)
-    return cp.sort_index()
-    
-    
-    
-def cumul_frequency_assessment(s1, s2, binrange, how='ge'):
-    """Iterate over a binrange and assess the conditional probability
-    for different levels
-    
-    NOTE: This is quite slow, can definitely make algorithmic speed
-    improvements here but it's working so I'm leaving until another day
-    """
-    f = ( 1. * s1.mask(b, how=how).count() / s2.mask(b, how=how).count() 
-          for b in binrange)
-    return pd.Series(f, index=binrange)
-        
+    return fig, axes     
 
-    
     
 if __name__ == '__main__':
     pass
