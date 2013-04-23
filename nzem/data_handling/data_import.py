@@ -18,6 +18,11 @@ from datetime import datetime, timedelta
 from dateutil.parser import parse
 from pandas.tseries.offsets import Minute
 import nzem
+from nzem.utilities.utilities import niwa_parse
+
+### Globals
+
+NZEM_DATA_FOLDER = os.path.join(os.path.expanduser('~'), "data")
 
 
 def execute_query(SQL, dbname="Electricity_Database", password="Hammertime",
@@ -109,53 +114,11 @@ def map_data(df, node_map=None, left_on="Grid Exit Point", right_on="Node",
     """
              
     if node_map == None:
-        node_map =load_map()
+        node_map = load_map()
         
     partial_map = node_map[[right_on, map_reference]]
     return df.merge(partial_map, left_on=left_on, right_on=right_on) 
     
-def load_reserve_prices(csv_name, tpid="Trading Period Id", date="Trading Date",
-                        period="Trading Period", date_time="Date Time", 
-                        date_time_index=False, title_columns=True):
-    """
-    Load reserve prices from a csv file and perform some basic data manipulations
-    Assumes that the reserve prices have a unique trading period ID which should
-    be manipulated
-    
-    Parameters
-    ----------
-    tpid : Column name for the trading period ID
-    date : Column name for the trading date
-    period : Column name for the trading period
-    date_time : Column name for the date_time
-    date_time_index : Boolean, if true assign the date time column to the index
-    title_columns : Whether to rename the titles to be more human readable
-    
-    Returns
-    -------
-    res_prices : DataFrame containing the reserve price data
-    
-    """
-    
-    if tpid:
-        res_prices = pd.read_csv(csv_name)
-        res_prices[date] = res_prices[tpid].apply(lambda x: str(x)[:-2])
-        res_prices[period] = res_prices[tpid].apply(lambda x: int(str(x)[-2:]))
-        res_prices = res_prices[res_prices[period] <= 48]
-        date_map = {x: parse(x) for x in res_prices[date].unique()}
-        res_prices[date_time] = res_prices.apply(map_date_period, 
-                            date_map=date_map, date=date, period=period, axis=1)
-        res_prices = res_prices.sort(date_time)
-        if date_time_index:
-            res_prices.index = res_prices[date_time]
-    else:
-        res_prices = pd.read_csv(csv_name)
-        
-    if title_columns:
-        col_dict = {x: x.replace('_', ' ').title() for x in res_prices.columns}
-        res_prices = res_prices.rename(columns=col_dict)
-        
-    return res_prices
     
     
 def map_date_period(series, date_map=None, date="Trading Date", 
@@ -187,46 +150,6 @@ def map_date_period(series, date_map=None, date="Trading Date",
         return parse(series[date]) + pmap(series[period])
         
         
-def load_energy_prices(csv_name, date="Trading Date", period="Trading Period",
-                       tpid="Trading Period Id", date_time="Date Time",
-                       quick_parse=True, date_time_index=False, 
-                       title_columns=True):
-    """
-    Will load energy price data from a CSV file and apply modifications
-    as necessary to it in order to return a usable data set
-    
-    Parameters
-    ----------
-    csv_fname : The name of the csv file containing the energy price data
-    date : The name of the column containing trading date information
-    period : The name of the column containing trading period information
-    date_time : The new Date Time column to be created
-    quick_parse : Boolean, determine whether to attempt to parse the dates
-    date_time_index : Whether to assign the new date time as the index
-    title_columns : Rename the columns to use a more human readable format
-    
-    Returns
-    -------
-    en_prices : Pandas DataFrame containing energy price data
-    """
-    
-    en_prices = pd.read_csv(csv_name)
-    
-    if quick_parse:
-        en_prices = en_prices.le_mask(period, 48)
-        date_map = {x: parse(x) for x in en_prices[date].unique()}
-        en_prices[date_time] = en_prices.apply(map_date_period,
-                    date_map=date_map, date=date, period=period, axis=1)
-        en_prices = en_prices.sort(date_time)
-        if date_time_index:
-            en_prices.index = en_prices[date_time]
-            
-    if title_columns:
-        col_dict = {x: x.replace('_', ' ').title() for x in en_prices.columns}
-        en_prices = en_prices.rename(columns=col_dict)
-        
-        
-    return en_prices
     
 def create_master_price_dataframe(energy_prices, reserve_prices):
     """
@@ -255,72 +178,78 @@ def create_master_price_dataframe(energy_prices, reserve_prices):
             
     return master_set
     
-def load_energy_offer_csv(csv_fname, date="TRADING_DATE", 
-                          period="TRADING_PERIOD", date_time="Date Time",
-                          quick_parse=False, date_time_index=False,
-                          title_columns=True):
+    
+def load_csvfile(csv_name, quick_parse=True, date_time_index=True,
+              title_columns=True, date_period=False, trading_period_id=False,
+              date="Trading Date", period="Trading Period", 
+              tpid="Trading Period Id", date_time="Date Time",
+              niwa_date=False):
     """
-    Will load energy offer data from a CSV file and apply modifications
-    as necessary to it in order to return a usable data set
+    Master function to handle the importation of data files for analysis.
+    Has capabilities of handling a broadish range of dates which is pretty sweet.
+    All the is needed to run the file is a file and information about what the
+    date column names are
     
     Parameters
     ----------
-    csv_fname : The name of the csv file containing the energy offer data
-    date : The name of the column containing trading date information
-    period : The name of the column containing trading period information
-    date_time : The new Date Time column to be created
-    quick_parse : Boolean, determine whether to attempt to parse the dates
-    date_time_index : Whether to assign the new date time as the index
-    title_columns : Rename the columns to use a more human readable format
+    csv_name : The name of the CSV file to be loaded
+    quick_parse : Whether to apply a memoised version of the date time parsing
+    date_time_index : Apply the date time column as the new index
+    title_columns : Change column names to a "title" format
+    date_period : Whether to apply the date_period parse method
+    trading_period_id : Whether to first convert a TPID to date_period syntax
+    date : The column name of the Trading Date
+    period : Column name of the Trading Period
+    tpid : Column name of the Trading Period ID
+    date_time : Column name of the datetime index
+    niwa_date : Whether the horrible NIWA date format is used (hydrology data..)
     
     Returns
     -------
-    en_offers : Pandas DataFrame containing energy offer data
-    """
+    df : A sorted dataframe with the date time index loaded and working
+    """      
 
-                          
-    en_offers = pd.read_csv(csv_fname)
+    if os.path.exists(csv_name):
+        df = pd.read_csv(csv_name)
+    elif os.path.exists(os.path.join(NZEM_DATA_FOLDER, csv_name)):
+        df = pd.read_csv(os.path.join(NZEM_DATA_FOLDER, csv_name))
+    else:
+        raise Exception("%s is not a valid file name" % csv_name)
+        
     if quick_parse:
-        en_offers = en_offers.le_mask(period, 48)
-        date_map = {x: parse(x) for x in en_offers[date].unique()}
-        en_offers[date_time] = en_offers.apply(map_date_period, date_map=date_map,
-            date=date, period=period, axis=1)
-        en_offers = en_offers.sort(date_time)
+        if niwa_date:
+            date_map = {x: niwa_parse(x) for x in df[date].unique()}
+            df[date_time] = df[date].map(date_map)
         
-        if date_time_index:
-            en_offers.index = en_offers[date_time]
+        else:
+            if trading_period_id:
+                fdate = lambda x: str(x)[:-2]
+                fperiod = lambda x: int(str(x)[-2:])
+                df[date] = df[tpid].apply(fdate)
+                df[period] = df[tpid].apply(fperiod)
+                date_period = True
+        
+            if date_period:
+                df = df.le_mask(period, 48)
+                date_map = {x: parse(x) for x in df[date].unique()}
+                df[date_time] = df.apply(map_date_period, date_map=date_map,
+                    date=date, period=period, axis=1)
+                
+            else:
+                raise Exception("Either date_period or trading_period_id must be \
+                set to True")
             
+    if date_time_index:
+        df.index = df[date_time]
+        
     if title_columns:
-        col_dict = {x: x.replace('_', ' ').title() for x in en_offers.columns}
-        en_offers = en_offers.rename(columns=col_dict)
+        col_dict = {x: x.replace('_', ' ').title() for x in df.columns}
+        df = df.rename(columns=col_dict)
         
-    return en_offers
+    return df.sort_index()
     
-    
-def load_demand_data(csv_name=None, quick_parse=True, date_time_index=True,
-    date="Trading Date", period="Trading Period", title_columns=True,
-    date_time="Date Time"):
+
         
-    if csv_name == None:
-        csv_name = "/home/nigel/Python_Tests/island_demand_data.csv"
-        
-    demand = pd.read_csv(csv_name)
-    if quick_parse:
-        demand = demand.le_mask(period, 48)
-        date_map = {x: parse(x) for x in demand[date].unique()}
-        demand[date_time] = demand.apply(map_date_period, date_map=date_map,
-            date=date, period=period, axis=1)
-        
-        if date_time_index:
-            demand.index = demand[date_time]
-            
-    if title_columns:
-        col_dict = {x: x.replace('_', ' ').title() for x in demand.columns}
-        demand = demand.rename(columns=col_dict)
-        
-    return demand.sort_index()
-    
-    
-    
+
 if __name__ == '__main__':
     pass

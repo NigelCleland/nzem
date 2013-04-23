@@ -1,4 +1,9 @@
 import pandas as pd
+from datetime import datetime, timedelta
+
+def niwa_parse(x, parse_str="%d%b%y"):
+    d = datetime.strptime(x, parse_str)
+    return d if d.year <= 2020 else datetime(d.year - 100, d.month, d.day)
 
 def ts_aggregation(df, stat_col, ts_agg=None, agg=None, **kargs):
     """ Perform statistics upon monthly data, applies the stat function
@@ -20,6 +25,9 @@ def ts_aggregation(df, stat_col, ts_agg=None, agg=None, **kargs):
 
     g = df.groupby(ts_agg) if ts_agg else df.groupby(lambda x: x.dayofyear)
     return g[stat_col].aggregate(agg, **kargs) if agg else g[stat_col].mean()
+    
+if __name__ == '__main__':
+    pass
     
     
     
