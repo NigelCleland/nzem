@@ -4,3 +4,5 @@ from nzem.data_handling.data_import import *
 from nzem.analysis.offer_curves import *
 from nzem.analysis.constraints import *
 from nzem.analysis.hydrology import *
+from nzem.utilities.ts_aggregation import *
+from nzem.utilities.aggregation import *

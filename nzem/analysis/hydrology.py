@@ -6,8 +6,8 @@ import os
 import glob
 import nzem
 from dateutil.parser import parse
-from datetime import datetime, timedelta
-    
+from datetime import datetime, timedelta  
+from nzem.utilities.utilities import ts_aggregation 
     
 def relative_level(df, stat_col, ts_agg=None, ts_agg_name="",
                    agg=None, **kargs):
@@ -22,7 +22,7 @@ def relative_level(df, stat_col, ts_agg=None, ts_agg_name="",
     -------
     """
     
-    relative = nzem.utilities.ts_aggregation(df, stat_col, ts_agg=ts_agg, 
+    relative = ts_aggregation(df, stat_col, ts_agg=ts_agg, 
                                              agg=agg, **kargs)
     df["AC"] = df.index.map(ts_agg)
     dfnew = df.merge(pd.DataFrame({ts_agg_name: relative}), left_on="AC",
@@ -35,8 +35,6 @@ def relative_level(df, stat_col, ts_agg=None, ts_agg_name="",
     del dfnew[ts_agg_name]
     return dfnew
     
-
-
 
 if __name__ == '__main__':
     pass
