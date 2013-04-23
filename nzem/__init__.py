@@ -6,3 +6,4 @@ from nzem.analysis.constraints import *
 from nzem.analysis.hydrology import *
 from nzem.utilities.ts_aggregation import *
 from nzem.utilities.aggregation import *
+from nzem.data_handling.master_set import *
