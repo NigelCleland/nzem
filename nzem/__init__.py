@@ -1,7 +1,6 @@
-from nzem.masks import apply_masks
-from nzem.data_import import *
-from nzem.offer_curves import *
-from nzem.constraints import *
-from nzem.offer_analysis import *
-from nzem.hydrology import *
-from nzem.utilities import *
+from nzem.utilities.masks import apply_masks, apply_series_masks
+from nzem.utilities.utilities import *
+from nzem.data_handling.data_import import *
+from nzem.analysis.offer_curves import *
+from nzem.analysis.constraints import *
+from nzem.analysis.hydrology import *
