@@ -151,33 +151,6 @@ def map_date_period(series, date_map=None, date="Trading Date",
         
         
     
-def create_master_price_dataframe(energy_prices, reserve_prices):
-    """
-    Will create a master price dataframe from the energy and reserve price
-    dataframes
-    """
-    
-    # Split the reserve prices
-    island_res_prices = reserve_prices.groupby(["Island Id", "Date Time"])["Price Sum"].sum()
-    
-    # Split the energy prices
-    gr_en_prices = energy_prices.groupby(["Bus Id", "Date Time"])["Price Sum"].sum()
-    
-    # Begin merging to create a master data set...
-    master_set = pd.DataFrame({"HAY2201 Price": gr_en_prices.ix["HAY2201"]})
-    for bus in energy_prices["Bus Id"].unique():
-        if bus != "HAY2201":
-            new_name = "%s Price" % bus
-            master_set = master_set.merge(pd.DataFrame({new_name: gr_en_prices.ix[bus]}), left_index=True,
-                right_index=True)
-    
-    for island in ("NI", "SI"):
-        new_name = "%s Reserve Price" % island
-        master_set = master_set.merge(pd.DataFrame({new_name: 
-            island_res_prices.ix[island]}), left_index=True, right_index=True)
-            
-    return master_set
-    
     
 def load_csvfile(csv_name, quick_parse=True, date_time_index=True,
               title_columns=True, date_period=False, trading_period_id=False,
