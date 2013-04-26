@@ -7,7 +7,9 @@ import glob
 import nzem
 from dateutil.parser import parse
 from datetime import datetime, timedelta  
-from nzem.utilities.utilities import ts_aggregation 
+from nzem.utilities.utilities import *
+from nzem.utilities.ts_aggregation import *
+from nzem.utilities.aggregation import *
     
 def relative_level(df, stat_col, ts_agg=None, ts_agg_name="",
                    agg=None, **kargs):

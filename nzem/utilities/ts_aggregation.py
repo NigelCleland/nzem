@@ -49,6 +49,20 @@ def year_tsagg(x):
     
 def doy_tsagg(x):
     return x.dayofyear
+    
+def tp_tsagg(x):
+    return 48  if x.hour == 0 and x.minute == 0 else x.hour * 2 + x.minute / 30
+    
+# Note, best way to use is via a lambda function with set and o in groupby
+# Groupby doesn't take kwargs
+def season_tsagg(x, s=3., o=1.):
+    if x.month + o < 13:
+        return ceil((x.month + o) / float(s)) 
+    else:
+        return ceil((x.month + o - 12) / float(s))
+    
+
+    
 
 
 if __name__ == '__main__':

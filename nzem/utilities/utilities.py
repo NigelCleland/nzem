@@ -14,6 +14,7 @@ def merge_series(s1, s2):
     return pd.DataFrame({s1.name: s1}).merge(pd.DataFrame({s2.name: s2}),
         left_index=True, right_index=True)
         
+        
 def cdf(series, step=1):
     """
     Construct a cumulative density function for a series and return the
@@ -53,6 +54,7 @@ def cumulative_frequency(s1, s2, binrange, how='ge'):
     f = (1. * s1.mask(b, how=how).count() / s2.mask(b, how=how).count() for
         b in binrange)
     return pd.Series(f, binrange)
+    
     
     
 
