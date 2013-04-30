@@ -57,7 +57,11 @@ def cumulative_frequency(s1, s2, binrange, how='ge'):
     
 def reduced_aggregation(series, npoints=500, agg=None, percent=True):
     """
-    Perform a backward reduced average calculation
+    Perform a backward reduced aggregation calculation.
+    Will sort the data, then take in fractionally reducing subsets the aggregation
+    applied to that data.
+    This enables visualisation of the effect of the extremes on the average 
+    prices as straight averages are misleading.
     
     Parameters
     ----------
@@ -68,7 +72,7 @@ def reduced_aggregation(series, npoints=500, agg=None, percent=True):
     
     Returns
     -------
-    series 
+    series : Series containing information regarding the applied aggregation
     """
     
     total_points = len(series)
@@ -85,14 +89,23 @@ def reduced_aggregation(series, npoints=500, agg=None, percent=True):
     
 def point_reduced_aggregation(series, percent, agg=None):
     """
-    Create a reduced aggregation for a specifc point
+    A single point reduced average.
+    Pass a percentage figure, will convert this into a subset of the data (e.g.
+    passing 5 will remove the top 5% of the series points and then apply an 
+    aggregation to them.
+    
+    Parameters
+    ----------
+    series : The pandas series to apply the transformation to
+    percent : The percentage figure (notes, is reverse e.g. 5 = 95% of data)
+    agg : The aggregation to apply
+    
+    Returns
+    -------
+    float : A float containig the applied aggregation
     """
-    # Assume 1% is smallest delineation, 
-    if percent < 1:
-        p = percent * len(series)
-    else:
-        p = percent / 100.  * len(series)
-        
+    # Convert percentage to datapoint
+    p = np.ceil(percent / 100.  * len(series))
     s = series.copy()
     s.sort()
     return agg(s.values[:-p]) if p > 0 else agg(s.values)
