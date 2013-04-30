@@ -83,6 +83,19 @@ def reduced_aggregation(series, npoints=500, agg=None, percent=True):
         z = z * 100. / total_points
     return pd.Series(m, index=z)
     
+def point_reduced_aggregation(series, percent, agg=None):
+    """
+    Create a reduced aggregation for a specifc point
+    """
+    # Assume 1% is smallest delineation, 
+    if percent < 1:
+        p = percent * len(series)
+    else:
+        p = percent / 100.  * len(series)
+        
+    s = series.copy()
+    s.sort()
+    return agg(s.values[:-p])
 
 if __name__ == '__main__':
     pass
