@@ -95,7 +95,7 @@ def point_reduced_aggregation(series, percent, agg=None):
         
     s = series.copy()
     s.sort()
-    return agg(s.values[:-p])
+    return agg(s.values[:-p]) if p > 0 else agg(s.values)
 
 if __name__ == '__main__':
     pass
