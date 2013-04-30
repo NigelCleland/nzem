@@ -77,7 +77,7 @@ def reduced_aggregation(series, npoints=500, agg=None, percent=True):
         
     s = series.copy()
     s.sort()
-    z = np.arange(npoints)
+    z = np.arange(1, npoints+1)
     m = [agg(s.values[:-i]) for i in z]
     if percent:
         z = z * 100. / total_points
