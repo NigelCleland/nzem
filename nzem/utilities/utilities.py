@@ -55,7 +55,33 @@ def cumulative_frequency(s1, s2, binrange, how='ge'):
         b in binrange)
     return pd.Series(f, binrange)
     
+def reduced_aggregation(series, npoints=500, agg=None, percent=True):
+    """
+    Perform a backward reduced average calculation
     
+    Parameters
+    ----------
+    series : The series to perform the reduced average on
+    npoints : Number of points to perform it for
+    agg : Aggregation to perform
+    percent : Wether the series index should be a percentage figure
+    
+    Returns
+    -------
+    series 
+    """
+    
+    total_points = len(series)
+    if npoints >= total_points:
+        npoints = total_points - 1
+        
+    s = series.copy()
+    s.sort()
+    z = np.arange(npoints)
+    m = [agg(s.values[:-i]) for i in z]
+    if percent:
+        z = z * 100. / total_points
+    return pd.Series(m, index=z)
     
 
 if __name__ == '__main__':
