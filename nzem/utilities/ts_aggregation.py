@@ -9,6 +9,7 @@ And are used in conjunction with aggregation functions
 
 import pandas as pd
 from datetime import datetime, timedelta
+import numpy as np
 
 def ts_aggregation(df, stat_col, ts_agg=None, agg=None, **kargs):
     """ Perform statistics upon monthly data, applies the stat function
@@ -57,9 +58,9 @@ def tp_tsagg(x):
 # Groupby doesn't take kwargs
 def season_tsagg(x, s=3., o=1.):
     if x.month + o < 13:
-        return ceil((x.month + o) / float(s)) 
+        return np.ceil((x.month + o) / float(s)) 
     else:
-        return ceil((x.month + o - 12) / float(s))
+        return np.ceil((x.month + o - 12) / float(s))
     
 
     
