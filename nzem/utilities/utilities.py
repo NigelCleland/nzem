@@ -55,6 +55,20 @@ def cumulative_frequency(s1, s2, binrange, how='ge'):
         b in binrange)
     return pd.Series(f, binrange)
     
+def conditional_sample_size(s, step=1, how='ge'):
+    """
+    Develop a conditional sample size for a particular series.
+    Takes as optional arguments a method and step size
+    """
+    binrange = np.arange(s.min() - step, s.max() + step, step)
+    f = (s.mask(b, how=how).count() for b in binrange)
+    return pd.Series(f, binrange)
+    
+def conditional_sample_weight(s, step=1, how='ge'):
+    
+    samples = conditional_sample_size(s, step=step, how=how)
+    return 1 - samples / float(samples.max())
+    
 def reduced_aggregation(series, npoints=500, agg=None, percent=True):
     """
     Perform a backward reduced aggregation calculation.
