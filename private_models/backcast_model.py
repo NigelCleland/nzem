@@ -149,3 +149,82 @@ if __name__ == '__main__':
     # Create the weighted models
     nimod = weighted_model(ni_masterset, masterset, ses, per, step=10)
     simod = weighted_model(si_masterset, masterset, ses, per, step=10)
+
+    def get_probability(series, mod=None):
+        try:
+            # Iteratively reduce the sample
+            n = mod.eq_mask("Season", series["Season Name"])
+            n = n.eq_mask("Time", series["Time Name"])
+            n = n.ge_mask("Lake Level", series["Relative Level"])
+            n = n.ix[0]["Weighted Probability"]
+        except IndexError:
+            n = np.nan
+        return n
+        
+    masterset["NI Model Prediction"] = masterset.apply(get_probability, mod=nimod, axis=1)
+    masterset["SI Model Prediction"] = masterset.apply(get_probability, mod=simod, axis=1)
+    
+    n = np.arange(0, 1, 0.01)
+    ni = []
+    si = []
+    
+    for i in n:
+        ni.append([
+        masterset.ge_mask("NI Model Prediction", i)["NI Model Prediction"].sum(),
+        masterset.ge_mask("NI Model Prediction", i).eq_mask("NI Constraint", True)["DOY"].count()])
+        
+        si.append([
+        masterset.ge_mask("SI Model Prediction", i)["SI Model Prediction"].sum(),
+        masterset.ge_mask("SI Model Prediction", i).eq_mask("SI Constraint", True)["DOY"].count()])
+        
+    ni = pd.DataFrame(ni, index=n, columns=["Model Prediction", "Actual"])
+    si = pd.DataFrame(si, index=n, columns=["Model Prediction", "Actual"])
+    
+    ni["Percentage Difference"] = 100. * ni["Model Prediction"] / ni["Actual"] - 100
+    si["Percentage Difference"] = 100. * si["Model Prediction"] / si["Actual"] - 100
+    
+    ni["Difference"] = ni["Model Prediction"] - ni["Actual"]
+    si["Difference"] = si["Model Prediction"] - si["Actual"]
+    
+    ni[["Model Prediction", "Actual", "Difference"]].plot(secondary_y="Difference")
+    si[["Model Prediction", "Actual", "Difference"]].plot(secondary_y="Difference")
+    
+    ni[["Model Prediction", "Actual", "Percentage Difference"]].plot(secondary_y="Percentage Difference")
+    si[["Model Prediction", "Actual", "Percentage Difference"]].plot(secondary_y="Percentage Difference")
+    
+    scale = 0.82
+    ni_scale = []
+    for i in n:
+        ni_scale.append([
+        (masterset.ge_mask("NI Model Prediction", i)["NI Model Prediction"]*scale).sum(),
+        masterset.ge_mask("NI Model Prediction", i).eq_mask("NI Constraint", True)["DOY"].count()])
+    ni_scale = pd.DataFrame(ni_scale, index=n, columns=["Model Prediction", "Actual"])
+    
+    ni_scale["Percentage Difference"] = 100. * ni_scale["Model Prediction"] / ni_scale["Actual"] - 100  
+    ni_scale["Difference"] = ni_scale["Model Prediction"] - ni_scale["Actual"]
+    
+    scale = 0.82
+    ni_scale = []
+    for i in n:
+        ni_scale.append([
+        (masterset.le_mask("NI Model Prediction", i)["NI Model Prediction"]*scale).sum(),
+        masterset.le_mask("NI Model Prediction", i).eq_mask("NI Constraint", True)["DOY"].count()])
+    ni_scale = pd.DataFrame(ni_scale, index=n, columns=["Model Prediction", "Actual"])
+    
+    ni_scale["Percentage Difference"] = 100. * ni_scale["Model Prediction"] / ni_scale["Actual"] - 100  
+    ni_scale["Difference"] = ni_scale["Model Prediction"] - ni_scale["Actual"]
+    
+    scale = 0.82
+    si_scale = []
+    for i in n:
+        si_scale.append([
+        (masterset.ge_mask("SI Model Prediction", i)["SI Model Prediction"]*scale).sum(),
+        masterset.ge_mask("SI Model Prediction", i).eq_mask("SI Constraint", True)["DOY"].count()])
+    si_scale = pd.DataFrame(si_scale, index=n, columns=["Model Prediction", "Actual"])
+    
+    si_scale["Percentage Difference"] = 100. * si_scale["Model Prediction"] / si_scale["Actual"] - 100  
+    si_scale["Difference"] = si_scale["Model Prediction"] - si_scale["Actual"]
+    
+        
+        
+	
