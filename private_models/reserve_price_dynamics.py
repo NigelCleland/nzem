@@ -57,4 +57,15 @@ if __name__ == '__main__':
     
     il_dataset = nzem.create_il_dataset()
     il_fir = nzem.stack_il_offer(il_dataset, rtype="6S")
-    il_sir = nzem.stack_il_offer(il_dataset, rtype="60S")
+    del il_dataset
+    il_fir.index = il_fir["Date Time"]
+    allre = il_fir.merge(allr_prices, left_index=True, right_index=True)
+    del il_fir
+    #il_sir = nzem.stack_il_offer(il_dataset, rtype="60S")
+    
+    nidata = allre.eq_mask("Island Name", "North Island")
+    del allre
+    dispatch = nidata[nidata["Price"] <= nidata["NI FIR Price"]]
+    del nidata
+    grouped = dispatch.groupby(["Date Time", "Company"])["Max"].sum()
+    

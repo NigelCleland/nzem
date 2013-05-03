@@ -237,6 +237,7 @@ def create_il_dataset(folder_name="il_data", quick_parse=True,
                                for f in files]
                                
     df = pd.concat(dataframes, ignore_index=True)
+    del dataframes
 
     if map_dataframe:
         df = map_data(df)
