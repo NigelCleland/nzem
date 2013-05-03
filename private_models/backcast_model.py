@@ -203,18 +203,18 @@ if __name__ == '__main__':
     ni_scale["Percentage Difference"] = 100. * ni_scale["Model Prediction"] / ni_scale["Actual"] - 100  
     ni_scale["Difference"] = ni_scale["Model Prediction"] - ni_scale["Actual"]
     
-    scale = 0.82
-    ni_scale = []
-    for i in n:
-        ni_scale.append([
-        (masterset.le_mask("NI Model Prediction", i)["NI Model Prediction"]*scale).sum(),
-        masterset.le_mask("NI Model Prediction", i).eq_mask("NI Constraint", True)["DOY"].count()])
-    ni_scale = pd.DataFrame(ni_scale, index=n, columns=["Model Prediction", "Actual"])
+    #scale = 0.82
+    #ni_scale = []
+    #for i in n:
+    #    ni_scale.append([
+    #   (masterset.le_mask("NI Model Prediction", i)["NI Model Prediction"]*scale).sum(),
+    #    masterset.le_mask("NI Model Prediction", i).eq_mask("NI Constraint", True)["DOY"].count()])
+    #ni_scale = pd.DataFrame(ni_scale, index=n, columns=["Model Prediction", "Actual"])
     
-    ni_scale["Percentage Difference"] = 100. * ni_scale["Model Prediction"] / ni_scale["Actual"] - 100  
-    ni_scale["Difference"] = ni_scale["Model Prediction"] - ni_scale["Actual"]
+    #ni_scale["Percentage Difference"] = 100. * ni_scale["Model Prediction"] / ni_scale["Actual"] - 100  
+    #ni_scale["Difference"] = ni_scale["Model Prediction"] - ni_scale["Actual"]
     
-    scale = 0.82
+    scale = 0.9
     si_scale = []
     for i in n:
         si_scale.append([
@@ -225,6 +225,51 @@ if __name__ == '__main__':
     si_scale["Percentage Difference"] = 100. * si_scale["Model Prediction"] / si_scale["Actual"] - 100  
     si_scale["Difference"] = si_scale["Model Prediction"] - si_scale["Actual"]
     
+    def prob_model(ge, le, nimod):
+        fig, axes = plt.subplots(1, 1, figsize=(16,9))
+        
+        ge.eq_mask("Season", "Summer").eq_mask("Time", "Peak")["Probability"].plot(
+                ax=axes, style='k.', label="Greater Than")
+
+        le.eq_mask("Season", "Summer").eq_mask("Time", "Peak")["Probability"].plot(
+                ax=axes, style='kx', label="Less Than")
+        nimod.eq_mask("Season", "Summer").eq_mask("Time", "Peak")["Weighted Probability"].plot(
+                ax=axes, style='k-', label="Weighted Model")    
+        
+        axes.set_xlabel("Relative National Hydro Level [GWh]")
+        axes.set_ylabel("Probability of a Constraint Occurring")
+        axes.grid(axis='y')
+        axes.legend(loc='best')
+        return fig, axes
+        
+    fig, axes = prob_model(nige_probs, nile_probs, nimod)
+    fig.savefig("prob_models.png", dpi=150)
+    
+    def forecast_plot(isl):
+        
+        fig, ax1 = plt.subplots(1, 1, figsize=(16,9))
+        ax1.plot(isl["Model Prediction"], 'k-', label="Model Prediction")
+        ax1.plot(isl["Actual"], 'kx', label="Actual Number")
+        ax1.plot(isl["Difference"], 'k--', label="Model Difference")
+        ax1.set_xlabel("Minimum Model Probability [%]")
+        ax1.set_ylabel("Number of Periods")
+        
+        #ax2 = ax1.twinx()
+        #ax2.plot(isl["Percentage Difference"], 'k--', label="Percentage Difference")
+        #ax2.set_ylabel("Percentage Difference")
+        ax1.legend()
+        #ax2.legend()
+        return fig
+        
+    fig = forecast_plot(ni)
+    fig.savefig("NI_init_model.png", dpi=150)
+    fig = forecast_plot(si)
+    fig.savefig("SI_init_model.png", dpi=150)
+    
+    fig = forecast_plot(ni_scale)
+    fig.savefig("NI_Correct.png", dpi=150)
+    fig = forecast_plot(si_scale)
+    fig.savefig("SI_Correct.png", dpi=150)
         
         
 	
