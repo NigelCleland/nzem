@@ -4,7 +4,7 @@
 *.md~
 *.txt~
 *.*~
-
+data
 
 # C extensions
 *.so
