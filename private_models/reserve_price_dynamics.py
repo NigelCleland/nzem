@@ -56,3 +56,5 @@ if __name__ == '__main__':
     # Need to load me some IL data yo!
     
     il_dataset = nzem.create_il_dataset()
+    il_fir = nzem.stack_il_offer(il_dataset, rtype="6S")
+    il_sir = nzem.stack_il_offer(il_dataset, rtype="60S")

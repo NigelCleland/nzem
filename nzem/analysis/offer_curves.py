@@ -26,7 +26,7 @@ def stack_il_offer(df, rtype="6S"):
     o = lambda x: '%s Max' % rtype in x
     prices = filter(p, band_information)
     offers = filter(o, band_information)
-    
+
     split_df = []
     for price, offer in itertools.izip(prices, offers):
         cols = gen + [price] + [offer]
@@ -35,7 +35,7 @@ def stack_il_offer(df, rtype="6S"):
         single_df["Band"] = re.findall('[0-9]', price)[0]
         split_df.append(single_df)
         
-    return pd.concat(split_df, ignore_index=true)
+    return pd.concat(split_df, ignore_index=True)
     
     
 def stack_energy_offer(df, price_name="Price", power_name="Power"):

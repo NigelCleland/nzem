@@ -237,10 +237,11 @@ def create_il_dataset(folder_name="il_data", quick_parse=True,
                                for f in files]
                                
     df = pd.concat(dataframes, ignore_index=True)
-    df.index = df[date_time]
-    df = df.sort_index()
+
     if map_dataframe:
         df = map_data(df)
+    df.index = df[date_time]
+    df = df.sort_index()
     return df
         
     
