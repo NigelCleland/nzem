@@ -52,3 +52,7 @@ if __name__ == '__main__':
     # nia, sia, nifirdf, nisirdf, sifirdf, sisirdf
     # Concludes section one, price dynamics
     # Need to move onto the individual company "effectiveness" factors next
+    
+    # Need to load me some IL data yo!
+    
+    il_dataset = nzem.create_il_dataset()

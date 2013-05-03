@@ -19,6 +19,7 @@ from dateutil.parser import parse
 from pandas.tseries.offsets import Minute
 import nzem
 from nzem.utilities.utilities import niwa_parse
+import glob
 
 ### Globals
 
@@ -68,7 +69,7 @@ def load_map(map_fname=None):
     df : A pandas dataframe containing the mapping information
     """
     if map_fname == None:
-        map_fname = os.getcwd() +'/maps/Nodal_Information.csv'
+        map_fname = os.path.join(NZEM_DATA_FOLDER, 'maps/Nodal_Information.csv')
         
     return pd.read_csv(map_fname)
     
@@ -221,8 +222,27 @@ def load_csvfile(csv_name, quick_parse=True, date_time_index=True,
         
     return df.sort_index()
     
-
+def create_il_dataset(folder_name="il_data", quick_parse=True, 
+                      date_time_index=False, title_columns=True,
+                      date_period=True, date="TRADING_DATE", 
+                      period="TRADING_PERIOD", date_time="Date Time",
+                      map_dataframe=True):
+                      
+    """ Load the full IL data set as a raw group of data """
+    files = glob.glob(os.path.join(NZEM_DATA_FOLDER, folder_name, '*.csv'))
+    
+    dataframes = [load_csvfile(f, date_period=date_period, date=date, 
+                               period=period, date_time_index=date_time_index,
+                               date_time=date_time) 
+                               for f in files]
+                               
+    df = pd.concat(dataframes, ignore_index=True)
+    df.index = df[date_time]
+    df = df.sort_index()
+    if map_dataframe:
+        df = map_data(df)
+    return df
         
-
+    
 if __name__ == '__main__':
     pass
