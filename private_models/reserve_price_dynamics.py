@@ -67,5 +67,47 @@ if __name__ == '__main__':
     del allre
     dispatch = nidata[nidata["Price"] <= nidata["NI FIR Price"]]
     del nidata
-    grouped = dispatch.groupby(["Date Time", "Company"])["Max"].sum()
+    grouped = dispatch.groupby(["Date Time", "Company"])["Offer"].sum()
+    del dispatch
+    
+    arr = np.array(grouped.index.tolist())
+    df = pd.DataFrame({"Dispatched Offer": grouped})
+    df["Date Time"] = arr[:,0]
+    df["Company"] = arr[:,1]
+    df.index = df["Date Time"]
+    dfmerg = nzem.merge_dfseries(df, allr_prices["NI FIR Price"], left_index=True)
+    
+    dfmerg["Year"] = dfmerg["Date Time"].apply(lambda x: x.year)
+    dfmerg["Month"] = dfmerg["Date Time"].apply(lambda x: x.month)
+    dfmerg["TP"] = dfmerg["Date Time"].apply(nzem.tp_tsagg)
+    
+    cavg = dfmerg.groupby(["Company", "Year", "Month", "TP"])
+    cavg = cavg["Dispatched Offer"].aggregate(np.max)
+    cavg.name = "75% Offer"
+    dfall = nzem.merge_dfseries(dfmerg, cavg, left_on=["Company", "Year", "Month", "TP"])
+    
+    def relative_offer(series):
+        return 1. * series["Dispatched Offer"] / series["75% Offer"] if series["75% Offer"] > 0 else 0 if series["Dispatched Offer"] == 0 else 1
+        
+    dfall["Relative Offer"] = dfall.apply(relative_offer, axis=1)
+    dfall["Offer Weighted Price"] = dfall["Relative Offer"] * dfall["NI FIR Price"]
+    
+    def get_ratio(df, comp):
+    
+        t1 = df.eq_mask("Company", comp).groupby(["Year", "Month"])["NI FIR Price"].sum() 
+        t2 = df.eq_mask("Company", comp).groupby(["Year", "Month"])["Offer Weighted Price"].sum() 
+        
+        m = (t2 / t1)
+        m = pd.DataFrame({"Ratio" : m})
+        arr = np.array(m.index.tolist())
+        m["Year"] = arr[:,0]
+        m["Month"] = arr[:,1]
+        m["Price"] = t1
+        def d(x):
+            return datetime.date(x[0], x[1],1)
+            
+        m["Date"] = m[["Year", "Month"]].apply(d, axis=1)
+        m.index = m["Date"]
+        
+        return m[["Ratio", "Price"]]
     
