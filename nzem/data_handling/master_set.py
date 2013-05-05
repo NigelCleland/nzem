@@ -54,16 +54,24 @@ def load_masterset():
     
     return md
 
-def columnise_res_prices(df, island_price=True):
+def columnise_res_prices(df, island_price=True, islandid="Island Id",
+    longname=False):
     """ 
     Columnise the reserve price dataframe
     """
     
+    if longname:
+        ni = "North Island"
+        si = "South Island"
+    else:
+        ni = "NI"
+        si = "SI"
+    
     # Split them
-    nif = df.eq_mask("Reserve Type", "F").eq_mask("Island Id", "NI")
-    nis = df.eq_mask("Reserve Type", "S").eq_mask("Island Id", "NI")
-    sif = df.eq_mask("Reserve Type", "F").eq_mask("Island Id", "SI")
-    sis = df.eq_mask("Reserve Type", "S").eq_mask("Island Id", "SI")
+    nif = df.eq_mask("Reserve Type", "F").eq_mask(islandid, ni)
+    nis = df.eq_mask("Reserve Type", "S").eq_mask(islandid, ni)
+    sif = df.eq_mask("Reserve Type", "F").eq_mask(islandid, si)
+    sis = df.eq_mask("Reserve Type", "S").eq_mask(islandid, si)
     
     # Rename columns
     nif = nif.rename(columns={"Price Sum": "NI FIR Price"})

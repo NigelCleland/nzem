@@ -1,6 +1,7 @@
 import pandas as pd
 import nzem
 import numpy as np
+import matplotlib.pyplot as plt
 
 def part_match(x, colset):
     for item in colset:
@@ -51,6 +52,50 @@ def weighted_model(ms1, ms2, seasons, periods, step=20):
     allprob = allprob.dropna()
     allprob.index = allprob["Lake Level"]
     return allprob
+    
+def forecast_plot(isl):
+    
+    fig, ax1 = plt.subplots(1, 1, figsize=(16,9))
+    ax1.plot(isl["Model Prediction"], 'k-', label="Model Prediction")
+    ax1.plot(isl["Actual"], 'kx', label="Actual Number")
+    ax1.plot(isl["Difference"], 'k--', label="Model Difference")
+    ax1.set_xlabel("Minimum Model Probability [%]")
+    ax1.set_ylabel("Number of Periods")
+    
+    #ax2 = ax1.twinx()
+    #ax2.plot(isl["Percentage Difference"], 'k--', label="Percentage Difference")
+    #ax2.set_ylabel("Percentage Difference")
+    ax1.legend()
+    #ax2.legend()
+    return fig
+
+def get_probability(series, mod=None):
+    try:
+        # Iteratively reduce the sample
+        n = mod.eq_mask("Season", series["Season Name"])
+        n = n.eq_mask("Time", series["Time Name"])
+        n = n.ge_mask("Lake Level", series["Relative Level"])
+        n = n.ix[0]["Weighted Probability"]
+    except IndexError:
+        n = np.nan
+    return n
+    
+def prob_model(ge, le, nimod):
+    fig, axes = plt.subplots(1, 1, figsize=(16,9))
+    
+    ge.eq_mask("Season", "Summer").eq_mask("Time", "Peak")["Probability"].plot(
+            ax=axes, style='k.', label="Greater Than")
+
+    le.eq_mask("Season", "Summer").eq_mask("Time", "Peak")["Probability"].plot(
+            ax=axes, style='kx', label="Less Than")
+    nimod.eq_mask("Season", "Summer").eq_mask("Time", "Peak")["Weighted Probability"].plot(
+            ax=axes, style='k-', label="Weighted Model")    
+    
+    axes.set_xlabel("Relative National Hydro Level [GWh]")
+    axes.set_ylabel("Probability of a Constraint Occurring")
+    axes.grid(axis='y')
+    axes.legend(loc='best')
+    return fig, axes
 
 
 if __name__ == '__main__':
@@ -150,16 +195,7 @@ if __name__ == '__main__':
     nimod = weighted_model(ni_masterset, masterset, ses, per, step=10)
     simod = weighted_model(si_masterset, masterset, ses, per, step=10)
 
-    def get_probability(series, mod=None):
-        try:
-            # Iteratively reduce the sample
-            n = mod.eq_mask("Season", series["Season Name"])
-            n = n.eq_mask("Time", series["Time Name"])
-            n = n.ge_mask("Lake Level", series["Relative Level"])
-            n = n.ix[0]["Weighted Probability"]
-        except IndexError:
-            n = np.nan
-        return n
+
         
     masterset["NI Model Prediction"] = masterset.apply(get_probability, mod=nimod, axis=1)
     masterset["SI Model Prediction"] = masterset.apply(get_probability, mod=simod, axis=1)
@@ -203,6 +239,21 @@ if __name__ == '__main__':
     ni_scale["Percentage Difference"] = 100. * ni_scale["Model Prediction"] / ni_scale["Actual"] - 100  
     ni_scale["Difference"] = ni_scale["Model Prediction"] - ni_scale["Actual"]
     
+    def prob_assesment(df, col, col_const):
+        sc = []
+        n = np.arange(0, 1, 0.01)
+        for i in n:
+            sc.append([
+                df.ge_mask(col, i)[col].sum(),
+                df.ge_mask(col, i).eq_mask(col_const, True)["DOY"].count()])
+        
+        scale = pd.DataFrame(sc, index=n, columns=["Model Prediction", "Actual"])
+        scale["Percentage Difference"] = 100. * scale["Model Prediction"] / scale["Actual"] - 100
+        scale["Difference"] = scale["Model Prediction"] - scale["Actual"]
+        return scale
+        
+                
+    
     #scale = 0.82
     #ni_scale = []
     #for i in n:
@@ -225,51 +276,64 @@ if __name__ == '__main__':
     si_scale["Percentage Difference"] = 100. * si_scale["Model Prediction"] / si_scale["Actual"] - 100  
     si_scale["Difference"] = si_scale["Model Prediction"] - si_scale["Actual"]
     
-    def prob_model(ge, le, nimod):
-        fig, axes = plt.subplots(1, 1, figsize=(16,9))
-        
-        ge.eq_mask("Season", "Summer").eq_mask("Time", "Peak")["Probability"].plot(
-                ax=axes, style='k.', label="Greater Than")
 
-        le.eq_mask("Season", "Summer").eq_mask("Time", "Peak")["Probability"].plot(
-                ax=axes, style='kx', label="Less Than")
-        nimod.eq_mask("Season", "Summer").eq_mask("Time", "Peak")["Weighted Probability"].plot(
-                ax=axes, style='k-', label="Weighted Model")    
         
-        axes.set_xlabel("Relative National Hydro Level [GWh]")
-        axes.set_ylabel("Probability of a Constraint Occurring")
-        axes.grid(axis='y')
-        axes.legend(loc='best')
-        return fig, axes
+#    fig, axes = prob_model(nige_probs, nile_probs, nimod)
+#    fig.savefig("prob_models.png", dpi=150)  
         
-    fig, axes = prob_model(nige_probs, nile_probs, nimod)
-    fig.savefig("prob_models.png", dpi=150)
+#    fig = forecast_plot(ni)
+#    fig.savefig("NI_init_model.png", dpi=150)
+#    fig = forecast_plot(si)
+#    fig.savefig("SI_init_model.png", dpi=150)
     
-    def forecast_plot(isl):
+#    fig = forecast_plot(ni_scale)
+#    fig.savefig("NI_Correct.png", dpi=150)
+#    fig = forecast_plot(si_scale)
+#    fig.savefig("SI_Correct.png", dpi=150)
         
-        fig, ax1 = plt.subplots(1, 1, figsize=(16,9))
-        ax1.plot(isl["Model Prediction"], 'k-', label="Model Prediction")
-        ax1.plot(isl["Actual"], 'kx', label="Actual Number")
-        ax1.plot(isl["Difference"], 'k--', label="Model Difference")
-        ax1.set_xlabel("Minimum Model Probability [%]")
-        ax1.set_ylabel("Number of Periods")
         
-        #ax2 = ax1.twinx()
-        #ax2.plot(isl["Percentage Difference"], 'k--', label="Percentage Difference")
-        #ax2.set_ylabel("Percentage Difference")
-        ax1.legend()
-        #ax2.legend()
-        return fig
-        
-    fig = forecast_plot(ni)
-    fig.savefig("NI_init_model.png", dpi=150)
-    fig = forecast_plot(si)
-    fig.savefig("SI_init_model.png", dpi=150)
+    # Load all of the new data
+    reprice = nzem.load_csvfile("Model_ds/MarAprResPrices.csv", trading_period_id=True)
+    enprice = nzem.load_csvfile("Model_ds/MarchAprilEnergyPrices.csv", date_period=True)
+    lakes = nzem.load_csvfile("Model_ds/MarAprlHydrodata.csv", niwa_date=True)
     
-    fig = forecast_plot(ni_scale)
-    fig.savefig("NI_Correct.png", dpi=150)
-    fig = forecast_plot(si_scale)
-    fig.savefig("SI_Correct.png", dpi=150)
+    # Create a single dataset from the new data
+    hay = enprice.eq_mask("Bus Id", "HAY2201")
+    ben = enprice.eq_mask("Bus Id", "BEN2201")
+    rp = nzem.columnise_res_prices(reprice, islandid="Island Name", longname=True)
+    
+    hay = hay.rename(columns={"Price Sum": "HAY2201 Price"})
+    ben = ben.rename(columns={"Price Sum": "BEN2201 Price"})
+
+    mdf = nzem.merge_series(hay["HAY2201 Price"], ben["BEN2201 Price"])
+    mdf = pd.merge(mdf, rp, left_index=True, right_index=True)
+    
+    lakesh = lakes["Daily Stored"].resample("30Min", fill_method='ffill')
+    mdf = nzem.merge_dfseries(mdf, lakesh, left_index=True)
+    
+    mdf["NI Constraint"] = mdf.apply(nzem.HVDC_Constraint,
+        energy_price_send="BEN2201 Price", energy_price_receive="HAY2201 Price", 
+        res_price="NI Reserve Price", abs_tol=5, axis=1)
         
+    mdf["SI Constraint"] = mdf.apply(nzem.HVDC_Constraint,
+        energy_price_receive="BEN2201 Price", energy_price_send="HAY2201 Price", 
+        res_price="SI Reserve Price", abs_tol=5, axis=1)
         
-	
+    mdf["Trading Period"] = mdf.index.map(nzem.tp_tsagg)
+    mdf["Season"] = mdf.index.map(nzem.season_tsagg)
+    mdf["DOY"] = mdf.index.map(nzem.doy_tsagg)
+    
+    mdf = nzem.merge_dfseries(mdf, decile_hydro_level, left_on="DOY")
+    mdf["Relative Level"] = mdf["Daily Stored"] - mdf["Decile Storage"]
+    mdf["Season Name"] = mdf["Season"].map(season_map)
+    mdf["Time Name"] = mdf["Trading Period"].map(period_map)
+    
+    mdf["NI Model Prediction"] = mdf.apply(get_probability, mod=nimod, axis=1)
+    mdf["SI Model Prediction"] = mdf.apply(get_probability, mod=simod, axis=1)
+    mdf["Sc NI Mod"] = mdf["NI Model Prediction"] * 0.82
+    mdf["Sc SI Mod"] = mdf["SI Model Prediction"] * 0.9
+    
+    nitest = prob_assesment(mdf, "Sc NI Mod", "NI Constraint")
+    sitest = prob_assesment(mdf, "Sc SI Mod", "SI Constraint")
+    
+    
