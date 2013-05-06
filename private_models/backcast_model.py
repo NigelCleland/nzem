@@ -336,4 +336,47 @@ if __name__ == '__main__':
     nitest = prob_assesment(mdf, "Sc NI Mod", "NI Constraint")
     sitest = prob_assesment(mdf, "Sc SI Mod", "SI Constraint")
     
-    
+    def monte_carlo(df, col="", N=1000, scale=1.0, ge=0.05):
+        prediction = []
+        pred = df[col]
+        pred = pred * scale
+        pred = pred.ge_mask(ge)
+        for n in xrange(N):
+            prediction.append(np.where(pred >= np.random.random(len(pred)), 1, 0).sum())
+        
+        return pd.Series(prediction)
+            
+    def sample_prob(series, mod=None):
+        try:
+            # Iteratively reduce the sample
+            n = mod.eq_mask("Season", series["Season Name"])
+            n = n.eq_mask("Time", series["Time Name"])
+            n = n.ge_mask("Lake Level", series["Relative Level"])
+            n = n.ix[0]["Weighted Probability"]
+        except IndexError:
+            n = np.nan
+        return n
+        
+    def monte_assess(df, mod, col1, col2, N=1000, scale=1.0):
+        n = np.arange(0, 1.0, 0.01)
+        num = []
+        for i in n:
+            act = df.ge_mask(col1, i).eq_mask(col2, True)[col2].sum()
+            pred = monte_carlo(df, mod, col=col1, N=N, scale=scale, ge=i)
+            try:
+                r = 1. -  (1.*(pred >= act).sum() / len(pred))
+            except:
+                r = 0
+            num.append(r)
+        return pd.Series(num, index=n)
+        
+    def monte_agg(df, col="", agg=None, N=1000, scale=1.0):
+        n = np.arange(0, 1.0, 0.01)
+        l = []
+        for i in n:
+            l.append(agg(monte_carlo(df, col=col, N=N, scale=scale, ge=i)))
+        
+        return pd.Series(l, n)
+        
+    nitest_monte = monte_assess(mdf, nimod, "NI Model Prediction", "NI Constraint", N=1000, scale=0.82)
+    sitest_monte = monte_assess(mdf, simod, "SI Model Prediction", "SI Constraint", N=1000, scale=0.9)
