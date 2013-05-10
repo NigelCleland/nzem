@@ -1,6 +1,12 @@
 import pandas as pd
 import nzem
 import numpy as np
+import style
+import matplotlib.pyplot as plt
+import matplotlib
+
+font = {'family': 'serif', 'size': 18}
+matplotlib.rc('font', **font)
 
 def part_match(x, colset):
     for item in colset:
@@ -193,6 +199,8 @@ if __name__ == '__main__':
     fig.subplots_adjust(hspace=0.075)
     fig.text(0.075, 0.5, 'Weekly Frequency of Binding Reserve Constraints [%]',
             ha='center', va='center', rotation='vertical')
+    for ax in axes:
+        rstyle(ax)
     fig.savefig("constraint_time_series.png", dpi=150)
     
     # Monthly Plots
@@ -217,7 +225,7 @@ if __name__ == '__main__':
     axes.set_ylabel("Monthly frequency deviation of reserve constraints")
     for label in axes.get_xticklabels():
         label.set_rotation(30)
-        
+    rstyle(axes)
     fig.savefig("monthly_constraint_activity.png", dpi=150)
     
     # Trading Periods Plots
@@ -228,6 +236,7 @@ if __name__ == '__main__':
     axes.grid(axis='y')
     axes.set_xlabel("Trading Period")
     axes.set_ylabel("Frequency of binding reserve constraints [%]")
+    rstyle(axes)
     fig.savefig("trading_period_activity.png", dpi=150)
 
 
@@ -246,6 +255,8 @@ if __name__ == '__main__':
         ha='center', va='center', rotation='vertical')
     plt.xlim(-1000, 2000)
     fig.subplots_adjust(hspace=0.075)
+    for ax in axes:
+        rstyle(ax)
     fig.savefig("hydro_situation.png", dpi=150)
     
     # Demand Plots
@@ -256,6 +267,7 @@ if __name__ == '__main__':
     axes.grid(axis='y')
     axes.set_xlabel("National Demand [MW]")
     axes.set_ylabel("Conditional Probability of Reserve Constraint [%]")
+    rstyle(axes)
     fig.savefig("demand_situation.png", dpi=150)
     
     # Risk plots
@@ -269,6 +281,8 @@ if __name__ == '__main__':
     fig.text(0.5, 0.05, "Island Risk [MW]", ha='center', va='center')
     fig.text(0.075, 0.5, "Conditional Probability of Constraint", 
         ha='center', va='center', rotation='vertical')    
+    for ax in axes:
+        rstyle(ax)
     fig.savefig("risk_analysis.png", dpi=150)
     
     # Reserve availability plots
@@ -279,5 +293,6 @@ if __name__ == '__main__':
     axes.set_ylabel("Conditional Probability of Reserve Constraint [%]")
     axes.grid()
     axes.grid(axis='y')
+    rstyle(axes)
     fig.savefig("reserve_avail.png", dpi=150)
     
