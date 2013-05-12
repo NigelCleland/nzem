@@ -278,18 +278,18 @@ if __name__ == '__main__':
     
 
         
-#    fig, axes = prob_model(nige_probs, nile_probs, nimod)
-#    fig.savefig("prob_models.png", dpi=150)  
+    fig1, axes1 = prob_model(nige_probs, nile_probs, nimod)
+    fig1.savefig("prob_models.png", dpi=150)  
         
-#    fig = forecast_plot(ni)
-#    fig.savefig("NI_init_model.png", dpi=150)
-#    fig = forecast_plot(si)
-#    fig.savefig("SI_init_model.png", dpi=150)
-    
-#    fig = forecast_plot(ni_scale)
-#    fig.savefig("NI_Correct.png", dpi=150)
-#    fig = forecast_plot(si_scale)
-#    fig.savefig("SI_Correct.png", dpi=150)
+    fig2 = forecast_plot(ni)
+    fig2.savefig("NI_init_model.png", dpi=150)
+    fig3 = forecast_plot(si)
+    fig3.savefig("SI_init_model.png", dpi=150)
+   
+    fig4 = forecast_plot(ni_scale)
+    fig4.savefig("NI_Correct.png", dpi=150)
+    fig5 = forecast_plot(si_scale)
+    fig5.savefig("SI_Correct.png", dpi=150)
         
         
     # Load all of the new data
@@ -376,7 +376,7 @@ if __name__ == '__main__':
         for i in n:
             l.append(agg(monte_carlo(df, col=col, N=N, scale=scale, ge=i)))
         
-        return pd.Series(l, n)
+        return pd.Series(l, index=n)
         
     nitest_monte = monte_assess(mdf, nimod, "NI Model Prediction", "NI Constraint", N=1000, scale=0.82)
     sitest_monte = monte_assess(mdf, simod, "SI Model Prediction", "SI Constraint", N=1000, scale=0.9)
