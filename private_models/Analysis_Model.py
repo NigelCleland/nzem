@@ -13,14 +13,14 @@ if __name__ == '__main__':
 
     pd.DataFrame = nzem.apply_masks()
     pd.Series = nzem.apply_series_masks()
-    
+
     # Load the master dataset
     masterset = nzem.load_masterset()
-    
+
     # Raw Hydro data for relative levels
     lake_data = nzem.load_csvfile("hydro_data/Hydro_Lake_Data.csv", niwa_date=True)
     inflow_data = nzem.load_csvfile("hydro_data/Hydro_Inflow_Data.csv", niwa_date=True)
-    
+
     # Get the lower decile for inflows and lake_data
     decile_hydro_level = nzem.ts_aggregation(lake_data, "Daily Stored",
             ts_agg=nzem.doy_tsagg, agg=nzem.per10)
@@ -28,22 +28,22 @@ if __name__ == '__main__':
     masterset["DOY"] = masterset.index.map(nzem.doy_tsagg)
     masterset = nzem.merge_dfseries(masterset, decile_hydro_level, left_on="DOY")
     masterset["Relative Level"] = masterset["Daily Stored"] - masterset["Decile Storage"]
-    
-    
+
+
     # Load the NFR data:
     nfr_data = nzem.load_csvfile("All_NFR_Data.csv", tpid="TRADING_PERIOD_ID",
                                  trading_period_id=True)
                                  
     # Get hydro data
     hvdc_data = nfr_data.eq_mask("Risk Six Sec Plant", "HVDC").eq_mask("Risk Sixty Sec Plant", "HVDC")
-    
+
     col_set = ["Nfr", "Reserve", "Risk", "Mw"]            
     cols = [x for x in hvdc_data.columns if part_match(x, col_set)]
-#    ghvdc_data = hvdc_data.groupby(["Island Name", "Date Time"])[cols].mean()
+    #    ghvdc_data = hvdc_data.groupby(["Island Name", "Date Time"])[cols].mean()
     ghvdc_data = nfr_data.groupby(["Island Name", "Date Time"])[cols].max()
-    
+
     # Determine which periods are constrained
-    
+
     masterset["NI Constraint"] = masterset.apply(nzem.HVDC_Constraint, 
             energy_price_send="BEN2201 Price", energy_price_receive="HAY2201 Price",
             res_price="NI Reserve Price", abs_tol=5, axis=1)
@@ -57,9 +57,9 @@ if __name__ == '__main__':
     masterset["Month"] = masterset.index.map(nzem.moy_tsagg)
     masterset["Season"] = masterset.index.map(nzem.season_tsagg)
     masterset["WOY"] = masterset.index.map(nzem.woy_tsagg)
-    
+
     # Begin determining the conditional probabilities for each factor:
-    
+
     ni_masterset = masterset.eq_mask("NI Constraint", True)
     si_masterset = masterset.eq_mask("SI Constraint", True)
     
