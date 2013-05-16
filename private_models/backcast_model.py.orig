@@ -387,6 +387,20 @@ if __name__ == '__main__':
     
 
         
+<<<<<<< HEAD
+    fig1, axes1 = prob_model(nige_probs, nile_probs, nimod)
+    fig1.savefig("prob_models.png", dpi=150)  
+        
+    fig2 = forecast_plot(ni)
+    fig2.savefig("NI_init_model.png", dpi=150)
+    fig3 = forecast_plot(si)
+    fig3.savefig("SI_init_model.png", dpi=150)
+   
+    fig4 = forecast_plot(ni_scale)
+    fig4.savefig("NI_Correct.png", dpi=150)
+    fig5 = forecast_plot(si_scale)
+    fig5.savefig("SI_Correct.png", dpi=150)
+=======
     fig, axes = prob_model(nige_probs, nile_probs, nimod)
     fig.savefig("prob_models.png", dpi=150)  
         
@@ -399,6 +413,7 @@ if __name__ == '__main__':
     fig.savefig("NI_Correct.png", dpi=150)
     fig = forecast_plot(si_scale)
     fig.savefig("SI_Correct.png", dpi=150)
+>>>>>>> dev
         
         
     # Load all of the new data
