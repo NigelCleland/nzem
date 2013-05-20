@@ -5,6 +5,7 @@
 *.txt~
 *.*~
 data
+private_models
 
 # C extensions
 *.so
