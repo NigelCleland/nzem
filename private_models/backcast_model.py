@@ -3,113 +3,10 @@ import nzem
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-import style
 
 font = {'family': 'serif', 'size': 18}
 matplotlib.rc('font', **font)
 
-def rstyle(ax):
-    """Styles an axes to appear like ggplot2
-    Must be called after all plot and axis manipulation operations have been carried out (needs to know final tick spacing)
-    """
-    #set the style of the major and minor grid lines, filled blocks
-    ax.grid(True, 'major', color='w', linestyle='-', linewidth=1.4)
-    ax.grid(True, 'minor', color='0.92', linestyle='-', linewidth=0.7)
-    ax.patch.set_facecolor('0.85')
-    ax.set_axisbelow(True)
-   
-    #set minor tick spacing to 1/2 of the major ticks
-    ax.xaxis.set_minor_locator(MultipleLocator( (plt.xticks()[0][1]-plt.xticks()[0][0]) / 2.0 ))
-    ax.yaxis.set_minor_locator(MultipleLocator( (plt.yticks()[0][1]-plt.yticks()[0][0]) / 2.0 ))
-   
-    #remove axis border
-    for child in ax.get_children():
-        if isinstance(child, matplotlib.spines.Spine):
-            child.set_alpha(0)
-       
-    #restyle the tick lines
-    for line in ax.get_xticklines() + ax.get_yticklines():
-        line.set_markersize(5)
-        line.set_color("gray")
-        line.set_markeredgewidth(1.4)
-   
-    #remove the minor tick lines    
-    for line in ax.xaxis.get_ticklines(minor=True) + ax.yaxis.get_ticklines(minor=True):
-        line.set_markersize(0)
-   
-    #only show bottom left ticks, pointing out of axis
-    rcParams['xtick.direction'] = 'out'
-    rcParams['ytick.direction'] = 'out'
-    ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('left')
-   
-   
-    if ax.legend_ <> None:
-        lg = ax.legend_
-        lg.get_frame().set_linewidth(0)
-        lg.get_frame().set_alpha(0.5)
-       
-       
-def rhist(ax, data, **keywords):
-    """Creates a histogram with default style parameters to look like ggplot2
-    Is equivalent to calling ax.hist and accepts the same keyword parameters.
-    If style parameters are explicitly defined, they will not be overwritten
-    """
-   
-    defaults = {
-                'facecolor' : '0.3',
-                'edgecolor' : '0.28',
-                'linewidth' : '1',
-                'bins' : 100
-                }
-   
-    for k, v in defaults.items():
-        if k not in keywords: keywords[k] = v
-   
-    return ax.hist(data, **keywords)
-
-
-def rbox(ax, data, **keywords):
-    """Creates a ggplot2 style boxplot, is eqivalent to calling ax.boxplot with the following additions:
-   
-    Keyword arguments:
-    colors -- array-like collection of colours for box fills
-    names -- array-like collection of box names which are passed on as tick labels
-
-    """
-
-    hasColors = 'colors' in keywords
-    if hasColors:
-        colors = keywords['colors']
-        keywords.pop('colors')
-       
-    if 'names' in keywords:
-        ax.tickNames = plt.setp(ax, xticklabels=keywords['names'] )
-        keywords.pop('names')
-   
-    bp = ax.boxplot(data, **keywords)
-    pylab.setp(bp['boxes'], color='black')
-    pylab.setp(bp['whiskers'], color='black', linestyle = 'solid')
-    pylab.setp(bp['fliers'], color='black', alpha = 0.9, marker= 'o', markersize = 3)
-    pylab.setp(bp['medians'], color='black')
-   
-    numBoxes = len(data)
-    for i in range(numBoxes):
-        box = bp['boxes'][i]
-        boxX = []
-        boxY = []
-        for j in range(5):
-          boxX.append(box.get_xdata()[j])
-          boxY.append(box.get_ydata()[j])
-        boxCoords = zip(boxX,boxY)
-       
-        if hasColors:
-            boxPolygon = Polygon(boxCoords, facecolor = colors[i % len(colors)])
-        else:
-            boxPolygon = Polygon(boxCoords, facecolor = '0.95')
-           
-        ax.add_patch(boxPolygon)
-    return bp
 
 def part_match(x, colset):
     for item in colset:
@@ -175,7 +72,6 @@ def forecast_plot(isl):
     #ax2.set_ylabel("Percentage Difference")
     ax1.legend()
     #ax2.legend()
-    rstyle(ax1)
     return fig
 
 def get_probability(series, mod=None):
@@ -257,7 +153,9 @@ if __name__ == '__main__':
     masterset["WOY"] = masterset.index.map(nzem.woy_tsagg)
     
     # Begin determining the conditional probabilities for each factor:
-    
+    masterset["Year"] = masterset.index.map(lambda x: x.year)
+    masterset_old = masterset.copy()
+    masterset = masterset.le_mask("Year", 2012)
 
     
     #### Going to need to begin the probability model again... SIGH ####
@@ -489,3 +387,117 @@ if __name__ == '__main__':
         
     nitest_monte = monte_assess(mdf, nimod, "NI Model Prediction", "NI Constraint", N=1000, scale=0.82)
     sitest_monte = monte_assess(mdf, simod, "SI Model Prediction", "SI Constraint", N=1000, scale=0.9)
+    
+    ### 2013 Model Test
+    
+    rp2013 = nzem.load_csvfile('2013_model_data/reserve_prices_2013.csv', trading_period_id=True)
+    ep2013 = nzem.load_csvfile('2013_model_data/energy_prices_2013.csv', date_period=True)
+    hd2013 = nzem.load_csvfile('2013_model_data/hydro_levels_2013.csv', niwa_date=True)["2013"]
+    
+    ms2013 = nzem.columnise_res_prices(rp2013)
+    hay2013 = ep2013.eq_mask("Bus Id", "HAY2201")["Price Sum"]
+    hay2013.name = "HAY2201 Price"
+    ben2013 = ep2013.eq_mask("Bus Id", "BEN2201")["Price Sum"]
+    ben2013.name = "BEN2201 Price"
+    ms2013 = ms2013.merge_series(hay2013, left_index=True)
+    ms2013 = ms2013.merge_series(ben2013, left_index=True)
+    level2013 = hd2013["Daily Stored"].resample("30Min", fill_method='ffill')
+    ms2013 = ms2013.merge_series(level2013, left_index=True)
+    
+    ms2013["DOY"] = ms2013.index.map(nzem.doy_tsagg)
+    ms2013["Season"] = ms2013.index.map(nzem.season_tsagg)
+    ms2013["Trading Period"] = ms2013.index.map(nzem.tp_tsagg)   
+    
+    ms2013["Season Name"] =  ms2013["Season"].map(season_map)
+    ms2013["Time Name"] = ms2013["Trading Period"].map(period_map)
+    
+    ms2013 = ms2013.merge_series(decile_hydro_level, left_on="DOY")
+    ms2013["Relative Level"] = ms2013["Daily Stored"] - ms2013["Decile Storage"]
+    
+    ms2013["NI Constraint"] = ms2013.apply(nzem.HVDC_Constraint,
+        energy_price_send="BEN2201 Price", energy_price_receive="HAY2201 Price",
+        res_price="NI Reserve Price", abs_tol=5, axis=1)
+        
+    ms2013["SI Constraint"] = ms2013.apply(nzem.HVDC_Constraint,
+        energy_price_receive="BEN2201 Price", energy_price_send="HAY2201 Price",
+        res_price="SI Reserve Price", abs_tol=5, axis=1)
+        
+    ms2013["NI Probability"] = ms2013.apply(get_probability, mod=nimod, axis=1)
+    ms2013["SI Probability"] = ms2013.apply(get_probability, mod=simod, axis=1)
+    
+    ms2013["Sc NI Probability"] = ms2013["NI Probability"] * 0.82
+    ms2013["Sc SI Probability"] = ms2013["SI Probability"] * 0.9
+    
+    def accuracy(ms, con_name, prob_name):
+        n = np.arange(0, 1, 0.01)
+        sc = []
+        for i in n:
+            sc.append([
+           ms.ge_mask(prob_name, i)[prob_name].sum(),
+           ms.ge_mask(prob_name, i).eq_mask(con_name, True)["DOY"].count()])
+       
+        scale = pd.DataFrame(sc, index=n, columns=["Model Prediction", "Actual"])
+        scale["Percentage Difference"] = 100. * scale["Model Prediction"] / scale["Actual"] - 100
+        scale["Difference"] = scale["Model Prediction"] - scale["Actual"]
+        return scale
+        
+    niacc = accuracy(ms2013, "NI Constraint", "Sc NI Probability")
+    siacc = accuracy(ms2013, "SI Constraint", "Sc SI Probability")
+    
+    fig = forecast_plot(niacc[:60])
+    fig.savefig("ni_mod_pred.png", dpi=150)
+    fig = forecast_plot(siacc[:25])
+    fig.savefig("si_mod_pred.png", dpi=150)
+    
+    # Couple time series
+    
+    t1 = masterset[["NI Constraint", "NI Model Prediction"]]
+    t1["Sc NI Probability"] = t1["NI Model Prediction"] * 0.82
+    
+    t2 = masterset[["SI Constraint", "SI Model Prediction"]]
+    t2["Sc SI Probability"] = t2["SI Model Prediction"] * 0.9
+    
+    t3 = ms2013[["NI Constraint", "Sc NI Probability"]]
+    t4 = ms2013[["SI Constraint", "Sc SI Probability"]]
+    
+    # NI Plot
+    
+    def month_year(x):
+        return datetime.date(x.year, x.month, 1)
+    
+    fig, axes = plt.subplots(1, 1, figsize=(16,9))
+    t1["NI Constraint"].groupby(month_year).sum().plot(ax=axes, style='k.-')
+    t1["Sc NI Probability"].groupby(month_year).sum().plot(ax=axes, style='b.-')
+    
+    t3["NI Constraint"].groupby(month_year).sum().plot(ax=axes, style='k.--')
+    t3["Sc NI Probability"].groupby(month_year).sum().plot(ax=axes, style='b.--')
+    axes.set_xlim(733000.0, 734989.0)
+    
+    axes.set_ylabel("Number of Periods")
+    
+    fig.savefig('nimodelts.png', dpi=150)
+    
+    fig, axes = plt.subplots(1, 1, figsize=(16,9))
+    t2["SI Constraint"].groupby(month_year).sum().plot(ax=axes, style='k.-')
+    t2["Sc SI Probability"].groupby(month_year).sum().plot(ax=axes, style='b.-')
+    
+    t4["SI Constraint"].groupby(month_year).sum().plot(ax=axes, style='k.--')
+    t4["Sc SI Probability"].groupby(month_year).sum().plot(ax=axes, style='b.--')
+    axes.set_xlim(733000.0, 734989.0)
+    
+    axes.set_ylabel("Number of Periods")
+    
+    fig.savefig("simodelts.png", dpi=150)
+    
+    def rprice_prob(ms, price, const):
+        n = np.arange(200, 1000, 10)
+        sc = []
+        for i in n:
+            sc.append([ms.ge_mask(price, i).eq_mask(const, True)["DOY"].count(),
+                       ms.ge_mask(price, i)["DOY"].count()])
+        df = pd.DataFrame(sc, index=n, columns=["Constrained", "All"])
+        df["Percentage"] = 1.0 * df["Constrained"] / df["All"]
+        return df
+        
+    niprobprice = rprice_prob(masterset, "HAY2201 Price", "NI Constraint")
+    siprobprice = rprice_prob(masterset, "BEN2201 Price", "SI Constraint") 
