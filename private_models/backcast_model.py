@@ -76,8 +76,8 @@ def forecast_plot(isl):
 
 def get_probability(series, mod=None):
     try:
+        n = mod.eq_Season("mask", series["Season Name"])
         # Iteratively reduce the sample
-        n = mod.eq_mask("Season", series["Season Name"])
         n = n.eq_mask("Time", series["Time Name"])
         n = n.ge_mask("Lake Level", series["Relative Level"])
         n = n.ix[0]["Weighted Probability"]
@@ -385,8 +385,8 @@ if __name__ == '__main__':
         
         return pd.Series(l, index=n)
         
-    nitest_monte = monte_assess(mdf, nimod, "NI Model Prediction", "NI Constraint", N=1000, scale=0.82)
-    sitest_monte = monte_assess(mdf, simod, "SI Model Prediction", "SI Constraint", N=1000, scale=0.9)
+    #nitest_monte = monte_assess(mdf, nimod, "NI Model Prediction", "NI Constraint", N=1000, scale=0.82)
+    #sitest_monte = monte_assess(mdf, simod, "SI Model Prediction", "SI Constraint", N=1000, scale=0.9)
     
     ### 2013 Model Test
     
