@@ -16,6 +16,7 @@ import pandas as pd
 import requests as rq
 import simplejson as json
 import os
+import urlparse
 
 # Secondary imports
 from bs4 import BeautifulSoup
@@ -103,6 +104,42 @@ def _sort_files(files):
                 filelisting[ty].append(f)
 
     return filelisting
+
+def _download_file(url, directory):
+    """
+    Non-exposed method to download a URL file to a particular location
+
+    Parameters
+    ----------
+    url: The particular URL to be downloaded
+    directory: The directory where the file will be downloaded to
+
+    Returns
+    -------
+    dst: The absolute path of the file destination
+    """
+
+    local_name = os.path.split(url)[1]
+    loc = os.path.join(directory, local_name)
+    r = rq.get(url, stream=True)
+    with open(dst, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+                f.flush()
+    return dst
+
+def _extract_file(file_name):
+    """
+
+    """
+
+    pass
+
+
+
+
+
 
 
 
