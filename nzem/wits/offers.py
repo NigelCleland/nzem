@@ -17,6 +17,8 @@ import requests as rq
 import simplejson as json
 import os
 import urlparse
+import subprocess
+import sys
 
 # Secondary imports
 from bs4 import BeautifulSoup
@@ -116,25 +118,52 @@ def _download_file(url, directory):
 
     Returns
     -------
-    dst: The absolute path of the file destination
+    loc: The absolute path of the file destination
     """
 
     local_name = os.path.split(url)[1]
     loc = os.path.join(directory, local_name)
     r = rq.get(url, stream=True)
-    with open(dst, 'wb') as f:
+    with open(loc, 'wb') as f:
         for chunk in r.iter_content(chunk_size=1024):
             if chunk:
                 f.write(chunk)
                 f.flush()
-    return dst
+    return loc
 
-def _extract_file(file_name):
+def _extract_file(file_name, delete_original=True, output=False):
     """
+    Non-exposed method to extract a compressed file in the same location
+    as the file itself, not the present path. Optional flags to delete
+    the compressed file and return output if desired
 
+    Parameters
+    ----------
+    file_name: The file name to be extracted
+
+    Returns
+    -------
+    output_name: The name of the extracted file created by 7z
     """
+    
+    directory = os.path.split(file_name)[0]
+    output_filename = os.path.splitext(os.path.split(file_name)[1])[0]
+    outdir = '-o%s' % directory
+    output_name = os.path.join(directory, output_filename)
+    s = subprocess.call(['7z', 'e', '-y', outdir, file_name], stderr=subprocess.STDOUT, 
+                    stdout=subprocess.PIPE)
 
-    pass
+    if delete_original:
+        os.remove(file_name)
+
+    if output:
+        print "Successfully extracted %s to %s" % (file_name, 
+                                                   output_name)
+        if delete_original:
+            print "Successfully deleted %s" % file_name
+
+    return output_name
+    
 
 
 
