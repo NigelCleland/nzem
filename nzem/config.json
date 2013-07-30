@@ -1,0 +1,8 @@
+{
+  "wits-site": "http://www.electricityinfo.co.nz/",
+  "wits-demand-current": "comitFta/ftaPage.demand",
+  "wits-demand-historic": "comitFta/web_gxp_demand_pages.downloadFiles",
+  "wits-offer-current": "comitFta/Ongoing_bidoffer.ongoing",
+  "wits-offer-historic": "comitFta/ongoing_bidoffer.download_monthly_files",
+  "wits-offer-types": ["bids", "diffbids", "offers", "ilreserves", "generatorreserves"]
+}
