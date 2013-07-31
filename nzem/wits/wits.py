@@ -93,11 +93,38 @@ class WitsScraper:
                      particular path.
         """
         r = rq.get(os.path.join(CONFIG['wits-site'], path))
-        soup = BeautifulSoup(r.text)
-
-        links = soup.find_all('a')
-        offer_files = [link.get('href') for link in links if '.csv' in link.get('href')]
+        chunky_soup = self._chunk_soup(r.text)
+        soups = (BeautifulSoup(chunk) for chunk in chunky_soup)
+        chunky_links = (soup_chunk.find_all('a') for soup_chunk in soups)
+        links = self._flatten(chunky_links)
+        offer_files = self._link_yield(links)
         return offer_files
+
+    def _chunk_soup(self, rtext, chunk_size=1000):
+        while rtext:
+            if len(rtext) >= chunk_size:
+                chunk, rtext = rtext[:chunk_size], rtext[chunk_size:]
+                yield chunk
+            else:
+                chunk = rtext
+                yield chunk
+                rtext = None
+
+
+    def _flatten(self, lol):
+        return (item for sublist in lol for item in sublist)
+
+
+    def _link_yield(self, links):
+        for link in links:
+            href = link.get('href')
+            if type(href) == str:
+                if '.csv' in href:
+                    yield href
+
+
+
+
 
     def _sort_files(self, files):
         """
@@ -218,7 +245,20 @@ class WitsScraper:
                               for item in dates]
 
         elif self._match_true(end_str, current) and not self._match_true(begin_str, current):
-            pass
+            
+            daily_dates = [d.strftime("%Y%m%d") for d in pd.date_range(begin_date, 
+                                                                 end_date)]
+            monthly_dates = [d.strftime("%Y%m") for d in pd.date_range(
+                                                    begin_date, 
+                                                    end_date + timedelta(days=31), 
+                                                    freq="M", normalize=True)]
+
+            daily_results = [self._match_iterables(item, current) 
+                              for item in daily_dates]
+            monthly_results = [self._match_iterables(item, historic) for item in
+                                monthly_dates]
+
+            search_results = daily_results + monthly_results
 
 
         elif begin_str not in current and end_str not in current:
@@ -230,7 +270,7 @@ class WitsScraper:
             search_results = [self._match_iterables(item, historic) for item in
                                 month_dates]
 
-        return search_results
+        return filter(lambda x: x != None, search_results)
 
     
     def _match_iterables(self, item, iterable):
@@ -243,10 +283,6 @@ class WitsScraper:
             if item in it:
                 return True
         return False
-
-
-
-
 
 
     def _parse_to_datetime(self, dt):
