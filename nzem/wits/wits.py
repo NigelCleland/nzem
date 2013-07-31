@@ -19,10 +19,14 @@ import os
 import urlparse
 import subprocess
 import sys
+import datetime
+
 
 # Secondary imports
 from bs4 import BeautifulSoup
 from collections import defaultdict
+from dateutil.parser import parse
+from datetime import timedelta
 
 # Load the master CONFIG json file
 CONFIG = json.load(open(os.path.join(os.path.expanduser('~/python/nzem/nzem'),
@@ -30,11 +34,15 @@ CONFIG = json.load(open(os.path.join(os.path.expanduser('~/python/nzem/nzem'),
 
 class WitsScraper:
 
-    def __init__(self, scrape_offers=True):
+    def __init__(self, scrape_offers=True, scrape_demand=True):
         print "Initialising WitsScraper:"
-        print "Scraping Offer Files"
-        self.current_files, self.historic_files = self._scrape_offers()
-        print "Offer Files Successfully Scraped"
+        if scrape_offers:
+            print "Scraping Offer Files"
+            self.current_files, self.historic_files = self._scrape_offers()
+            print "Offer Files Successfully Scraped"
+        if scrape_demand:
+            print "Scraping Demand Files"
+            print "Demand Files Sucessfully Scraped"
 
 
     def _scrape_offers(self, current=True, historic=True, sortfiles=True):
@@ -172,6 +180,95 @@ class WitsScraper:
                 print "Successfully deleted %s" % file_name
 
         return output_name
+
+    def _filter_dates(self, product=False, begin_date=None, end_date=None):
+        """ Find the file(s) which contain the beginning and end date within them
+        Return the file for a specific product as required, else return
+        a dictionary with lists containing the output.
+        
+        Parameters
+        ----------
+        product
+        begin_date:
+        end_date:
+
+        Returns
+        -------
+        search_results:
+        """
+
+        begin_date = self._parse_to_datetime(begin_date)
+        end_date = self._parse_to_datetime(end_date)
+
+        begin_str = begin_date.strftime('%Y%m%d')
+        end_str = end_date.strftime('%Y%m%d')
+
+        # Try the current files first
+        current = list(self._yield_product(self.current_files, product=product))
+        historic = list(self._yield_product(self.historic_files, product=product))
+
+
+
+
+        if self._match_true(begin_str, current) and self._match_true(end_str, current):
+            dates = [d.strftime("%Y%m%d") for d in pd.date_range(begin_date, 
+                                                                 end_date)]
+
+            search_results = [self._match_iterables(item, current) 
+                              for item in dates]
+
+        elif self._match_true(end_str, current) and not self._match_true(begin_str, current):
+            pass
+
+
+        elif begin_str not in current and end_str not in current:
+            month_dates = [d.strftime("%Y%m") for d in pd.date_range(
+                                                    begin_date, 
+                                                    end_date + timedelta(days=31), 
+                                                    freq="M", normalize=True)]
+
+            search_results = [self._match_iterables(item, historic) for item in
+                                month_dates]
+
+        return search_results
+
+    
+    def _match_iterables(self, item, iterable):
+        for it in iterable:
+            if item in it:
+                return it
+
+    def _match_true(self, item, iterable):
+        for it in iterable:
+            if item in it:
+                return True
+        return False
+
+
+
+
+
+
+    def _parse_to_datetime(self, dt):
+        """ Simple function to parse the datetime if it is not already a 
+        datetime"""
+        if type(dt) != datetime.datetime:
+            dt = parse(dt)
+        return dt
+
+    def _yield_product(self, d, product=False):
+        """ Yield a flattened list of items from a nested dictionary """
+        if product:
+            for item in d[product]:
+                yield item
+        else:
+            for key in d.keys():
+                for item in d[key]:
+                    yield item
+
+
+
+
     
 
 
