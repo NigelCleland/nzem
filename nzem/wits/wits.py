@@ -161,6 +161,7 @@ class WitsScraper:
                     f.flush()
         return loc
 
+
     def _extract_file(self, file_name, delete_original=True, output=False):
         """
         Non-exposed method to extract a compressed file in the same location
@@ -194,7 +195,8 @@ class WitsScraper:
 
         return output_name
 
-    def _filter_dates(self, product=False, begin_date=None, end_date=None):
+
+    def _filter_offer_dates(self, product=False, begin_date=None, end_date=None):
         """ Find the file(s) which contain the beginning and end date within them
         Return the file for a specific product as required, else return
         a dictionary with lists containing the output.
@@ -263,6 +265,31 @@ class WitsScraper:
         self.search_results = search_results
         return search_results
 
+    def _download_search(self, directory, search_results=None, extract=True):
+        
+        if search_results == None:
+            try:
+                search_results = self.search_results
+            except:
+                raise ValueError('You must have either completed a recent search\
+                                  or pass search results to this function')
+
+        self._ensure_directory(directory)
+        print "Attempting to downloads files to %s" % directory
+        for result in search_results:
+            try:
+                location = self._download_file(result, directory)
+                if extract:
+                    output_name = self._extract_file(location)
+            except:
+                url = urlparse.urljoin(CONFIG['wits-site'], result)
+                location = self._download_file(url, directory)
+                if extract:
+                    output_name = self._extract_file(location)
+        print "Downloads completed"
+
+
+    #### Assistance and helper functions
     
     def _match_iterables(self, item, iterable):
         """ Return the string in the iterable which matches the item """
@@ -328,6 +355,14 @@ class WitsScraper:
             if type(href) == str:
                 if '.csv' in href:
                     yield href
+
+    def _ensure_directory(self, directory):
+        """ Check to see if a directory exists, if not create it """
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+        return None
+
+
 
 
 
