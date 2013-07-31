@@ -9,6 +9,9 @@ at a later date
 Author: Nigel Cleland
 Date: 30th July 2013
 License: MIT
+
+This script provides the WitsScraper class which is a general purpose scraper
+intended to make interfacing with the WITS free to air site much nicer.
 """
 
 # Module Imports
@@ -83,6 +86,14 @@ class WitsScraper:
         Non-exposed method to scrape a particular path, it assumes that the site
         is the WITS free to air site and will preprend this to the requests query.
 
+        Notes:
+        ------
+        This function was exhibiting strange behaviour and not returning all of
+        the links when implemented in a simple fashion. To overcome this I've
+        split the requests message (r.text) to be parsed into chunks which are
+        then fed to the link finder. This isn't perfect and could likely be
+        implemented in a far nicer fashion, however it suffices for now.
+
         Parameters
         ----------
         path: The path to be scraped, either current or historic offers typically
@@ -99,31 +110,6 @@ class WitsScraper:
         links = self._flatten(chunky_links)
         offer_files = self._link_yield(links)
         return offer_files
-
-    def _chunk_soup(self, rtext, chunk_size=1000):
-        while rtext:
-            if len(rtext) >= chunk_size:
-                chunk, rtext = rtext[:chunk_size], rtext[chunk_size:]
-                yield chunk
-            else:
-                chunk = rtext
-                yield chunk
-                rtext = None
-
-
-    def _flatten(self, lol):
-        return (item for sublist in lol for item in sublist)
-
-
-    def _link_yield(self, links):
-        for link in links:
-            href = link.get('href')
-            if type(href) == str:
-                if '.csv' in href:
-                    yield href
-
-
-
 
 
     def _sort_files(self, files):
@@ -215,13 +201,13 @@ class WitsScraper:
         
         Parameters
         ----------
-        product
-        begin_date:
-        end_date:
+        product: The product to be filtered (if any)
+        begin_date: The beginning date to find files for
+        end_date: The end date to find files for
 
         Returns
         -------
-        search_results:
+        search_results: The results of the search through the offer files
         """
 
         begin_date = self._parse_to_datetime(begin_date)
@@ -230,13 +216,13 @@ class WitsScraper:
         begin_str = begin_date.strftime('%Y%m%d')
         end_str = end_date.strftime('%Y%m%d')
 
-        # Try the current files first
+        # Filter by product if needed
         current = list(self._yield_product(self.current_files, product=product))
         historic = list(self._yield_product(self.historic_files, product=product))
 
 
 
-
+        # Try the current files first
         if self._match_true(begin_str, current) and self._match_true(end_str, current):
             dates = [d.strftime("%Y%m%d") for d in pd.date_range(begin_date, 
                                                                  end_date)]
@@ -244,6 +230,7 @@ class WitsScraper:
             search_results = [self._match_iterables(item, current) 
                               for item in dates]
 
+        # See if it partially matches historic, partially matches current
         elif self._match_true(end_str, current) and not self._match_true(begin_str, current):
             
             daily_dates = [d.strftime("%Y%m%d") for d in pd.date_range(begin_date, 
@@ -260,7 +247,7 @@ class WitsScraper:
 
             search_results = daily_results + monthly_results
 
-
+        # Scrape the historic files
         elif begin_str not in current and end_str not in current:
             month_dates = [d.strftime("%Y%m") for d in pd.date_range(
                                                     begin_date, 
@@ -270,15 +257,21 @@ class WitsScraper:
             search_results = [self._match_iterables(item, historic) for item in
                                 month_dates]
 
-        return filter(lambda x: x != None, search_results)
+        # Return the search results, save the last search to an internal
+        # attribute for safe keeping
+        search_results = filter(lambda x: x != None, search_results)
+        self.search_results = search_results
+        return search_results
 
     
     def _match_iterables(self, item, iterable):
+        """ Return the string in the iterable which matches the item """
         for it in iterable:
             if item in it:
                 return it
 
     def _match_true(self, item, iterable):
+        """ Return true if item matches any part of the items in the iterable """
         for it in iterable:
             if item in it:
                 return True
@@ -287,7 +280,8 @@ class WitsScraper:
 
     def _parse_to_datetime(self, dt):
         """ Simple function to parse the datetime if it is not already a 
-        datetime"""
+        datetime
+        """
         if type(dt) != datetime.datetime:
             dt = parse(dt)
         return dt
@@ -301,6 +295,39 @@ class WitsScraper:
             for key in d.keys():
                 for item in d[key]:
                     yield item
+
+    def _chunk_soup(self, rtext, chunk_size=1000):
+        """ Return a number of requests text chunks, this is to ensure
+        that the scraper does not error before reaching the end.
+        Quite a strange bug really...
+        
+        Parameters
+        ----------
+        rtext: The requests text to be chunked (not this is typically a string)
+        chunk_size: The size of each chunk
+        """
+        while rtext:
+            if len(rtext) >= chunk_size:
+                chunk, rtext = rtext[:chunk_size], rtext[chunk_size:]
+                yield chunk
+            else:
+                chunk = rtext
+                yield chunk
+                rtext = None
+
+
+    def _flatten(self, lol):
+        """ Flattens a list of lists (lol) and returns a generator """
+        return (item for sublist in lol for item in sublist)
+
+
+    def _link_yield(self, links):
+        """ Yield all csv links from a list of BeautifulSoup links """
+        for link in links:
+            href = link.get('href')
+            if type(href) == str:
+                if '.csv' in href:
+                    yield href
 
 
 
