@@ -11,12 +11,19 @@ import pandas as pd
 import numpy as np
 from datetime import date, datetime, time, timedelta
 import pandas.io.sql as sql
-import pyodbc
+#import pyodbc
 import os
 import sys
 
 if sys.platform.startswith("linux"):
    from pbs import Command
+
+# Change to the gnash directory, assumes it is extracted in the user home path.
+
+gnash_path = os.path.join(os.path.expanduser('~'), 'CDS', 'CentralisedDataset', 'HalfHourly')
+os.chdir(gnash_path)
+
+
 
 class Gnasher(object):
 	"""Gnasher is a class designed to make interfacing with the Gnash.exe as 
@@ -24,37 +31,36 @@ class Gnasher(object):
 	returning data as pandas DataFrames and generally taking care of
 	the BS which makes dealing with such systems "fun"
 	"""
-	def __init__(self, arg):
+	def __init__(self):
 		super(Gnasher, self).__init__()
-		self.arg = arg
 		self._initialise_connection()
 
-	def query_gnash(input_string):
+	def query_gnash(self, input_string):
 		output_file = "temporary_file.csv"
 		self._run_query(input_string, output_file)
 		self.query = self._convertgnashdump(output_file)
 		return self.query
 
 
-	def _initialise_connection():
+	def _initialise_connection(self):
 		try:
 			self.gnash = Command("./Gnash.exe")
 		except:
 			print "Error, cannot create a connection to Gnash"
 
-	def _run_query(input_string, output_file):
+	def _run_query(self, input_string, output_file):
 		try:
 			self.gnash(_in=input_string, _out=output_file)
 		except:
 			print "Error, cannot run the query on Gnash"
 
 	
-	def _convertgnashdump(output_file):
+	def _convertgnashdump(self, output_file):
 
 		# First read to obtain dump file
    		Gin=pd.read_csv(output_file, header=1, skiprows=[2], 
    			na_values=['?','       ? ','       ?','          ? ','          ?','        ?'],
-   			converters={'Aux.DayClock': ordinal_converter}, parse_dates=True)
+   			converters={'Aux.DayClock': self._ordinal_converter}, parse_dates=True)
    		names = Gin.columns #get names used by Gnash
    		# Dictionary Comprehension to rename columns
    		new_names = {x: x.replace('.', '_')}
@@ -63,7 +69,7 @@ class Gnasher(object):
 		Gin = Gin.set_index('Aux_DayClock')
    		return Gin
 
-	def _ordinal_converter(x):
+	def _ordinal_converter(self, x):
 		x=float(x) + datetime.toordinal(datetime(1899,12,31))
 		
 		return datetime(date.fromordinal(int(np.floor(x))).year,
