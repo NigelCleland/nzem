@@ -18,7 +18,7 @@ import subprocess
 from cStringIO import StringIO
 
 if sys.platform.startswith("linux"):
-   from pbs import Command
+   from sh import Command
 
 # Change to the gnash directory, assumes it is extracted in the user home path.
 
@@ -39,11 +39,13 @@ class Gnasher(object):
         super(Gnasher, self).__init__()
         self._initialise_connection()
 
-    def query_gnash(self, input_string, output_file=None):
+    def query_gnash(self, input_string, output_file=None, rm_file=True):
     
         
         self._run_query(input_string, output_file=output_file)
         self.query = self._convertgnashdump(output_file)
+        if rm_file:
+            os.remove(output_file)
         return self.query
 
 
@@ -70,6 +72,8 @@ class Gnasher(object):
         new_names = {x: x.replace('.', '_') for x in Gin.columns}
         Gin.rename(columns=new_names, inplace=True)
         Gin = Gin.applymap(na_conv)
+        # Drop na values
+        Gin = Gin.dropna()
         # Set a new index
         Gin["Aux_DayClock"] = Gin["Aux_DayClock"].apply(self._ordinal_converter)
         Gin = Gin.set_index('Aux_DayClock')
