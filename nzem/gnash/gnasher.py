@@ -35,9 +35,9 @@ class Gnasher(object):
 		super(Gnasher, self).__init__()
 		self._initialise_connection()
 
-	def query_gnash(self, input_string):
-		output_file = "temporary_file.csv"
-		self._run_query(input_string, output_file)
+	def query_gnash(self, input_string, output_file=None):
+	
+		self._run_query(input_string, output_file=output_file)
 		self.query = self._convertgnashdump(output_file)
 		return self.query
 
@@ -48,7 +48,7 @@ class Gnasher(object):
 		except:
 			print "Error, cannot create a connection to Gnash"
 
-	def _run_query(self, input_string, output_file):
+	def _run_query(self, input_string, output_file=None):
 		try:
 			self.gnash(_in=input_string, _out=output_file)
 		except:
@@ -57,24 +57,29 @@ class Gnasher(object):
 	
 	def _convertgnashdump(self, output_file):
 
+		na_conv = lambda x: np.nan if "?" in str(x) else x
+
 		# First read to obtain dump file
    		Gin=pd.read_csv(output_file, header=1, skiprows=[2], 
-   			na_values=['?','       ? ','       ?','          ? ','          ?','        ?'],
    			converters={'Aux.DayClock': self._ordinal_converter}, parse_dates=True)
-   		names = Gin.columns #get names used by Gnash
    		# Dictionary Comprehension to rename columns
-   		new_names = {x: x.replace('.', '_')}
+   		new_names = {x: x.replace('.', '_') for x in Gin.columns}
    		Gin.rename(columns=new_names, inplace=True)
+   		Gin = Gin.applymap(na_conv)
    		# Set a new index
 		Gin = Gin.set_index('Aux_DayClock')
    		return Gin
 
 	def _ordinal_converter(self, x):
-		x=float(x) + datetime.toordinal(datetime(1899,12,31))
-		
-		return datetime(date.fromordinal(int(np.floor(x))).year,
-						date.fromordinal(int(np.floor(x))).month,
-						date.fromordinal(int(np.floor(x))).day,
-						int(np.floor(float("{0:.2f}".format((x%1.0)*24)))),
-						int((float("{0:.2f}".format((x%1.0)*24))%1.0)*60.0))
+		if np.isnan(x):
+			return np.nan
+	
+		x =float(x) + datetime.toordinal(datetime(1899,12,31))
+		ord_date = date.fromordinal(int(np.floor(x)))
+		 
+		return datetime(ord_date.year,
+						ord_date.month,
+						ord_date.day,
+						int(np.floor((x % 1.0) * 24)),
+						int(np.round((x % 1.0 * 24 % 1.0 * 60), decimals=0)))
 			
