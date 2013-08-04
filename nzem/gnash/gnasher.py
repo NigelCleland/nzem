@@ -42,7 +42,7 @@ class Gnasher(object):
     def query_gnash(self, input_string):
         
         self._run_query(input_string)  
-        time.sleep(5)     
+        #time.sleep(5)     
         self._scrub_output()
         self.query = pd.read_csv(self.output, header=0, skiprows=[1])
         return self.query
@@ -57,7 +57,7 @@ class Gnasher(object):
             def grab_output(line):
                 self.output.write(line)
             self.gnash = Command("./Gnash.exe")
-            self.gnash(_in=input_string, _out=grab_output)
+            self.gnash(_in=input_string, _out=grab_output).wait()
         except:
             print "Error, cannot run the query on Gnash"
 
