@@ -5,13 +5,102 @@ import os
 import matplotlib.pyplot as plt
 import datetime as dt
 from dateutil.parser import parse
+from collections import defaultdict
 
 sys.path.append(os.path.join(os.path.expanduser("~"), 
                 'python', 'pdtools'))
 import pdtools
 
+class Offer(object):
+    """docstring for Offer"""
+    def __init__(self):
+        super(Offer, self).__init__()
 
-class ILOffer(object):
+
+    def _rename_columns(self):
+
+        self.df.rename(columns={x: x.replace('_', ' ').title() for 
+                x in self.df.columns}, inplace=True)
+
+
+    def _stack_columns(self):
+        self.stacked_frame = pd.concat(self._stacker())
+
+
+    def _stacker(self):
+        """ General Stacker designed to handle all forms of
+        offer dataframe, energy, plsr, and IL
+        """
+
+
+        general_columns = [x for x in self.df.columns if "Band" not in x]
+        band_columns = [x for x in self.df.columns if x not in general_columns]
+        filterdict = self._assign_band(band_columns)
+
+        for key in filterdict:
+
+            all_cols = general_columns + filterdict[key].values()
+
+            single = self.df[all_cols].copy()
+            # Assign identifiers
+            single["Product Type"] = key[0]
+            single["Reserve Type"] = key[1]
+            single["Band Number"] = key[2]
+
+            single.rename(columns={v: k for k, v in filterdict[key].items()}, 
+                inplace=True)
+
+            yield single
+
+
+    def _assign_band(self, band_columns):
+        """ Figure out what type of columns they are from the bands 
+        Should return a list of lists of the form
+
+        Product Type, Reserve Type, Band, Params*
+        """
+
+        filtered = defaultdict(dict)
+        for band in band_columns:
+            split = band.split()
+
+            band_number = int(split[0][4:])
+            param = split[-1]
+            reserve_type = self._reserve_type(band)
+            product_type = self._product_type(band)
+
+            filtered[(product_type, reserve_type, band_number)][param] = band
+
+        return filtered
+
+    def _reserve_type(self, band):
+        return "6S" if "6S" in band else "60S" if "60S" in band else "N"
+
+    def _product_type(self, band):
+        return "Plsr" if (
+                "Plsr" in band) else "Twdsr" if (
+                "Twdsr" in band) else"Il" if (
+                "6S" in band or "60S" in band) else "Energy"
+
+
+
+
+    
+    def _map_location(self, island=True, region=True):
+        """
+        Map the location based upon the node.
+        Useful when looking at regional instances
+        """
+
+        pass
+
+
+
+
+
+
+
+class ILOffer(Offer):
     """
     ILOffer
     ===========
@@ -23,7 +112,7 @@ class ILOffer(object):
     """
     def __init__(self, df):
         super(ILOffer, self).__init__()
-        self.df = df
+        self.df = df.copy()
         self.stacked_frame = None
         self.single_frame = None
 
@@ -124,13 +213,6 @@ class ILOffer(object):
                 yield single
 
 
-    def _map_location(self, island=True, region=True):
-        """
-        Map the location based upon the node.
-        Useful when looking at regional instances
-        """
-
-        pass
 
 
 
@@ -138,7 +220,8 @@ class ILOffer(object):
 
 
 
-class PLSROffer(object):
+
+class PLSROffer(Offer):
     """
     PLSROffer
     ===========
@@ -154,7 +237,7 @@ class PLSROffer(object):
 
 
 
-class EnergyOffer(object):
+class EnergyOffer(Offer):
     """
     EnergyOffer
     ===========
