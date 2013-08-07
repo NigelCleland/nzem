@@ -40,11 +40,15 @@ class Gnasher(object):
     """
     def __init__(self):
         super(Gnasher, self).__init__()
+        
 
-    def query_gnash(self, input_string):
+    def query_energy(self, input_string):
+        """
+        Query the energy aspects of Gnash... 
+        Should test this to see if it works with multiple inputs
+        """
         
         self._run_query(input_string)  
-        #time.sleep(5)     
         self._scrub_output()
         self.query = pd.read_csv(self.output, header=0, skiprows=[1])
         self._floss_DataFrame()
@@ -132,4 +136,14 @@ class Gnasher(object):
             except:
                 return x
 
+    def _get_names(self):
+        """
+        Place holder function, current plan is to grab all of the names off
+        Gnash and then make these searchable.
+
+        Can then have the user create "fuzzier" queries with the module
+        constructing the rest.
+        """
+
+        pass
 
