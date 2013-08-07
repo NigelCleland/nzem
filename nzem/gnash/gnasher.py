@@ -27,6 +27,7 @@ if sys.platform.startswith("linux"):
 
 cwd = os.getcwd()
 
+# Set where your current Gnash directory is!
 gnash_path = os.path.join(os.path.expanduser('~'), 'CDS', 'CentralisedDataset', 'HalfHourly')
 os.chdir(gnash_path)
 
@@ -40,7 +41,7 @@ class Gnasher(object):
     """
     def __init__(self):
         super(Gnasher, self).__init__()
-        
+
 
     def query_energy(self, input_string):
         """
