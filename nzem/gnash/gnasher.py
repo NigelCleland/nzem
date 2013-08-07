@@ -16,6 +16,7 @@ import os
 import sys
 import subprocess
 from cStringIO import StringIO
+import time
 
 if sys.platform.startswith("linux"):
    from sh import Command
@@ -37,37 +38,36 @@ class Gnasher(object):
     """
     def __init__(self):
         super(Gnasher, self).__init__()
-        self._initialise_connection()
 
-    def query_gnash(self, input_string, output_file=None, rm_file=True):
-    
+    def query_gnash(self, input_string):
         
-        self._run_query(input_string, output_file=output_file)
-        self.query = self._convertgnashdump(output_file)
-        if rm_file:
-            os.remove(output_file)
+        self._run_query(input_string)  
+        #time.sleep(5)     
+        self._scrub_output()
+        self.query = pd.read_csv(self.output, header=0, skiprows=[1])
         return self.query
 
 
-    def _initialise_connection(self):
-        try:
-            self.gnash = Command("./Gnash.exe")
-        except:
-            print "Error, cannot create a connection to Gnash"
 
-    def _run_query(self, input_string, output_file=None):
+
+    def _run_query(self, input_string):
+        # Trying to make the buffering process working.
         try:
-            return self.gnash(_in=input_string, _out=output_file)
+            self.output = StringIO()
+            def grab_output(line):
+                self.output.write(line)
+            self.gnash = Command("./Gnash.exe")
+            self.gnash(_in=input_string, _out=grab_output).wait()
         except:
             print "Error, cannot run the query on Gnash"
 
     
-    def _convertgnashdump(self, output_file):
+    def _convertgnashdump(self):
 
         na_conv = lambda x: np.nan if "?" in str(x) else x
 
         # First read to obtain dump file
-        Gin=pd.read_csv(output_file, header=1, skiprows=[2])
+        Gin=pd.read_csv(self.output, header=0)
         # Dictionary Comprehension to rename columns
         new_names = {x: x.replace('.', '_') for x in Gin.columns}
         Gin.rename(columns=new_names, inplace=True)
@@ -91,4 +91,17 @@ class Gnasher(object):
                         ord_date.day,
                         int(np.floor((x % 1.0) * 24)),
                         int(np.round((x % 1.0 * 24 % 1.0 * 60), decimals=0)))
-            
+
+    def _scrub_output(self):
+        # Go line by line through the output until you find the header
+        
+        string = self.output.getvalue()
+        self.output.close()
+
+        begin = string.find("Aux.Date") - 1
+        end = string.find("Gnash:Bye") - 2
+
+        string = string[begin:end]
+
+        self.output = StringIO(string)
+
