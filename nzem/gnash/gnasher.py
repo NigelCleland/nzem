@@ -9,6 +9,7 @@ Assumes you have the CDS extracted onto your computer
 
 import pandas as pd
 import numpy as np
+import datetime as dt
 from datetime import date, datetime, time, timedelta
 import pandas.io.sql as sql
 #import pyodbc
@@ -17,6 +18,7 @@ import sys
 import subprocess
 from cStringIO import StringIO
 import time
+from pandas.tseries.offsets import Minute, Hour
 
 if sys.platform.startswith("linux"):
    from sh import Command
@@ -45,9 +47,8 @@ class Gnasher(object):
         #time.sleep(5)     
         self._scrub_output()
         self.query = pd.read_csv(self.output, header=0, skiprows=[1])
+        self._floss_DataFrame()
         return self.query
-
-
 
 
     def _run_query(self, input_string):
@@ -61,36 +62,6 @@ class Gnasher(object):
         except:
             print "Error, cannot run the query on Gnash"
 
-    
-    def _convertgnashdump(self):
-
-        na_conv = lambda x: np.nan if "?" in str(x) else x
-
-        # First read to obtain dump file
-        Gin=pd.read_csv(self.output, header=0)
-        # Dictionary Comprehension to rename columns
-        new_names = {x: x.replace('.', '_') for x in Gin.columns}
-        Gin.rename(columns=new_names, inplace=True)
-        Gin = Gin.applymap(na_conv)
-        # Drop na values
-        Gin = Gin.dropna()
-        # Set a new index
-        Gin["Aux_DayClock"] = Gin["Aux_DayClock"].apply(self._ordinal_converter)
-        Gin = Gin.set_index('Aux_DayClock')
-        return Gin
-
-    def _ordinal_converter(self, x):
-        if np.isnan(x):
-            return np.nan
-    
-        x =float(x) + datetime.toordinal(datetime(1899,12,31))
-        ord_date = date.fromordinal(int(np.floor(x)))
-         
-        return datetime(ord_date.year,
-                        ord_date.month,
-                        ord_date.day,
-                        int(np.floor((x % 1.0) * 24)),
-                        int(np.round((x % 1.0 * 24 % 1.0 * 60), decimals=0)))
 
     def _scrub_output(self):
         # Go line by line through the output until you find the header
@@ -104,4 +75,61 @@ class Gnasher(object):
         string = string[begin:end]
 
         self.output = StringIO(string)
+
+
+    def _floss_DataFrame(self):
+        """
+        Floss (clean up) the DataFrame by completing a series of transformations.
+        """
+
+        # Convert values to floats
+        for col in self.query.columns:
+            if "Aux" not in col:
+
+                self.query[col] = self.query[col].apply(self._object_converter)
+
+        # Construct a datetime array
+        self.query["DateTime"] = self.query.apply(self._datetime_converter, axis=1)
+
+        # Rename the columns
+        self.query.rename(columns={x: x.replace('.', '_') for x in self.query.columns}, 
+                inplace=True)
+
+        # Set the index
+        self.query.set_index("DateTime", inplace=True)
+
+        # Strip all nan values
+        self.query = self.query.dropna()
+
+
+    def _datetime_converter(self, series):
+        """
+        Convert to a DateTime object from date and period.
+        Note, some of the periods are 1/2 periods, e.g. 4.5.
+        These are currently returned as np.nan
+        """
+
+        try:
+            date = datetime.strptime(series["Aux.Date"], "%d/%m/%Y")
+            time = Minute(30) * int(series["Aux.HHn"]) - Minute(15)
+        except:
+            return np.nan
+
+        return date + time
+
+
+    def _object_converter(self, x):
+        """
+        Attempt to force the data types to be a bit more consistent!
+        """
+        if type(x) == str:
+            return float(x.replace('\xc2\xb7', '.'))
+        elif type(x) == int:
+            return float(x)
+        else:
+            try:
+                return float(x)
+            except:
+                return x
+
 
