@@ -39,3 +39,7 @@ A module to make working with offer data, both energy, reserve and demand, much
 more comfortable. This may include stacking data, specific analysis into subsets
 of the data or other arrangements.
 
+## Gnash
+
+Interface for interacting with the CDS Gnash executable from linux using Python
+
