@@ -30,9 +30,51 @@ class Offer(object):
             self._map_location()
             self._apply_datetime()
             self._sort_offers()
+            self.offers.index = np.arange(len(self.offers))
 
     def stack_columns(self):
         self.offer_stack = pd.concat(self._stacker(), ignore_index=True)
+
+
+    def filter_stack(self, date=None, period=None, product_type=None,
+                     reserve_type=None, island=None, company=None,
+                     region=None, station=None, non_zero=False):
+
+        if not type(self.offer_stack) == pd.core.frame.DataFrame:
+            self.stack_columns()
+
+        fstack = self.offer_stack.copy()
+
+        if date:
+            fstack = fstack.eq_mask("Trading Date", date)
+
+        if period:
+            fstack = fstack.eq_mask("Trading Period", period)
+
+        if product_type:
+            fstack = fstack.eq_mask("Product Type", product_type)
+
+        if reserve_type:
+            fstack = fstack.eq_mask("Reserve Type", reserve_type)
+
+        if island:
+            fstack = fstack.eq_mask("Island", island)
+
+        if company:
+            fstack = fstack.eq_mask("Company", company)
+
+        if region:
+            fstack = fstack.eq_mask("Region", region)
+
+        if station:
+            fstack = fstack.eq_mask("Station", station)
+
+        if non_zero:
+            fstack = fstack.gt_mask("Max", 0)
+
+        self.fstack = fstack
+
+
 
 
     def _stacker(self):
@@ -82,7 +124,7 @@ class Offer(object):
         return filtered
 
     def _reserve_type(self, band):
-        return "FIR" if "6S" in band else "SIR" if "60S" in band else "N"
+        return "FIR" if "6S" in band else "SIR" if "60S" in band else "Energy"
 
     def _product_type(self, band):
         return "PLSR" if (
@@ -128,6 +170,9 @@ class Offer(object):
 
     def _sort_offers(self, datetime_col="Trading Datetime"):
         self.offers.sort(columns=[datetime_col], inplace=True)
+
+
+
 
 
 class ILOffer(Offer):
