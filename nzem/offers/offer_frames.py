@@ -171,6 +171,18 @@ class PLSROffer(Offer):
         super(PLSROffer, self).__init__(offers)
 
 
+    def merge_stacked_offers(self, il_offer):
+
+        if not type(self.offer_stack) == pd.core.frame.DataFrame:
+            self.stack_columns()
+
+        if not type(il_offer.offer_stack) == pd.core.frame.DataFrame:
+            il_offer.stack_columns()
+
+        return ReserveOffer(pd.concat([self.offer_stack,
+                    il_offer.offer_stack], ignore_index=True))
+
+
 
 class ReserveOffer(Offer):
     """
