@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import sys
 import os
-import matplotlib.pyplot as plt
 import datetime as dt
 from dateutil.parser import parse
 from collections import defaultdict

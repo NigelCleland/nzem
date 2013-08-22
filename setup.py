@@ -39,7 +39,13 @@ setup(
     license='MIT Software License',
     author='Nigel Cleland',
     tests_require=['pytest'],
-    install_requires=[pandas>=0.11.0
+    install_requires=[pandas>=0.11.0,
+                      numpy>=1.7.1,
+                      requests>=1.2.3,
+                      beautifulsoup4>=4.3.1,
+                      sh>=1.08,
+                      simplejson>=3.3.0,
+                      matplotlib>=1.3.0
                     ],
     cmdclass={'test': PyTest},
     author_email='nigel.cleland@gmail.com',
