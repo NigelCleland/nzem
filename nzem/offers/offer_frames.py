@@ -17,13 +17,16 @@ import pdtools
 
 class Offer(object):
     """docstring for Offer"""
-    def __init__(self, offers):
+    def __init__(self, offers, run_operations=True):
         super(Offer, self).__init__()
         self.offers = offers.copy()
-        self._retitle_columns()
-        self._convert_dates()
-        self._map_location()
-        self._apply_datetime()
+        self.offer_stack = None
+        if run_operations:
+            self._retitle_columns()
+            self._convert_dates()
+            self._map_location()
+            self._apply_datetime()
+            self._sort_offers()
 
     def stack_columns(self):
         self.offer_stack = pd.concat(self._stacker(), ignore_index=True)
@@ -120,10 +123,8 @@ class Offer(object):
     def _period_minutes(self, period):
         return timedelta(minutes=int(period)*30 -15)
 
-
-
-
-
+    def _sort_offers(self, datetime_col="Trading Datetime"):
+        self.offers.sort(columns=[datetime_col], inplace=True)
 
 
 class ILOffer(Offer):
@@ -140,6 +141,18 @@ class ILOffer(Offer):
         super(ILOffer, self).__init__(offers)
 
 
+    def merge_stacked_offers(self, plsr_offer):
+
+        if not type(self.offer_stack) == pd.core.frame.DataFrame:
+            self.stack_columns()
+
+        if not type(plsr_offer.offer_stack) == pd.core.frame.DataFrame:
+            plsr_offer.stack_columns()
+
+        return ReserveOffer(pd.concat([self.offer_stack,
+                    plsr_offer.offer_stack], ignore_index=True))
+
+
 
 class PLSROffer(Offer):
     """
@@ -152,9 +165,25 @@ class PLSROffer(Offer):
     template and then modificiations are made from there
     """
     def __init__(self, offers):
-        super(PLSROffer, self).__init__()
-        self.offers = offers
+        super(PLSROffer, self).__init__(offers)
 
+
+
+class ReserveOffer(Offer):
+    """
+    ReserveOffer
+    ============
+
+    Container for mixed PLSR, IL and TWDSR Offers.
+    Created by using the merge offers method of either the ILOffer
+    or PLSROffer classes.
+    """
+    def __init__(self, offers):
+        super(ReserveOffer, self).__init__(offers, run_operations=False)
+
+        # Note, a raw Offer frame isn't passed, therefore manually add it
+        # to the offer stack
+        self.offer_stack = offers
 
 
 class EnergyOffer(Offer):
@@ -168,6 +197,6 @@ class EnergyOffer(Offer):
     template and then modificiations are made from there
     """
     def __init__(self, offers):
-        super(EnergyOffer, self).__init__()
-        self.offers = offers
+        super(EnergyOffer, self).__init__(offers)
+
 
