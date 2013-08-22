@@ -7,7 +7,7 @@ import datetime as dt
 from dateutil.parser import parse
 from collections import defaultdict
 
-sys.path.append(os.path.join(os.path.expanduser("~"), 
+sys.path.append(os.path.join(os.path.expanduser("~"),
                 'python', 'pdtools'))
 import pdtools
 
@@ -19,12 +19,12 @@ class Offer(object):
 
     def _rename_columns(self):
 
-        self.df.rename(columns={x: x.replace('_', ' ').title() for 
+        self.df.rename(columns={x: x.replace('_', ' ').title() for
                 x in self.df.columns}, inplace=True)
 
 
     def _stack_columns(self):
-        self.stacked_frame = pd.concat(self._stacker())
+        self.stacked_frame = pd.concat(self._stacker(), ignore_index=True)
 
 
     def _stacker(self):
@@ -47,14 +47,14 @@ class Offer(object):
             single["Reserve Type"] = key[1]
             single["Band Number"] = key[2]
 
-            single.rename(columns={v: k for k, v in filterdict[key].items()}, 
+            single.rename(columns={v: k for k, v in filterdict[key].items()},
                 inplace=True)
 
             yield single
 
 
     def _assign_band(self, band_columns):
-        """ Figure out what type of columns they are from the bands 
+        """ Figure out what type of columns they are from the bands
         Should return a list of lists of the form
 
         Product Type, Reserve Type, Band, Params*
@@ -83,9 +83,10 @@ class Offer(object):
                 "6S" in band or "60S" in band) else "Energy"
 
 
+    def _retitle_columns(self):
+        self.df.rename(columns={x: x.replace('_', ' ').title() for x in self.df.columns}, inplace=True)
 
 
-    
     def _map_location(self, island=True, region=True):
         """
         Map the location based upon the node.
@@ -104,7 +105,7 @@ class ILOffer(Offer):
     """
     ILOffer
     ===========
-    
+
     Wrapper around an IL Offer dataframe which provides a number
     of useful functions in assessing the Energy Offers.
     Is created by passing a pandas DataFrame in the standard WITS
@@ -119,7 +120,7 @@ class ILOffer(Offer):
 
     def stack_frame(self):
         """
-        Aggregates all of the frames together and adds them to a 
+        Aggregates all of the frames together and adds them to a
         stacked frame object.
         """
 
@@ -139,9 +140,9 @@ class ILOffer(Offer):
 
         fig, axes = plt.subplots(1,1,figsize=(16,9))
 
-        axes.plot(fir["MAX"].cumsum(), fir["PRICE"], 'k.-', 
+        axes.plot(fir["MAX"].cumsum(), fir["PRICE"], 'k.-',
             label="FIR Offer Stack")
-        axes.plot(sir["MAX"].cumsum(), sir["PRICE"], 'k.--', 
+        axes.plot(sir["MAX"].cumsum(), sir["PRICE"], 'k.--',
             label="SIR Offer Stack")
 
         axes.legend(loc='upper left')
@@ -151,18 +152,18 @@ class ILOffer(Offer):
 
         return fig, axes
 
-    def get_single_frame(self, trading_date=None, 
+    def get_single_frame(self, trading_date=None,
                                trading_period=None,
                                reserve_type=None):
 
         if trading_date == None:
             trading_date = input(
                     "Please enter the trading date (day first): ")
-        
+
         if trading_period == None:
             trading_period = input(
                     "Please enter the trading period (1-48): ")
-        
+
         if reserve_type == None:
             reserve_type = input(
                     "Please enter the reserve type (6S, 60S): ")
@@ -205,7 +206,7 @@ class ILOffer(Offer):
             for i, (price, maxe) in enumerate(zip(prices, maxes)):
                 col_names = general + [price] + [maxe]
                 single = self.df[col_names].copy()
-                single.rename(columns={price: "PRICE", maxe: "MAX"}, 
+                single.rename(columns={price: "PRICE", maxe: "MAX"},
                                 inplace=True)
                 # Set two new columns with the band and reserve type
                 single["Reserve Type"] =  ty
@@ -225,7 +226,7 @@ class PLSROffer(Offer):
     """
     PLSROffer
     ===========
-    
+
     Wrapper around an PLSR Offer dataframe which provides a number
     of useful functions in assessing the Energy Offers.
     Is created by passing a pandas DataFrame in the standard WITS
@@ -241,7 +242,7 @@ class EnergyOffer(Offer):
     """
     EnergyOffer
     ===========
-    
+
     Wrapper around an Energy Offer dataframe which provides a number
     of useful functions in assessing the Energy Offers.
     Is created by passing a pandas DataFrame in the standard WITS
