@@ -19,7 +19,7 @@ def read(*filenames, **kwargs):
             buf.append(f.read())
     return sep.join(buf)
 
-long_description = read('README.txt', 'CHANGES.txt')
+long_description = read('README.md')
 
 class PyTest(TestCommand):
     def finalize_options(self):
@@ -33,19 +33,19 @@ class PyTest(TestCommand):
         sys.exit(errcode)
 
 setup(
-    name='sandman',
+    name='nzem',
     version=nzem.__version__,
     url='http://github.com/NigelCleland/nzem',
     license='MIT Software License',
     author='Nigel Cleland',
     tests_require=['pytest'],
-    install_requires=[pandas>=0.11.0,
-                      numpy>=1.7.1,
-                      requests>=1.2.3,
-                      beautifulsoup4>=4.3.1,
-                      sh>=1.08,
-                      simplejson>=3.3.0,
-                      matplotlib>=1.3.0
+    install_requires=['pandas>=0.11.0',
+                      'numpy>=1.7.1',
+                      'requests>=1.2.3',
+                      'beautifulsoup4>=4.3.1',
+                      'sh>=1.08',
+                      'simplejson>=3.3.0',
+                      'matplotlib>=1.3.0'
                     ],
     cmdclass={'test': PyTest},
     author_email='nigel.cleland@gmail.com',
