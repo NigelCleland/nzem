@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -49,17 +47,31 @@
           <div class="body">
             
   <h1>Source code for nzem.offers.offer_frames</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Offer Frames</span>
+<span class="sd">============</span>
+
+<span class="sd">A collection of classes to make working with energy and reserve offers</span>
+<span class="sd">from the New Zealand Electricity Market a bit more painless.</span>
+
+<span class="sd">Contains a master class, Offer, which publically exposed subclasses</span>
+<span class="sd">inherit from.</span>
+<span class="sd">This master class contains the code necessary for the exposed subclasses</span>
+<span class="sd">to function.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># Import Modules</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">datetime</span> <span class="kn">as</span> <span class="nn">dt</span>
+<span class="kn">import</span> <span class="nn">simplejson</span> <span class="kn">as</span> <span class="nn">json</span>
 <span class="kn">from</span> <span class="nn">dateutil.parser</span> <span class="kn">import</span> <span class="n">parse</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">pandas.tseries.offsets</span> <span class="kn">import</span> <span class="n">Minute</span>
-<span class="kn">import</span> <span class="nn">datetime</span> <span class="kn">as</span> <span class="nn">dt</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
-<span class="kn">import</span> <span class="nn">simplejson</span> <span class="kn">as</span> <span class="nn">json</span>
+
 
 <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s">&quot;~&quot;</span><span class="p">),</span>
                 <span class="s">&#39;python&#39;</span><span class="p">,</span> <span class="s">&#39;pdtools&#39;</span><span class="p">))</span>
@@ -69,8 +81,25 @@
                          <span class="s">&#39;config.json&#39;</span><span class="p">)))</span>
 
 <div class="viewcode-block" id="Offer"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.Offer">[docs]</a><span class="k">class</span> <span class="nc">Offer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;docstring for Offer&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;The Master Offer Class&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offers</span><span class="p">,</span> <span class="n">run_operations</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the offer class by passing an offer DataFrame, optionally</span>
+<span class="sd">        run a number of modifications</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        offers: type Pandas DataFrame</span>
+<span class="sd">            A Pandas DataFrame containing offer data</span>
+<span class="sd">        run_operations: type bool</span>
+<span class="sd">            Run the operations on the contained offers</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Offer: type Offer</span>
+<span class="sd">            A container around a Pandas DataFrame containing additional</span>
+<span class="sd">            functionality</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Offer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">offers</span> <span class="o">=</span> <span class="n">offers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span> <span class="o">=</span> <span class="bp">None</span>
@@ -396,7 +425,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2013, Author.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>
