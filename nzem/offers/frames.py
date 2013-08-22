@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 import datetime as dt
 from dateutil.parser import parse
 from collections import defaultdict
+from pandas.tseries.offsets import Minute
+import datetime as dt
+from datetime import datetime, timedelta
+
 
 sys.path.append(os.path.join(os.path.expanduser("~"),
                 'python', 'pdtools'))
@@ -17,6 +21,9 @@ class Offer(object):
         super(Offer, self).__init__()
         self.offers = offers.copy()
         self._retitle_columns()
+        self._convert_dates()
+        self._map_location()
+        self._apply_datetime()
 
     def stack_columns(self):
         self.offer_stack = pd.concat(self._stacker(), ignore_index=True)
@@ -83,7 +90,7 @@ class Offer(object):
                 for x in self.offers.columns}, inplace=True)
 
 
-    def _map_location(self, island=True, region=True, user_map=None,
+    def _map_location(self, user_map=None,
             left_on="Grid Exit Point", right_on="Grid Exit Point"):
         """
         Map the location based upon the node.
@@ -97,6 +104,23 @@ class Offer(object):
                 "Load Area": "Region", "Island Name": "Island"}, inplace=True)
 
         self.offers = self.offers.merge(user_map, left_on=left_on, right_on=right_on)
+
+
+    def _convert_dates(self, date_col="Trading Date"):
+
+        self.offers[date_col] = pd.to_datetime(self.offers[date_col])
+
+
+    def _apply_datetime(self, date_col="Trading Date",
+            period_col="Trading Period", datetime_col="Trading Datetime"):
+
+        self.offers[datetime_col] = self.offers[date_col] + self.offers[period_col].apply(self._period_minutes)
+
+
+    def _period_minutes(self, period):
+        return timedelta(minutes=int(period)*30 -15)
+
+
 
 
 
