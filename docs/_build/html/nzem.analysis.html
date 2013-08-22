@@ -73,16 +73,27 @@
 <dt id="nzem.analysis.constraints.HVDC_Constraint">
 <tt class="descclassname">nzem.analysis.constraints.</tt><tt class="descname">HVDC_Constraint</tt><big>(</big><em>series</em>, <em>energy_price_send=''</em>, <em>energy_price_receive=''</em>, <em>res_price=''</em>, <em>abs_tol=None</em>, <em>rel_tol=None</em>, <em>min_split=10</em><big>)</big><a class="reference internal" href="_modules/nzem/analysis/constraints.html#HVDC_Constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.analysis.constraints.HVDC_Constraint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine whether an HVDC constraint is active within the system</p>
-<p>series : The Pandas DF series (i.e. a single entry)
-energy_price : The energy price column name
-res_price : The reserve price column name
-inverse : Whether the inverse should be applied (e.g. multiply by -1)
-abs_tol : What absolute tolerance should be applied to the dataset
-rel_tol : What relative tolerance should be applied
-minimium_split : The minimum split required to attribute towards reserve</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>series</strong> : The Pandas DF series (i.e. a single entry)</p>
+<p><strong>energy_price</strong> : The energy price column name</p>
+<p><strong>res_price</strong> : The reserve price column name</p>
+<p><strong>inverse</strong> : Whether the inverse should be applied (e.g. multiply by -1)</p>
+<p><strong>abs_tol</strong> : What absolute tolerance should be applied to the dataset</p>
+<p><strong>rel_tol</strong> : What relative tolerance should be applied</p>
+<p><strong>minimium_split</strong> : The minimum split required to attribute towards reserve</p>
 <blockquote>
-<div>binding upon the system.</div></blockquote>
-<p>constraint : True if constraint is binding, false otherwise</p>
+<div><p>binding upon the system.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first last"><strong>constraint</strong> : True if constraint is binding, false otherwise</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">

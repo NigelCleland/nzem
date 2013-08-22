@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # nzem documentation build configuration file, created by
-# sphinx-quickstart on Fri Aug 23 09:33:35 2013.
+# sphinx-quickstart on Fri Aug 23 11:38:59 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
 #
@@ -25,7 +25,7 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -85,6 +85,9 @@ pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
+
+# If true, keep warnings as "system message" paragraphs in the built documents.
+#keep_warnings = False
 
 
 # -- Options for HTML output ---------------------------------------------------
@@ -241,6 +244,9 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
 
+# If true, do not generate a @detailmenu in the "Top" node's menu.
+#texinfo_no_detailmenu = False
+
 
 # -- Options for Epub output ---------------------------------------------------
 
@@ -267,6 +273,9 @@ epub_copyright = u'2013, Author'
 # A tuple containing the cover image and cover page html template filenames.
 #epub_cover = ()
 
+# A sequence of (type, uri, title) tuples for the guide element of content.opf.
+#epub_guide = ()
+
 # HTML files that should be inserted before the pages created by sphinx.
 # The format is a list of tuples containing the path and title.
 #epub_pre_files = []
@@ -283,3 +292,15 @@ epub_copyright = u'2013, Author'
 
 # Allow duplicate toc entries.
 #epub_tocdup = True
+
+# Fix unsupported image types using the PIL.
+#epub_fix_images = False
+
+# Scale large images.
+#epub_max_image_width = 0
+
+# If 'no', URL addresses will not be shown.
+#epub_show_urls = 'inline'
+
+# If false, no index is generated.
+#epub_use_index = True

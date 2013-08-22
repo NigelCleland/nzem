@@ -1,8 +1,4 @@
-"""
-Offer Frames
-============
-
-A collection of classes to make working with energy and reserve offers
+"""A collection of classes to make working with energy and reserve offers
 from the New Zealand Electricity Market a bit more painless.
 
 Contains a master class, Offer, which publically exposed subclasses
@@ -327,11 +323,7 @@ class Offer(object):
 
 
 class ILOffer(Offer):
-    """
-    ILOffer
-    ===========
-
-    Wrapper around an IL Offer dataframe which provides a number
+    """ Wrapper around an IL Offer dataframe which provides a number
     of useful functions in assessing the Energy Offers.
     Is created by passing a pandas DataFrame in the standard WITS
     template and then modificiations are made from there
@@ -354,11 +346,7 @@ class ILOffer(Offer):
 
 
 class PLSROffer(Offer):
-    """
-    PLSROffer
-    ===========
-
-    Wrapper around an PLSR Offer dataframe which provides a number
+    """ Wrapper around an PLSR Offer dataframe which provides a number
     of useful functions in assessing the Energy Offers.
     Is created by passing a pandas DataFrame in the standard WITS
     template and then modificiations are made from there
@@ -381,11 +369,7 @@ class PLSROffer(Offer):
 
 
 class ReserveOffer(Offer):
-    """
-    ReserveOffer
-    ============
-
-    Container for mixed PLSR, IL and TWDSR Offers.
+    """ Container for mixed PLSR, IL and TWDSR Offers.
     Created by using the merge offers method of either the ILOffer
     or PLSROffer classes.
     """
@@ -398,11 +382,7 @@ class ReserveOffer(Offer):
 
 
 class EnergyOffer(Offer):
-    """
-    EnergyOffer
-    ===========
-
-    Wrapper around an Energy Offer dataframe which provides a number
+    """ Wrapper around an Energy Offer dataframe which provides a number
     of useful functions in assessing the Energy Offers.
     Is created by passing a pandas DataFrame in the standard WITS
     template and then modificiations are made from there

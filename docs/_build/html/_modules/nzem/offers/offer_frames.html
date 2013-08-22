@@ -47,11 +47,7 @@
           <div class="body">
             
   <h1>Source code for nzem.offers.offer_frames</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Offer Frames</span>
-<span class="sd">============</span>
-
-<span class="sd">A collection of classes to make working with energy and reserve offers</span>
+<span class="sd">&quot;&quot;&quot;A collection of classes to make working with energy and reserve offers</span>
 <span class="sd">from the New Zealand Electricity Market a bit more painless.</span>
 
 <span class="sd">Contains a master class, Offer, which publically exposed subclasses</span>
@@ -112,6 +108,20 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="p">))</span>
 
 <div class="viewcode-block" id="Offer.stack_columns"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.Offer.stack_columns">[docs]</a>    <span class="k">def</span> <span class="nf">stack_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Stack a horizontal dataframe into a vertical configuration to</span>
+<span class="sd">        improve functionality</span>
+
+<span class="sd">        Exists as an exposed wrapper around the _stacker() class which</span>
+<span class="sd">        is a python generator yielding stacked DataFrames.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self.offer_stack: type Pandas DataFrame</span>
+<span class="sd">            A DataFrame containing offer data with identifiers that has</span>
+<span class="sd">            been stacked vertically</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stacker</span><span class="p">(),</span> <span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 </div>
@@ -119,6 +129,43 @@
                      <span class="n">reserve_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">island</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">company</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                      <span class="n">region</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">non_zero</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                      <span class="n">return_df</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Filter a vertically stacked offer dataframe to obtain a</span>
+<span class="sd">        subset of the data within it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        self.offer_stack: type Pandas DataFrame</span>
+<span class="sd">            Stacked data, if it does not exist it will be created</span>
+<span class="sd">        date: type str, bool default None</span>
+<span class="sd">            The trading date to filter by</span>
+<span class="sd">        period: type str, bool default None</span>
+<span class="sd">            The Trading Period to filter by</span>
+<span class="sd">        product_type: type str, bool default None</span>
+<span class="sd">            Which product, IL, PLSR, TWDSR, Energy to filter by</span>
+<span class="sd">        reserve_type: type str, bool default None</span>
+<span class="sd">            FIR, SIR or Energy, which reserve type to use</span>
+<span class="sd">        island: type str, bool default None</span>
+<span class="sd">            Whether to filter by a specific Island e.g. (North Island)</span>
+<span class="sd">        company: type str, bool default None</span>
+<span class="sd">            Filter a specific company (e.g. MRPL)</span>
+<span class="sd">        region: type str, bool, default None</span>
+<span class="sd">            Filter a specific region (e.g. Auckland)</span>
+<span class="sd">        station: type str, bool, default None</span>
+<span class="sd">            Which Station to filter, Generators optionally</span>
+<span class="sd">        non_zero: type bool, default False</span>
+<span class="sd">            Return only non zero offers</span>
+<span class="sd">        return_df: type bool, default False</span>
+<span class="sd">            Return the filtered DataFrame as well as saving to latest query</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fstack: type Pandas DataFrame</span>
+<span class="sd">            The filtered DataFrame</span>
+<span class="sd">        self.fstack: type Pandas DataFrame</span>
+<span class="sd">            The filtered DataFrame applied to a class method</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stack_columns</span><span class="p">()</span>
@@ -159,7 +206,28 @@
 
 </div>
 <div class="viewcode-block" id="Offer.clear_offers"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.Offer.clear_offers">[docs]</a>    <span class="k">def</span> <span class="nf">clear_offers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requirement</span><span class="p">,</span> <span class="n">fstack</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">return_df</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Clear the offers against a requirement &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; Clear the offer stack against a requirement</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        self.fstack: type pandas DataFrame</span>
+<span class="sd">            The filter query, must be for a single period and date</span>
+<span class="sd">        requirement: type float</span>
+<span class="sd">            The requirement for energy or reserve, must be a positive number</span>
+<span class="sd">        fstack: type pandas DataFrame, bool default None</span>
+<span class="sd">            Optional argument to not use the current query</span>
+<span class="sd">        return_df: type bool, default True</span>
+<span class="sd">            Return the DataFrame to the user, or keep as query</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self.cleared_fstack: type pandas DataFrame</span>
+<span class="sd">            A DataFrame which has been cleared against the requirement</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">requirement</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Requirement must be a positive number&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">fstack</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
             <span class="n">fstack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fstack</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -304,11 +372,7 @@
 
 </div>
 <div class="viewcode-block" id="ILOffer"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.ILOffer">[docs]</a><span class="k">class</span> <span class="nc">ILOffer</span><span class="p">(</span><span class="n">Offer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    ILOffer</span>
-<span class="sd">    ===========</span>
-
-<span class="sd">    Wrapper around an IL Offer dataframe which provides a number</span>
+    <span class="sd">&quot;&quot;&quot; Wrapper around an IL Offer dataframe which provides a number</span>
 <span class="sd">    of useful functions in assessing the Energy Offers.</span>
 <span class="sd">    Is created by passing a pandas DataFrame in the standard WITS</span>
 <span class="sd">    template and then modificiations are made from there</span>
@@ -331,11 +395,7 @@
 
 </div></div>
 <div class="viewcode-block" id="PLSROffer"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.PLSROffer">[docs]</a><span class="k">class</span> <span class="nc">PLSROffer</span><span class="p">(</span><span class="n">Offer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    PLSROffer</span>
-<span class="sd">    ===========</span>
-
-<span class="sd">    Wrapper around an PLSR Offer dataframe which provides a number</span>
+    <span class="sd">&quot;&quot;&quot; Wrapper around an PLSR Offer dataframe which provides a number</span>
 <span class="sd">    of useful functions in assessing the Energy Offers.</span>
 <span class="sd">    Is created by passing a pandas DataFrame in the standard WITS</span>
 <span class="sd">    template and then modificiations are made from there</span>
@@ -358,11 +418,7 @@
 
 </div></div>
 <div class="viewcode-block" id="ReserveOffer"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.ReserveOffer">[docs]</a><span class="k">class</span> <span class="nc">ReserveOffer</span><span class="p">(</span><span class="n">Offer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    ReserveOffer</span>
-<span class="sd">    ============</span>
-
-<span class="sd">    Container for mixed PLSR, IL and TWDSR Offers.</span>
+    <span class="sd">&quot;&quot;&quot; Container for mixed PLSR, IL and TWDSR Offers.</span>
 <span class="sd">    Created by using the merge offers method of either the ILOffer</span>
 <span class="sd">    or PLSROffer classes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -375,11 +431,7 @@
 
 </div>
 <div class="viewcode-block" id="EnergyOffer"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.EnergyOffer">[docs]</a><span class="k">class</span> <span class="nc">EnergyOffer</span><span class="p">(</span><span class="n">Offer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    EnergyOffer</span>
-<span class="sd">    ===========</span>
-
-<span class="sd">    Wrapper around an Energy Offer dataframe which provides a number</span>
+    <span class="sd">&quot;&quot;&quot; Wrapper around an Energy Offer dataframe which provides a number</span>
 <span class="sd">    of useful functions in assessing the Energy Offers.</span>
 <span class="sd">    Is created by passing a pandas DataFrame in the standard WITS</span>
 <span class="sd">    template and then modificiations are made from there</span>
