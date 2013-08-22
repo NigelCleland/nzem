@@ -38,7 +38,8 @@ class Offer(object):
 
     def filter_stack(self, date=None, period=None, product_type=None,
                      reserve_type=None, island=None, company=None,
-                     region=None, station=None, non_zero=False):
+                     region=None, station=None, non_zero=False,
+                     return_df=False):
 
         if not type(self.offer_stack) == pd.core.frame.DataFrame:
             self.stack_columns()
@@ -73,6 +74,9 @@ class Offer(object):
             fstack = fstack.gt_mask("Max", 0)
 
         self.fstack = fstack
+
+        if return_df:
+            return fstack
 
 
 
