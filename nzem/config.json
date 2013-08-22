@@ -13,5 +13,6 @@
         "bids": "nodal_bids",
         "diffbids": "nodal_diffbids"
   },
-  "map-location": "/home/nigel/data/maps/Nodal_Information.csv"
+  "map-location": "/home/nigel/data/maps/Nodal_Information.csv",
+  "gnash-path": "/home/nigel/CDS/CentralisedDataset/HalfHourly"
 }

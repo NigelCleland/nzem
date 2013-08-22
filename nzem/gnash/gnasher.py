@@ -19,6 +19,7 @@ import subprocess
 from cStringIO import StringIO
 import time
 from pandas.tseries.offsets import Minute, Hour
+import simplejson as json
 
 if sys.platform.startswith("linux"):
    from sh import Command
@@ -27,14 +28,20 @@ if sys.platform.startswith("linux"):
 
 cwd = os.getcwd()
 
+CONFIG = json.load(open(os.path.join(os.path.expanduser('~/python/nzem/nzem'),
+                         'config.json')))
+
 # Set where your current Gnash directory is!
-gnash_path = os.path.join(os.path.expanduser('~'), 'CDS', 'CentralisedDataset', 'HalfHourly')
-os.chdir(gnash_path)
+gnash_path = CONFIG['gnash-path']
+try:
+    os.chdir(gnash_path)
+except OSError:
+    print "You may need to update your Gnash path for Gnasher to work"
 
 
 
 class Gnasher(object):
-    """Gnasher is a class designed to make interfacing with the Gnash.exe as 
+    """Gnasher is a class designed to make interfacing with the Gnash.exe as
     painless as possible. It should eventually handle constructing queries,
     returning data as pandas DataFrames and generally taking care of
     the BS which makes dealing with such systems "fun"
@@ -45,11 +52,11 @@ class Gnasher(object):
 
     def query_energy(self, input_string):
         """
-        Query the energy aspects of Gnash... 
+        Query the energy aspects of Gnash...
         Should test this to see if it works with multiple inputs
         """
-        
-        self._run_query(input_string)  
+
+        self._run_query(input_string)
         self._scrub_output()
         self.query = pd.read_csv(self.output, header=0, skiprows=[1])
         self._floss_DataFrame()
@@ -70,7 +77,7 @@ class Gnasher(object):
 
     def _scrub_output(self):
         # Go line by line through the output until you find the header
-        
+
         string = self.output.getvalue()
         self.output.close()
 
@@ -97,7 +104,7 @@ class Gnasher(object):
         self.query["DateTime"] = self.query.apply(self._datetime_converter, axis=1)
 
         # Rename the columns
-        self.query.rename(columns={x: x.replace('.', '_') for x in self.query.columns}, 
+        self.query.rename(columns={x: x.replace('.', '_') for x in self.query.columns},
                 inplace=True)
 
         # Set the index
