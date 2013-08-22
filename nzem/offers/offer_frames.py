@@ -1,14 +1,28 @@
+"""
+Offer Frames
+============
+
+A collection of classes to make working with energy and reserve offers
+from the New Zealand Electricity Market a bit more painless.
+
+Contains a master class, Offer, which publically exposed subclasses
+inherit from.
+This master class contains the code necessary for the exposed subclasses
+to function.
+"""
+
+# Import Modules
 import pandas as pd
 import numpy as np
 import sys
 import os
 import datetime as dt
+import simplejson as json
 from dateutil.parser import parse
 from collections import defaultdict
 from pandas.tseries.offsets import Minute
-import datetime as dt
 from datetime import datetime, timedelta
-import simplejson as json
+
 
 sys.path.append(os.path.join(os.path.expanduser("~"),
                 'python', 'pdtools'))
@@ -18,8 +32,25 @@ CONFIG = json.load(open(os.path.join(os.path.expanduser('~/python/nzem/nzem'),
                          'config.json')))
 
 class Offer(object):
-    """docstring for Offer"""
+    """The Master Offer Class"""
     def __init__(self, offers, run_operations=True):
+        """ Create the offer class by passing an offer DataFrame, optionally
+        run a number of modifications
+
+        Parameters
+        ----------
+        offers: type Pandas DataFrame
+            A Pandas DataFrame containing offer data
+        run_operations: type bool
+            Run the operations on the contained offers
+
+        Returns
+        -------
+        Offer: type Offer
+            A container around a Pandas DataFrame containing additional
+            functionality
+
+        """
         super(Offer, self).__init__()
         self.offers = offers.copy()
         self.offer_stack = None
@@ -32,6 +63,20 @@ class Offer(object):
             self.offers.index = np.arange(len(self.offers))
 
     def stack_columns(self):
+        """ Stack a horizontal dataframe into a vertical configuration to
+        improve functionality
+
+        Exists as an exposed wrapper around the _stacker() class which
+        is a python generator yielding stacked DataFrames.
+
+        Returns
+        -------
+        self.offer_stack: type Pandas DataFrame
+            A DataFrame containing offer data with identifiers that has
+            been stacked vertically
+
+
+        """
         self.offer_stack = pd.concat(self._stacker(), ignore_index=True)
 
 
@@ -39,6 +84,43 @@ class Offer(object):
                      reserve_type=None, island=None, company=None,
                      region=None, station=None, non_zero=False,
                      return_df=False):
+        """Filter a vertically stacked offer dataframe to obtain a
+        subset of the data within it.
+
+        Parameters
+        ----------
+        self.offer_stack: type Pandas DataFrame
+            Stacked data, if it does not exist it will be created
+        date: type str, bool default None
+            The trading date to filter by
+        period: type str, bool default None
+            The Trading Period to filter by
+        product_type: type str, bool default None
+            Which product, IL, PLSR, TWDSR, Energy to filter by
+        reserve_type: type str, bool default None
+            FIR, SIR or Energy, which reserve type to use
+        island: type str, bool default None
+            Whether to filter by a specific Island e.g. (North Island)
+        company: type str, bool default None
+            Filter a specific company (e.g. MRPL)
+        region: type str, bool, default None
+            Filter a specific region (e.g. Auckland)
+        station: type str, bool, default None
+            Which Station to filter, Generators optionally
+        non_zero: type bool, default False
+            Return only non zero offers
+        return_df: type bool, default False
+            Return the filtered DataFrame as well as saving to latest query
+
+        Returns
+        -------
+        fstack: type Pandas DataFrame
+            The filtered DataFrame
+        self.fstack: type Pandas DataFrame
+            The filtered DataFrame applied to a class method
+
+        """
+
 
         if not type(self.offer_stack) == pd.core.frame.DataFrame:
             self.stack_columns()
@@ -79,7 +161,28 @@ class Offer(object):
 
 
     def clear_offers(self, requirement, fstack=None, return_df=True):
-        """ Clear the offers against a requirement """
+        """ Clear the offer stack against a requirement
+
+        Parameters
+        ----------
+        self.fstack: type pandas DataFrame
+            The filter query, must be for a single period and date
+        requirement: type float
+            The requirement for energy or reserve, must be a positive number
+        fstack: type pandas DataFrame, bool default None
+            Optional argument to not use the current query
+        return_df: type bool, default True
+            Return the DataFrame to the user, or keep as query
+
+        Returns
+        -------
+        self.cleared_fstack: type pandas DataFrame
+            A DataFrame which has been cleared against the requirement
+
+        """
+
+        if requirement < 0:
+            raise ValueError("Requirement must be a positive number")
 
         if not type(fstack) == pd.core.frame.DataFrame:
             fstack = self.fstack.copy()
