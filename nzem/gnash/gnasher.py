@@ -33,11 +33,6 @@ CONFIG = json.load(open(os.path.join(os.path.expanduser('~/python/nzem/nzem'),
 
 # Set where your current Gnash directory is!
 gnash_path = CONFIG['gnash-path']
-try:
-    os.chdir(gnash_path)
-except OSError:
-    print "You may need to update your Gnash path for Gnasher to work"
-
 
 
 class Gnasher(object):
@@ -48,6 +43,10 @@ class Gnasher(object):
     """
     def __init__(self):
         super(Gnasher, self).__init__()
+        try:
+            os.chdir(gnash_path)
+        except OSError:
+            print "You may need to update your Gnash path for Gnasher to work"
 
 
     def query_energy(self, input_string):
