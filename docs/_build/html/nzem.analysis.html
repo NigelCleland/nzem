@@ -1,0 +1,165 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>analysis Package &mdash; nzem  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="nzem  documentation" href="index.html" />
+    <link rel="up" title="nzem Package" href="nzem.html" />
+    <link rel="next" title="frequent_io Package" href="nzem.frequent_io.html" />
+    <link rel="prev" title="nzem Package" href="nzem.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nzem.frequent_io.html" title="frequent_io Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nzem.html" title="nzem Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">nzem  documentation</a> &raquo;</li>
+          <li><a href="nzem.html" accesskey="U">nzem Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="analysis-package">
+<h1>analysis Package<a class="headerlink" href="#analysis-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-nzem.analysis.constraints">
+<span id="constraints-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">constraints</span></tt> Module<a class="headerlink" href="#module-nzem.analysis.constraints" title="Permalink to this headline">¶</a></h2>
+<p>Determine whether constraints are active for a particular trading period</p>
+<dl class="function">
+<dt id="nzem.analysis.constraints.CCGT_Constraint">
+<tt class="descclassname">nzem.analysis.constraints.</tt><tt class="descname">CCGT_Constraint</tt><big>(</big><em>series</em>, <em>eprice=''</em>, <em>oprice=''</em>, <em>rprice=''</em>, <em>abs_tol=None</em>, <em>rel_tol=None</em>, <em>min_split=10</em><big>)</big><a class="reference internal" href="_modules/nzem/analysis/constraints.html#CCGT_Constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.analysis.constraints.CCGT_Constraint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nzem.analysis.constraints.CCGT_Offer_Plot">
+<tt class="descclassname">nzem.analysis.constraints.</tt><tt class="descname">CCGT_Offer_Plot</tt><big>(</big><em>df</em><big>)</big><a class="reference internal" href="_modules/nzem/analysis/constraints.html#CCGT_Offer_Plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.analysis.constraints.CCGT_Offer_Plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nzem.analysis.constraints.HVDC_Constraint">
+<tt class="descclassname">nzem.analysis.constraints.</tt><tt class="descname">HVDC_Constraint</tt><big>(</big><em>series</em>, <em>energy_price_send=''</em>, <em>energy_price_receive=''</em>, <em>res_price=''</em>, <em>abs_tol=None</em>, <em>rel_tol=None</em>, <em>min_split=10</em><big>)</big><a class="reference internal" href="_modules/nzem/analysis/constraints.html#HVDC_Constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.analysis.constraints.HVDC_Constraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether an HVDC constraint is active within the system</p>
+<p>series : The Pandas DF series (i.e. a single entry)
+energy_price : The energy price column name
+res_price : The reserve price column name
+inverse : Whether the inverse should be applied (e.g. multiply by -1)
+abs_tol : What absolute tolerance should be applied to the dataset
+rel_tol : What relative tolerance should be applied
+minimium_split : The minimum split required to attribute towards reserve</p>
+<blockquote>
+<div>binding upon the system.</div></blockquote>
+<p>constraint : True if constraint is binding, false otherwise</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nzem.analysis.constraints.constraint_plot">
+<tt class="descclassname">nzem.analysis.constraints.</tt><tt class="descname">constraint_plot</tt><big>(</big><em>master_set</em>, <em>island='NI'</em>, <em>inverse=False</em>, <em>min_split=10</em><big>)</big><a class="reference internal" href="_modules/nzem/analysis/constraints.html#constraint_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.analysis.constraints.constraint_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a scatter plot constrained vs unconstrained reserves</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">analysis Package</a><ul>
+<li><a class="reference internal" href="#module-nzem.analysis.constraints"><tt class="docutils literal"><span class="pre">constraints</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="nzem.html"
+                        title="previous chapter">nzem Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="nzem.frequent_io.html"
+                        title="next chapter">frequent_io Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/nzem.analysis.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nzem.frequent_io.html" title="frequent_io Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nzem.html" title="nzem Package"
+             >previous</a> |</li>
+        <li><a href="index.html">nzem  documentation</a> &raquo;</li>
+          <li><a href="nzem.html" >nzem Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Author.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

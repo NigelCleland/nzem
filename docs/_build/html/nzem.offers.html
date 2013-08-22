@@ -1,0 +1,204 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>offers Package &mdash; nzem  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="nzem  documentation" href="index.html" />
+    <link rel="up" title="nzem Package" href="nzem.html" />
+    <link rel="next" title="wits Package" href="nzem.wits.html" />
+    <link rel="prev" title="gnash Package" href="nzem.gnash.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nzem.wits.html" title="wits Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nzem.gnash.html" title="gnash Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">nzem  documentation</a> &raquo;</li>
+          <li><a href="nzem.html" accesskey="U">nzem Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="offers-package">
+<h1>offers Package<a class="headerlink" href="#offers-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-nzem.offers.offer_frames">
+<span id="offer-frames-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">offer_frames</span></tt> Module<a class="headerlink" href="#module-nzem.offers.offer_frames" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="nzem.offers.offer_frames.EnergyOffer">
+<em class="property">class </em><tt class="descclassname">nzem.offers.offer_frames.</tt><tt class="descname">EnergyOffer</tt><big>(</big><em>offers</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#EnergyOffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.EnergyOffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nzem.offers.offer_frames.Offer" title="nzem.offers.offer_frames.Offer"><tt class="xref py py-class docutils literal"><span class="pre">nzem.offers.offer_frames.Offer</span></tt></a></p>
+<p>Wrapper around an Energy Offer dataframe which provides a number
+of useful functions in assessing the Energy Offers.
+Is created by passing a pandas DataFrame in the standard WITS
+template and then modificiations are made from there</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nzem.offers.offer_frames.ILOffer">
+<em class="property">class </em><tt class="descclassname">nzem.offers.offer_frames.</tt><tt class="descname">ILOffer</tt><big>(</big><em>offers</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#ILOffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.ILOffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nzem.offers.offer_frames.Offer" title="nzem.offers.offer_frames.Offer"><tt class="xref py py-class docutils literal"><span class="pre">nzem.offers.offer_frames.Offer</span></tt></a></p>
+<p>Wrapper around an IL Offer dataframe which provides a number
+of useful functions in assessing the Energy Offers.
+Is created by passing a pandas DataFrame in the standard WITS
+template and then modificiations are made from there</p>
+<dl class="method">
+<dt id="nzem.offers.offer_frames.ILOffer.merge_stacked_offers">
+<tt class="descname">merge_stacked_offers</tt><big>(</big><em>plsr_offer</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#ILOffer.merge_stacked_offers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.ILOffer.merge_stacked_offers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nzem.offers.offer_frames.Offer">
+<em class="property">class </em><tt class="descclassname">nzem.offers.offer_frames.</tt><tt class="descname">Offer</tt><big>(</big><em>offers</em>, <em>run_operations=True</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#Offer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.Offer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>docstring for Offer</p>
+<dl class="method">
+<dt id="nzem.offers.offer_frames.Offer.clear_offers">
+<tt class="descname">clear_offers</tt><big>(</big><em>requirement</em>, <em>fstack=None</em>, <em>return_df=True</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#Offer.clear_offers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.Offer.clear_offers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the offers against a requirement</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nzem.offers.offer_frames.Offer.filter_stack">
+<tt class="descname">filter_stack</tt><big>(</big><em>date=None</em>, <em>period=None</em>, <em>product_type=None</em>, <em>reserve_type=None</em>, <em>island=None</em>, <em>company=None</em>, <em>region=None</em>, <em>station=None</em>, <em>non_zero=False</em>, <em>return_df=False</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#Offer.filter_stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.Offer.filter_stack" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="nzem.offers.offer_frames.Offer.stack_columns">
+<tt class="descname">stack_columns</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#Offer.stack_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.Offer.stack_columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nzem.offers.offer_frames.PLSROffer">
+<em class="property">class </em><tt class="descclassname">nzem.offers.offer_frames.</tt><tt class="descname">PLSROffer</tt><big>(</big><em>offers</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#PLSROffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.PLSROffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nzem.offers.offer_frames.Offer" title="nzem.offers.offer_frames.Offer"><tt class="xref py py-class docutils literal"><span class="pre">nzem.offers.offer_frames.Offer</span></tt></a></p>
+<p>Wrapper around an PLSR Offer dataframe which provides a number
+of useful functions in assessing the Energy Offers.
+Is created by passing a pandas DataFrame in the standard WITS
+template and then modificiations are made from there</p>
+<dl class="method">
+<dt id="nzem.offers.offer_frames.PLSROffer.merge_stacked_offers">
+<tt class="descname">merge_stacked_offers</tt><big>(</big><em>il_offer</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#PLSROffer.merge_stacked_offers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.PLSROffer.merge_stacked_offers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nzem.offers.offer_frames.ReserveOffer">
+<em class="property">class </em><tt class="descclassname">nzem.offers.offer_frames.</tt><tt class="descname">ReserveOffer</tt><big>(</big><em>offers</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#ReserveOffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.ReserveOffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nzem.offers.offer_frames.Offer" title="nzem.offers.offer_frames.Offer"><tt class="xref py py-class docutils literal"><span class="pre">nzem.offers.offer_frames.Offer</span></tt></a></p>
+<p>Container for mixed PLSR, IL and TWDSR Offers.
+Created by using the merge offers method of either the ILOffer
+or PLSROffer classes.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">offers Package</a><ul>
+<li><a class="reference internal" href="#module-nzem.offers.offer_frames"><tt class="docutils literal"><span class="pre">offer_frames</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="nzem.gnash.html"
+                        title="previous chapter">gnash Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="nzem.wits.html"
+                        title="next chapter">wits Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/nzem.offers.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nzem.wits.html" title="wits Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nzem.gnash.html" title="gnash Package"
+             >previous</a> |</li>
+        <li><a href="index.html">nzem  documentation</a> &raquo;</li>
+          <li><a href="nzem.html" >nzem Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Author.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

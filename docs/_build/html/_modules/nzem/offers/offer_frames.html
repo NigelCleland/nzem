@@ -1,0 +1,402 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>nzem.offers.offer_frames &mdash; nzem  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="nzem  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">nzem  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for nzem.offers.offer_frames</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">datetime</span> <span class="kn">as</span> <span class="nn">dt</span>
+<span class="kn">from</span> <span class="nn">dateutil.parser</span> <span class="kn">import</span> <span class="n">parse</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">pandas.tseries.offsets</span> <span class="kn">import</span> <span class="n">Minute</span>
+<span class="kn">import</span> <span class="nn">datetime</span> <span class="kn">as</span> <span class="nn">dt</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span> <span class="nn">simplejson</span> <span class="kn">as</span> <span class="nn">json</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s">&quot;~&quot;</span><span class="p">),</span>
+                <span class="s">&#39;python&#39;</span><span class="p">,</span> <span class="s">&#39;pdtools&#39;</span><span class="p">))</span>
+<span class="kn">import</span> <span class="nn">pdtools</span>
+
+<span class="n">CONFIG</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s">&#39;~/python/nzem/nzem&#39;</span><span class="p">),</span>
+                         <span class="s">&#39;config.json&#39;</span><span class="p">)))</span>
+
+<div class="viewcode-block" id="Offer"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.Offer">[docs]</a><span class="k">class</span> <span class="nc">Offer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;docstring for Offer&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offers</span><span class="p">,</span> <span class="n">run_operations</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Offer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offers</span> <span class="o">=</span> <span class="n">offers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">run_operations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_retitle_columns</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_convert_dates</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_map_location</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_datetime</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sort_offers</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Offer.stack_columns"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.Offer.stack_columns">[docs]</a>    <span class="k">def</span> <span class="nf">stack_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stacker</span><span class="p">(),</span> <span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Offer.filter_stack"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.Offer.filter_stack">[docs]</a>    <span class="k">def</span> <span class="nf">filter_stack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">product_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">reserve_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">island</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">company</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">region</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">non_zero</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                     <span class="n">return_df</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stack_columns</span><span class="p">()</span>
+
+        <span class="n">fstack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">date</span><span class="p">:</span>
+            <span class="n">fstack</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Trading Date&quot;</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">period</span><span class="p">:</span>
+            <span class="n">fstack</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Trading Period&quot;</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">product_type</span><span class="p">:</span>
+            <span class="n">fstack</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Product Type&quot;</span><span class="p">,</span> <span class="n">product_type</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">reserve_type</span><span class="p">:</span>
+            <span class="n">fstack</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Reserve Type&quot;</span><span class="p">,</span> <span class="n">reserve_type</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">island</span><span class="p">:</span>
+            <span class="n">fstack</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Island&quot;</span><span class="p">,</span> <span class="n">island</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">company</span><span class="p">:</span>
+            <span class="n">fstack</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Company&quot;</span><span class="p">,</span> <span class="n">company</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">region</span><span class="p">:</span>
+            <span class="n">fstack</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Region&quot;</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">station</span><span class="p">:</span>
+            <span class="n">fstack</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Station&quot;</span><span class="p">,</span> <span class="n">station</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">non_zero</span><span class="p">:</span>
+            <span class="n">fstack</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">gt_mask</span><span class="p">(</span><span class="s">&quot;Max&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fstack</span> <span class="o">=</span> <span class="n">fstack</span>
+
+        <span class="k">if</span> <span class="n">return_df</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fstack</span>
+
+</div>
+<div class="viewcode-block" id="Offer.clear_offers"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.Offer.clear_offers">[docs]</a>    <span class="k">def</span> <span class="nf">clear_offers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requirement</span><span class="p">,</span> <span class="n">fstack</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">return_df</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Clear the offers against a requirement &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">fstack</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+            <span class="n">fstack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fstack</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Trading Datetime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Filtered Dataset contains more than one</span><span class="se">\</span>
+<span class="s">                              date, this invalidates the clearing&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Reserve Type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Filtered Dataset contains more than one</span><span class="se">\</span>
+<span class="s">                              type of data, this invalidates the clearing&quot;</span><span class="p">)</span>
+
+        <span class="c"># Drop the zero offers</span>
+        <span class="n">fstack</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">gt_mask</span><span class="p">(</span><span class="s">&quot;Max&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="c"># Sort by price</span>
+        <span class="n">fstack</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;Price&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="c"># Reindex</span>
+        <span class="n">fstack</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fstack</span><span class="p">))</span>
+
+        <span class="c"># Cumulative Offers</span>
+        <span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Cumulative Offers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Max&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+
+        <span class="c"># Apply a cleared flag</span>
+        <span class="n">marginal_unit</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">ge_mask</span><span class="p">(</span><span class="s">&quot;Cumulative Offers&quot;</span><span class="p">,</span> <span class="n">requirement</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Cleared&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Cleared&quot;</span><span class="p">][:</span><span class="n">marginal_unit</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="c"># Determine the dispatched quantity</span>
+        <span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Cleared Quantity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Cleared Quantity&quot;</span><span class="p">][:</span><span class="n">marginal_unit</span><span class="p">]</span> <span class="o">=</span> <span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Max&quot;</span><span class="p">][:</span><span class="n">marginal_unit</span><span class="p">]</span>
+
+        <span class="c"># Special case for the marginal unit.</span>
+        <span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Cleared Quantity&quot;</span><span class="p">][</span><span class="n">marginal_unit</span><span class="p">]</span> <span class="o">=</span> <span class="n">requirement</span> <span class="o">-</span> <span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Max&quot;</span><span class="p">][:</span><span class="n">marginal_unit</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="c"># Determine the dispatched price</span>
+        <span class="n">fstack</span><span class="p">[</span><span class="s">&quot;Clearing Price&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fstack</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Cleared&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)[</span><span class="s">&quot;Price&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cleared_fstack</span> <span class="o">=</span> <span class="n">fstack</span>
+        <span class="k">if</span> <span class="n">return_df</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fstack</span>
+
+
+
+</div>
+    <span class="k">def</span> <span class="nf">_stacker</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; General Stacker designed to handle all forms of</span>
+<span class="sd">        offer dataframe, energy, plsr, and IL</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="n">general_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s">&quot;Band&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+        <span class="n">band_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">general_columns</span><span class="p">]</span>
+        <span class="n">filterdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assign_band</span><span class="p">(</span><span class="n">band_columns</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">filterdict</span><span class="p">:</span>
+
+            <span class="n">all_cols</span> <span class="o">=</span> <span class="n">general_columns</span> <span class="o">+</span> <span class="n">filterdict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+
+            <span class="n">single</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="p">[</span><span class="n">all_cols</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="c"># Assign identifiers</span>
+            <span class="n">single</span><span class="p">[</span><span class="s">&quot;Product Type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">single</span><span class="p">[</span><span class="s">&quot;Reserve Type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">single</span><span class="p">[</span><span class="s">&quot;Band Number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+            <span class="n">single</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">filterdict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+                <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+            <span class="k">yield</span> <span class="n">single</span>
+
+
+    <span class="k">def</span> <span class="nf">_assign_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band_columns</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Figure out what type of columns they are from the bands</span>
+<span class="sd">        Should return a list of lists of the form</span>
+
+<span class="sd">        Product Type, Reserve Type, Band, Params*</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">filtered</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_columns</span><span class="p">:</span>
+            <span class="n">split</span> <span class="o">=</span> <span class="n">band</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+            <span class="n">band_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">4</span><span class="p">:])</span>
+            <span class="n">param</span> <span class="o">=</span> <span class="n">split</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">reserve_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reserve_type</span><span class="p">(</span><span class="n">band</span><span class="p">)</span>
+            <span class="n">product_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product_type</span><span class="p">(</span><span class="n">band</span><span class="p">)</span>
+
+            <span class="n">filtered</span><span class="p">[(</span><span class="n">product_type</span><span class="p">,</span> <span class="n">reserve_type</span><span class="p">,</span> <span class="n">band_number</span><span class="p">)][</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">band</span>
+
+        <span class="k">return</span> <span class="n">filtered</span>
+
+    <span class="k">def</span> <span class="nf">_reserve_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;FIR&quot;</span> <span class="k">if</span> <span class="s">&quot;6S&quot;</span> <span class="ow">in</span> <span class="n">band</span> <span class="k">else</span> <span class="s">&quot;SIR&quot;</span> <span class="k">if</span> <span class="s">&quot;60S&quot;</span> <span class="ow">in</span> <span class="n">band</span> <span class="k">else</span> <span class="s">&quot;Energy&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_product_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;PLSR&quot;</span> <span class="k">if</span> <span class="p">(</span>
+                <span class="s">&quot;Plsr&quot;</span> <span class="ow">in</span> <span class="n">band</span><span class="p">)</span> <span class="k">else</span> <span class="s">&quot;TWDSR&quot;</span> <span class="k">if</span> <span class="p">(</span>
+                <span class="s">&quot;Twdsr&quot;</span> <span class="ow">in</span> <span class="n">band</span><span class="p">)</span> <span class="k">else</span><span class="s">&quot;IL&quot;</span> <span class="k">if</span> <span class="p">(</span>
+                <span class="s">&quot;6S&quot;</span> <span class="ow">in</span> <span class="n">band</span> <span class="ow">or</span> <span class="s">&quot;60S&quot;</span> <span class="ow">in</span> <span class="n">band</span><span class="p">)</span> <span class="k">else</span> <span class="s">&quot;Energy&quot;</span>
+
+
+    <span class="k">def</span> <span class="nf">_retitle_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="o">.</span><span class="n">columns</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_map_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_map</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">left_on</span><span class="o">=</span><span class="s">&quot;Grid Exit Point&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s">&quot;Grid Exit Point&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map the location based upon the node.</span>
+<span class="sd">        Useful when looking at regional instances</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user_map</span><span class="p">:</span>
+            <span class="n">user_map</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;map-location&#39;</span><span class="p">])</span>
+            <span class="n">user_map</span> <span class="o">=</span> <span class="n">user_map</span><span class="p">[[</span><span class="s">&quot;Node&quot;</span><span class="p">,</span> <span class="s">&quot;Load Area&quot;</span><span class="p">,</span> <span class="s">&quot;Island Name&quot;</span><span class="p">]]</span>
+            <span class="n">user_map</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;Node&quot;</span><span class="p">:</span> <span class="s">&quot;Grid Exit Point&quot;</span><span class="p">,</span>
+                <span class="s">&quot;Load Area&quot;</span><span class="p">:</span> <span class="s">&quot;Region&quot;</span><span class="p">,</span> <span class="s">&quot;Island Name&quot;</span><span class="p">:</span> <span class="s">&quot;Island&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">offers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">user_map</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="n">left_on</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="n">right_on</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_convert_dates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date_col</span><span class="o">=</span><span class="s">&quot;Trading Date&quot;</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="p">[</span><span class="n">date_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="p">[</span><span class="n">date_col</span><span class="p">])</span>
+
+
+    <span class="k">def</span> <span class="nf">_apply_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date_col</span><span class="o">=</span><span class="s">&quot;Trading Date&quot;</span><span class="p">,</span>
+            <span class="n">period_col</span><span class="o">=</span><span class="s">&quot;Trading Period&quot;</span><span class="p">,</span> <span class="n">datetime_col</span><span class="o">=</span><span class="s">&quot;Trading Datetime&quot;</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="p">[</span><span class="n">datetime_col</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="p">[</span><span class="n">date_col</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="p">[</span><span class="n">period_col</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_period_minutes</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_period_minutes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">period</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">period</span><span class="p">)</span><span class="o">*</span><span class="mi">30</span> <span class="o">-</span><span class="mi">15</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_sort_offers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datetime_col</span><span class="o">=</span><span class="s">&quot;Trading Datetime&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offers</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">datetime_col</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+
+
+</div>
+<div class="viewcode-block" id="ILOffer"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.ILOffer">[docs]</a><span class="k">class</span> <span class="nc">ILOffer</span><span class="p">(</span><span class="n">Offer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ILOffer</span>
+<span class="sd">    ===========</span>
+
+<span class="sd">    Wrapper around an IL Offer dataframe which provides a number</span>
+<span class="sd">    of useful functions in assessing the Energy Offers.</span>
+<span class="sd">    Is created by passing a pandas DataFrame in the standard WITS</span>
+<span class="sd">    template and then modificiations are made from there</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offers</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ILOffer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">offers</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ILOffer.merge_stacked_offers"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.ILOffer.merge_stacked_offers">[docs]</a>    <span class="k">def</span> <span class="nf">merge_stacked_offers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plsr_offer</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stack_columns</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">plsr_offer</span><span class="o">.</span><span class="n">offer_stack</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+            <span class="n">plsr_offer</span><span class="o">.</span><span class="n">stack_columns</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">ReserveOffer</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span><span class="p">,</span>
+                    <span class="n">plsr_offer</span><span class="o">.</span><span class="n">offer_stack</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+
+
+</div></div>
+<div class="viewcode-block" id="PLSROffer"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.PLSROffer">[docs]</a><span class="k">class</span> <span class="nc">PLSROffer</span><span class="p">(</span><span class="n">Offer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    PLSROffer</span>
+<span class="sd">    ===========</span>
+
+<span class="sd">    Wrapper around an PLSR Offer dataframe which provides a number</span>
+<span class="sd">    of useful functions in assessing the Energy Offers.</span>
+<span class="sd">    Is created by passing a pandas DataFrame in the standard WITS</span>
+<span class="sd">    template and then modificiations are made from there</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offers</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PLSROffer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">offers</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PLSROffer.merge_stacked_offers"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.PLSROffer.merge_stacked_offers">[docs]</a>    <span class="k">def</span> <span class="nf">merge_stacked_offers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">il_offer</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stack_columns</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">il_offer</span><span class="o">.</span><span class="n">offer_stack</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+            <span class="n">il_offer</span><span class="o">.</span><span class="n">stack_columns</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">ReserveOffer</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span><span class="p">,</span>
+                    <span class="n">il_offer</span><span class="o">.</span><span class="n">offer_stack</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+
+
+</div></div>
+<div class="viewcode-block" id="ReserveOffer"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.ReserveOffer">[docs]</a><span class="k">class</span> <span class="nc">ReserveOffer</span><span class="p">(</span><span class="n">Offer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ReserveOffer</span>
+<span class="sd">    ============</span>
+
+<span class="sd">    Container for mixed PLSR, IL and TWDSR Offers.</span>
+<span class="sd">    Created by using the merge offers method of either the ILOffer</span>
+<span class="sd">    or PLSROffer classes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offers</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ReserveOffer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">offers</span><span class="p">,</span> <span class="n">run_operations</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="c"># Note, a raw Offer frame isn&#39;t passed, therefore manually add it</span>
+        <span class="c"># to the offer stack</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offer_stack</span> <span class="o">=</span> <span class="n">offers</span>
+
+</div>
+<div class="viewcode-block" id="EnergyOffer"><a class="viewcode-back" href="../../../nzem.offers.html#nzem.offers.offer_frames.EnergyOffer">[docs]</a><span class="k">class</span> <span class="nc">EnergyOffer</span><span class="p">(</span><span class="n">Offer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    EnergyOffer</span>
+<span class="sd">    ===========</span>
+
+<span class="sd">    Wrapper around an Energy Offer dataframe which provides a number</span>
+<span class="sd">    of useful functions in assessing the Energy Offers.</span>
+<span class="sd">    Is created by passing a pandas DataFrame in the standard WITS</span>
+<span class="sd">    template and then modificiations are made from there</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offers</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EnergyOffer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">offers</span><span class="p">)</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">nzem  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Author.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

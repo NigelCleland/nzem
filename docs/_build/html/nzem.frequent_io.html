@@ -1,0 +1,164 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>frequent_io Package &mdash; nzem  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="nzem  documentation" href="index.html" />
+    <link rel="up" title="nzem Package" href="nzem.html" />
+    <link rel="next" title="gnash Package" href="nzem.gnash.html" />
+    <link rel="prev" title="analysis Package" href="nzem.analysis.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nzem.gnash.html" title="gnash Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nzem.analysis.html" title="analysis Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">nzem  documentation</a> &raquo;</li>
+          <li><a href="nzem.html" accesskey="U">nzem Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="frequent-io-package">
+<h1>frequent_io Package<a class="headerlink" href="#frequent-io-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="data-import-module">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">data_import</span></tt> Module<a class="headerlink" href="#data-import-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-nzem.frequent_io.master_set">
+<span id="master-set-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">master_set</span></tt> Module<a class="headerlink" href="#module-nzem.frequent_io.master_set" title="Permalink to this headline">¶</a></h2>
+<p>Generic &#8220;Load All&#8221; function to make creating a merged dataset simpler
+when beginning a new analysis</p>
+<dl class="function">
+<dt id="nzem.frequent_io.master_set.columnise_energy_prices">
+<tt class="descclassname">nzem.frequent_io.master_set.</tt><tt class="descname">columnise_energy_prices</tt><big>(</big><em>df</em>, <em>island_split=True</em><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/master_set.html#columnise_energy_prices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.master_set.columnise_energy_prices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Columnise the energy price dataframe</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nzem.frequent_io.master_set.columnise_res_prices">
+<tt class="descclassname">nzem.frequent_io.master_set.</tt><tt class="descname">columnise_res_prices</tt><big>(</big><em>df</em>, <em>island_price=True</em>, <em>islandid='Island Id'</em>, <em>longname=False</em><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/master_set.html#columnise_res_prices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.master_set.columnise_res_prices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Columnise the reserve price dataframe</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nzem.frequent_io.master_set.load_masterset">
+<tt class="descclassname">nzem.frequent_io.master_set.</tt><tt class="descname">load_masterset</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/master_set.html#load_masterset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.master_set.load_masterset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a master dataset will return a merged DataFrame containing the
+following information time alligned:</p>
+<ol class="arabic simple">
+<li>Energy Prices (Five Nodes)</li>
+<li>Reserve Prices (Two Region, Two Type)</li>
+<li>Hydro Lake Storage</li>
+<li>Hydro Inflow Levels</li>
+<li>National Demand</li>
+</ol>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">frequent_io Package</a><ul>
+<li><a class="reference internal" href="#data-import-module"><tt class="docutils literal"><span class="pre">data_import</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-nzem.frequent_io.master_set"><tt class="docutils literal"><span class="pre">master_set</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="nzem.analysis.html"
+                        title="previous chapter">analysis Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="nzem.gnash.html"
+                        title="next chapter">gnash Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/nzem.frequent_io.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nzem.gnash.html" title="gnash Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nzem.analysis.html" title="analysis Package"
+             >previous</a> |</li>
+        <li><a href="index.html">nzem  documentation</a> &raquo;</li>
+          <li><a href="nzem.html" >nzem Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Author.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
