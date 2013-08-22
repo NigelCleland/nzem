@@ -9,11 +9,14 @@ from collections import defaultdict
 from pandas.tseries.offsets import Minute
 import datetime as dt
 from datetime import datetime, timedelta
-
+import simplejson as json
 
 sys.path.append(os.path.join(os.path.expanduser("~"),
                 'python', 'pdtools'))
 import pdtools
+
+CONFIG = json.load(open(os.path.join(os.path.expanduser('~/python/nzem/nzem'),
+                         'config.json')))
 
 class Offer(object):
     """docstring for Offer"""
@@ -101,7 +104,7 @@ class Offer(object):
         """
 
         if not user_map:
-            user_map = pd.read_csv('/home/nigel/data/maps/Nodal_Information.csv')
+            user_map = pd.read_csv(CONFIG['map-location'])
             user_map = user_map[["Node", "Load Area", "Island Name"]]
             user_map.rename(columns={"Node": "Grid Exit Point",
                 "Load Area": "Region", "Island Name": "Island"}, inplace=True)

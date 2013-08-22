@@ -12,5 +12,6 @@
         "offers": "Energy_Offers",
         "bids": "nodal_bids",
         "diffbids": "nodal_diffbids"
-  }
+  },
+  "map-location": "/home/nigel/data/maps/Nodal_Information.csv"
 }
