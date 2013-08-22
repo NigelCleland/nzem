@@ -79,6 +79,51 @@ class Offer(object):
             return fstack
 
 
+    def clear_offers(self, requirement, fstack=None, return_df=True):
+        """ Clear the offers against a requirement """
+
+        if not type(fstack) == pd.core.frame.DataFrame:
+            fstack = self.fstack.copy()
+
+        if len(fstack["Trading Datetime"].unique()) > 1:
+            raise ValueError("Filtered Dataset contains more than one\
+                              date, this invalidates the clearing")
+
+        if len(fstack["Reserve Type"].unique()) > 1:
+            raise ValueError("Filtered Dataset contains more than one\
+                              type of data, this invalidates the clearing")
+
+        # Drop the zero offers
+        fstack = fstack.gt_mask("Max", 0.0)
+        # Sort by price
+        fstack.sort(columns=["Price"], inplace=True)
+
+        # Reindex
+        fstack.index = np.arange(len(fstack))
+
+        # Cumulative Offers
+        fstack["Cumulative Offers"] = fstack["Max"].cumsum()
+
+        # Apply a cleared flag
+        marginal_unit = fstack.ge_mask("Cumulative Offers", requirement).index[0]
+        fstack["Cleared"] = False
+        fstack["Cleared"][:marginal_unit+1] = True
+
+        # Determine the dispatched quantity
+        fstack["Cleared Quantity"] = 0
+        fstack["Cleared Quantity"][:marginal_unit] = fstack["Max"][:marginal_unit]
+
+        # Special case for the marginal unit.
+        fstack["Cleared Quantity"][marginal_unit] = requirement - fstack["Max"][:marginal_unit].sum()
+
+        # Determine the dispatched price
+        fstack["Clearing Price"] = fstack.eq_mask("Cleared", True)["Price"].max()
+
+        self.cleared_fstack = fstack
+        if return_df:
+            return fstack
+
+
 
 
     def _stacker(self):
