@@ -8,7 +8,7 @@
     
     <title>offers Package &mdash; nzem 0.2.1 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -102,25 +102,25 @@ template and then modificiations are made from there</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>self.fstack: type pandas DataFrame</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>self.fstack</strong> : pandas DataFrame</p>
 <blockquote>
 <div><p>The filter query, must be for a single period and date</p>
 </div></blockquote>
-<p><strong>requirement: type float</strong> :</p>
+<p><strong>requirement</strong> : float</p>
 <blockquote>
 <div><p>The requirement for energy or reserve, must be a positive number</p>
 </div></blockquote>
-<p><strong>fstack: type pandas DataFrame, bool default None</strong> :</p>
+<p><strong>fstack</strong> : pandas DataFrame, bool default None</p>
 <blockquote>
 <div><p>Optional argument to not use the current query</p>
 </div></blockquote>
-<p><strong>return_df: type bool, default True</strong> :</p>
+<p><strong>return_df</strong> : bool, default True</p>
 <blockquote>
 <div><p>Return the DataFrame to the user, or keep as query</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>self.cleared_fstack: type pandas DataFrame</strong> :</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>self.cleared_fstack</strong> : pandas DataFrame</p>
 <blockquote class="last">
 <div><p>A DataFrame which has been cleared against the requirement</p>
 </div></blockquote>
@@ -139,57 +139,57 @@ subset of the data within it.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>self.offer_stack: type Pandas DataFrame</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>self.offer_stack</strong> : Pandas DataFrame</p>
 <blockquote>
 <div><p>Stacked data, if it does not exist it will be created</p>
 </div></blockquote>
-<p><strong>date: type str, bool default None</strong> :</p>
+<p><strong>date</strong> : str, bool default None</p>
 <blockquote>
 <div><p>The trading date to filter by</p>
 </div></blockquote>
-<p><strong>period: type str, bool default None</strong> :</p>
+<p><strong>period</strong> : str, bool default None</p>
 <blockquote>
 <div><p>The Trading Period to filter by</p>
 </div></blockquote>
-<p><strong>product_type: type str, bool default None</strong> :</p>
+<p><strong>product_type</strong> : str, bool default None</p>
 <blockquote>
 <div><p>Which product, IL, PLSR, TWDSR, Energy to filter by</p>
 </div></blockquote>
-<p><strong>reserve_type: type str, bool default None</strong> :</p>
+<p><strong>reserve_type</strong> : str, bool default None</p>
 <blockquote>
 <div><p>FIR, SIR or Energy, which reserve type to use</p>
 </div></blockquote>
-<p><strong>island: type str, bool default None</strong> :</p>
+<p><strong>island</strong> : str, bool default None</p>
 <blockquote>
 <div><p>Whether to filter by a specific Island e.g. (North Island)</p>
 </div></blockquote>
-<p><strong>company: type str, bool default None</strong> :</p>
+<p><strong>company</strong> : str, bool default None</p>
 <blockquote>
 <div><p>Filter a specific company (e.g. MRPL)</p>
 </div></blockquote>
-<p><strong>region: type str, bool, default None</strong> :</p>
+<p><strong>region</strong> : str, bool, default None</p>
 <blockquote>
 <div><p>Filter a specific region (e.g. Auckland)</p>
 </div></blockquote>
-<p><strong>station: type str, bool, default None</strong> :</p>
+<p><strong>station</strong> : str, bool, default None</p>
 <blockquote>
 <div><p>Which Station to filter, Generators optionally</p>
 </div></blockquote>
-<p><strong>non_zero: type bool, default False</strong> :</p>
+<p><strong>non_zero</strong> : bool, default False</p>
 <blockquote>
 <div><p>Return only non zero offers</p>
 </div></blockquote>
-<p><strong>return_df: type bool, default False</strong> :</p>
+<p><strong>return_df</strong> : bool, default False</p>
 <blockquote>
 <div><p>Return the filtered DataFrame as well as saving to latest query</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>fstack: type Pandas DataFrame</strong> :</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>fstack</strong> : Pandas DataFrame</p>
 <blockquote>
 <div><p>The filtered DataFrame</p>
 </div></blockquote>
-<p><strong>self.fstack: type Pandas DataFrame</strong> :</p>
+<p><strong>self.fstack</strong> : Pandas DataFrame</p>
 <blockquote class="last">
 <div><p>The filtered DataFrame applied to a class method</p>
 </div></blockquote>
@@ -210,7 +210,7 @@ is a python generator yielding stacked DataFrames.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>self.offer_stack: type Pandas DataFrame</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>self.offer_stack</strong> : type Pandas DataFrame</p>
 <blockquote class="last">
 <div><p>A DataFrame containing offer data with identifiers that has
 been stacked vertically</p>
