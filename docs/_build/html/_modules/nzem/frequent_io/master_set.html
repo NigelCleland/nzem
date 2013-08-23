@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>nzem.frequent_io.master_set &mdash; nzem 0.2.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="nzem 0.2.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">nzem 0.2.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for nzem.frequent_io.master_set</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot; Generic &quot;Load All&quot; function to make creating a merged dataset simpler</span>
+<span class="sd">when beginning a new analysis</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">nzem</span>
+
+<div class="viewcode-block" id="load_masterset"><a class="viewcode-back" href="../../../nzem.frequent_io.html#nzem.frequent_io.master_set.load_masterset">[docs]</a><span class="k">def</span> <span class="nf">load_masterset</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Load a master dataset will return a merged DataFrame containing the</span>
+<span class="sd">    following information time alligned:</span>
+<span class="sd">    </span>
+<span class="sd">    1. Energy Prices (Five Nodes)</span>
+<span class="sd">    2. Reserve Prices (Two Region, Two Type)</span>
+<span class="sd">    3. Hydro Lake Storage</span>
+<span class="sd">    4. Hydro Inflow Levels</span>
+<span class="sd">    5. National Demand</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c"># Apply the masks to the dataframes and series</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">apply_masks</span><span class="p">()</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">apply_series_masks</span><span class="p">()</span>
+    
+    <span class="c"># Load the five current datasets</span>
+    <span class="n">energy_prices</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">load_csvfile</span><span class="p">(</span><span class="s">&quot;Nodal_Pricing_Five_Node.csv&quot;</span><span class="p">,</span> 
+                                  <span class="n">date_period</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">reserve_prices</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">load_csvfile</span><span class="p">(</span><span class="s">&quot;reserve_prices.csv&quot;</span><span class="p">,</span>
+                                  <span class="n">trading_period_id</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">hydro_data</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">load_csvfile</span><span class="p">(</span><span class="s">&#39;hydro_data/Hydro_Lake_Data.csv&#39;</span><span class="p">,</span>
+                                   <span class="n">niwa_date</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">inflow_data</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">load_csvfile</span><span class="p">(</span><span class="s">&#39;hydro_data/Hydro_Inflow_Data.csv&#39;</span><span class="p">,</span>
+                                    <span class="n">niwa_date</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">demand_data</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">load_csvfile</span><span class="p">(</span><span class="s">&#39;island_demand_data.csv&#39;</span><span class="p">,</span> <span class="n">date_period</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    
+    <span class="c"># Columnise the price data</span>
+    <span class="n">all_res_prices</span> <span class="o">=</span> <span class="n">columnise_res_prices</span><span class="p">(</span><span class="n">reserve_prices</span><span class="p">)</span>
+    <span class="n">all_en_prices</span> <span class="o">=</span> <span class="n">columnise_energy_prices</span><span class="p">(</span><span class="n">energy_prices</span><span class="p">)</span>
+    
+    <span class="c"># Resample the hydro data</span>
+    <span class="n">hd</span> <span class="o">=</span> <span class="n">hydro_data</span><span class="p">[</span><span class="s">&quot;Daily Stored&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s">&#39;30Min&#39;</span><span class="p">,</span> <span class="n">fill_method</span><span class="o">=</span><span class="s">&#39;ffill&#39;</span><span class="p">)</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">inflow_data</span><span class="p">[</span><span class="s">&quot;Daily Inflow&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s">&#39;30Min&#39;</span><span class="p">,</span> <span class="n">fill_method</span><span class="o">=</span><span class="s">&#39;ffill&#39;</span><span class="p">)</span>
+    
+    <span class="c"># Nationalise the demand data</span>
+    <span class="n">nat_demand</span> <span class="o">=</span> <span class="n">demand_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">)[</span><span class="s">&quot;Demand Sum&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">nat_demand</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;National Demand&quot;</span>
+    
+    <span class="c"># Merge all of the datasets</span>
+    
+    <span class="n">md</span> <span class="o">=</span> <span class="n">all_en_prices</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">all_res_prices</span><span class="p">,</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">merge_dfseries</span><span class="p">(</span><span class="n">md</span><span class="p">,</span> <span class="n">hd</span><span class="p">,</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">merge_dfseries</span><span class="p">(</span><span class="n">md</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">merge_dfseries</span><span class="p">(</span><span class="n">md</span><span class="p">,</span> <span class="n">nat_demand</span><span class="p">,</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">md</span>
+</div>
+<div class="viewcode-block" id="columnise_res_prices"><a class="viewcode-back" href="../../../nzem.frequent_io.html#nzem.frequent_io.master_set.columnise_res_prices">[docs]</a><span class="k">def</span> <span class="nf">columnise_res_prices</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">island_price</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">islandid</span><span class="o">=</span><span class="s">&quot;Island Id&quot;</span><span class="p">,</span>
+    <span class="n">longname</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Columnise the reserve price dataframe</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">longname</span><span class="p">:</span>
+        <span class="n">ni</span> <span class="o">=</span> <span class="s">&quot;North Island&quot;</span>
+        <span class="n">si</span> <span class="o">=</span> <span class="s">&quot;South Island&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ni</span> <span class="o">=</span> <span class="s">&quot;NI&quot;</span>
+        <span class="n">si</span> <span class="o">=</span> <span class="s">&quot;SI&quot;</span>
+    
+    <span class="c"># Split them</span>
+    <span class="n">nif</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Reserve Type&quot;</span><span class="p">,</span> <span class="s">&quot;F&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="n">islandid</span><span class="p">,</span> <span class="n">ni</span><span class="p">)</span>
+    <span class="n">nis</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Reserve Type&quot;</span><span class="p">,</span> <span class="s">&quot;S&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="n">islandid</span><span class="p">,</span> <span class="n">ni</span><span class="p">)</span>
+    <span class="n">sif</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Reserve Type&quot;</span><span class="p">,</span> <span class="s">&quot;F&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="n">islandid</span><span class="p">,</span> <span class="n">si</span><span class="p">)</span>
+    <span class="n">sis</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Reserve Type&quot;</span><span class="p">,</span> <span class="s">&quot;S&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="n">islandid</span><span class="p">,</span> <span class="n">si</span><span class="p">)</span>
+    
+    <span class="c"># Rename columns</span>
+    <span class="n">nif</span> <span class="o">=</span> <span class="n">nif</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;Price Sum&quot;</span><span class="p">:</span> <span class="s">&quot;NI FIR Price&quot;</span><span class="p">})</span>
+    <span class="n">nis</span> <span class="o">=</span> <span class="n">nis</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;Price Sum&quot;</span><span class="p">:</span> <span class="s">&quot;NI SIR Price&quot;</span><span class="p">})</span>
+    <span class="n">sif</span> <span class="o">=</span> <span class="n">sif</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;Price Sum&quot;</span><span class="p">:</span> <span class="s">&quot;SI FIR Price&quot;</span><span class="p">})</span>
+    <span class="n">sis</span> <span class="o">=</span> <span class="n">sis</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;Price Sum&quot;</span><span class="p">:</span> <span class="s">&quot;SI SIR Price&quot;</span><span class="p">})</span>
+    
+    <span class="c"># Remerge them back together</span>
+    
+    <span class="n">mdf</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">merge_series</span><span class="p">(</span><span class="n">nif</span><span class="p">[</span><span class="s">&quot;NI FIR Price&quot;</span><span class="p">],</span> <span class="n">nis</span><span class="p">[</span><span class="s">&quot;NI SIR Price&quot;</span><span class="p">])</span>
+    <span class="n">mdf</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">merge_dfseries</span><span class="p">(</span><span class="n">mdf</span><span class="p">,</span> <span class="n">sif</span><span class="p">[</span><span class="s">&quot;SI FIR Price&quot;</span><span class="p">],</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">mdf</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">merge_dfseries</span><span class="p">(</span><span class="n">mdf</span><span class="p">,</span> <span class="n">sis</span><span class="p">[</span><span class="s">&quot;SI SIR Price&quot;</span><span class="p">],</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">island_price</span><span class="p">:</span>
+        <span class="n">mdf</span><span class="p">[</span><span class="s">&quot;NI Reserve Price&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mdf</span><span class="p">[</span><span class="s">&quot;NI FIR Price&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">mdf</span><span class="p">[</span><span class="s">&quot;NI SIR Price&quot;</span><span class="p">]</span>
+        <span class="n">mdf</span><span class="p">[</span><span class="s">&quot;SI Reserve Price&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mdf</span><span class="p">[</span><span class="s">&quot;SI FIR Price&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">mdf</span><span class="p">[</span><span class="s">&quot;SI SIR Price&quot;</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">mdf</span>
+    </div>
+<div class="viewcode-block" id="columnise_energy_prices"><a class="viewcode-back" href="../../../nzem.frequent_io.html#nzem.frequent_io.master_set.columnise_energy_prices">[docs]</a><span class="k">def</span> <span class="nf">columnise_energy_prices</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">island_split</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Columnise the energy price dataframe</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c"># Separate the columns</span>
+    <span class="n">hay</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Bus Id&quot;</span><span class="p">,</span> <span class="s">&quot;HAY2201&quot;</span><span class="p">)</span>
+    <span class="n">ben</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Bus Id&quot;</span><span class="p">,</span> <span class="s">&quot;BEN2201&quot;</span><span class="p">)</span>
+    <span class="n">sfd</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Bus Id&quot;</span><span class="p">,</span> <span class="s">&quot;SFD2201&quot;</span><span class="p">)</span>
+    <span class="n">hly</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Bus Id&quot;</span><span class="p">,</span> <span class="s">&quot;HLY2201&quot;</span><span class="p">)</span>
+    <span class="n">ota</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">eq_mask</span><span class="p">(</span><span class="s">&quot;Bus Id&quot;</span><span class="p">,</span> <span class="s">&quot;OTA2201&quot;</span><span class="p">)</span>
+    
+    <span class="c"># Rename the columns</span>
+    <span class="n">hay</span> <span class="o">=</span> <span class="n">hay</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;Price Sum&quot;</span><span class="p">:</span> <span class="s">&quot;HAY2201 Price&quot;</span><span class="p">})</span>
+    <span class="n">ben</span> <span class="o">=</span> <span class="n">ben</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;Price Sum&quot;</span><span class="p">:</span> <span class="s">&quot;BEN2201 Price&quot;</span><span class="p">})</span>
+    <span class="n">sfd</span> <span class="o">=</span> <span class="n">sfd</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;Price Sum&quot;</span><span class="p">:</span> <span class="s">&quot;SFD2201 Price&quot;</span><span class="p">})</span>
+    <span class="n">hly</span> <span class="o">=</span> <span class="n">hly</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;Price Sum&quot;</span><span class="p">:</span> <span class="s">&quot;HLY2201 Price&quot;</span><span class="p">})</span>
+    <span class="n">ota</span> <span class="o">=</span> <span class="n">ota</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;Price Sum&quot;</span><span class="p">:</span> <span class="s">&quot;OTA2201 Price&quot;</span><span class="p">})</span>
+    
+    <span class="c"># Remerge them</span>
+    <span class="n">mdf</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">merge_series</span><span class="p">(</span><span class="n">hay</span><span class="p">[</span><span class="s">&quot;HAY2201 Price&quot;</span><span class="p">],</span> <span class="n">ben</span><span class="p">[</span><span class="s">&quot;BEN2201 Price&quot;</span><span class="p">])</span>
+    <span class="n">mdf</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">merge_dfseries</span><span class="p">(</span><span class="n">mdf</span><span class="p">,</span> <span class="n">sfd</span><span class="p">[</span><span class="s">&quot;SFD2201 Price&quot;</span><span class="p">],</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">mdf</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">merge_dfseries</span><span class="p">(</span><span class="n">mdf</span><span class="p">,</span> <span class="n">hly</span><span class="p">[</span><span class="s">&quot;HLY2201 Price&quot;</span><span class="p">],</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">mdf</span> <span class="o">=</span> <span class="n">nzem</span><span class="o">.</span><span class="n">merge_dfseries</span><span class="p">(</span><span class="n">mdf</span><span class="p">,</span> <span class="n">ota</span><span class="p">[</span><span class="s">&quot;OTA2201 Price&quot;</span><span class="p">],</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">island_split</span><span class="p">:</span>
+        <span class="n">mdf</span><span class="p">[</span><span class="s">&quot;Island Price Split&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mdf</span><span class="p">[</span><span class="s">&quot;HAY2201 Price&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">mdf</span><span class="p">[</span><span class="s">&quot;BEN2201 Price&quot;</span><span class="p">]</span>
+        
+    <span class="k">return</span> <span class="n">mdf</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">nzem 0.2.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Author.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
