@@ -35,14 +35,14 @@ class Offer(object):
 
         Parameters
         ----------
-        offers: type Pandas DataFrame
+        offers : type Pandas DataFrame
             A Pandas DataFrame containing offer data
-        run_operations: type bool
+        run_operations : type bool
             Run the operations on the contained offers
 
         Returns
         -------
-        Offer: type Offer
+        Offer : type Offer
             A container around a Pandas DataFrame containing additional
             functionality
 
@@ -67,7 +67,7 @@ class Offer(object):
 
         Returns
         -------
-        self.offer_stack: type Pandas DataFrame
+        self.offer_stack : type Pandas DataFrame
             A DataFrame containing offer data with identifiers that has
             been stacked vertically
 
@@ -85,34 +85,34 @@ class Offer(object):
 
         Parameters
         ----------
-        self.offer_stack: type Pandas DataFrame
+        self.offer_stack : Pandas DataFrame
             Stacked data, if it does not exist it will be created
-        date: type str, bool default None
+        date : str, bool default None
             The trading date to filter by
-        period: type str, bool default None
+        period : str, bool default None
             The Trading Period to filter by
-        product_type: type str, bool default None
+        product_type : str, bool default None
             Which product, IL, PLSR, TWDSR, Energy to filter by
-        reserve_type: type str, bool default None
+        reserve_type : str, bool default None
             FIR, SIR or Energy, which reserve type to use
-        island: type str, bool default None
+        island : str, bool default None
             Whether to filter by a specific Island e.g. (North Island)
-        company: type str, bool default None
+        company : str, bool default None
             Filter a specific company (e.g. MRPL)
-        region: type str, bool, default None
+        region : str, bool, default None
             Filter a specific region (e.g. Auckland)
-        station: type str, bool, default None
+        station : str, bool, default None
             Which Station to filter, Generators optionally
-        non_zero: type bool, default False
+        non_zero : bool, default False
             Return only non zero offers
-        return_df: type bool, default False
+        return_df : bool, default False
             Return the filtered DataFrame as well as saving to latest query
 
         Returns
         -------
-        fstack: type Pandas DataFrame
+        fstack : Pandas DataFrame
             The filtered DataFrame
-        self.fstack: type Pandas DataFrame
+        self.fstack : Pandas DataFrame
             The filtered DataFrame applied to a class method
 
         """
@@ -161,18 +161,18 @@ class Offer(object):
 
         Parameters
         ----------
-        self.fstack: type pandas DataFrame
+        self.fstack : pandas DataFrame
             The filter query, must be for a single period and date
-        requirement: type float
+        requirement : float
             The requirement for energy or reserve, must be a positive number
-        fstack: type pandas DataFrame, bool default None
+        fstack : pandas DataFrame, bool default None
             Optional argument to not use the current query
-        return_df: type bool, default True
+        return_df : bool, default True
             Return the DataFrame to the user, or keep as query
 
         Returns
         -------
-        self.cleared_fstack: type pandas DataFrame
+        self.cleared_fstack : pandas DataFrame
             A DataFrame which has been cleared against the requirement
 
         """
