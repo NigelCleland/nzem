@@ -24,8 +24,11 @@ sys.path.append(os.path.join(os.path.expanduser("~"),
                 'python', 'pdtools'))
 import pdtools
 
-CONFIG = json.load(open(os.path.join(os.path.expanduser('~/python/nzem/nzem'),
-                         'config.json')))
+try:
+    CONFIG = json.load(open(os.path.join(
+        os.path.expanduser('~/python/nzem/nzem'), 'config.json')))
+except:
+    print "CONFIG File does not exist"
 
 class Offer(object):
     """The Master Offer Class"""

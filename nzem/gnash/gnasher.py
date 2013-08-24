@@ -28,11 +28,15 @@ if sys.platform.startswith("linux"):
 
 cwd = os.getcwd()
 
-CONFIG = json.load(open(os.path.join(os.path.expanduser('~/python/nzem/nzem'),
-                         'config.json')))
+try:
+    CONFIG = json.load(open(os.path.join(
+        os.path.expanduser('~/python/nzem/nzem'), 'config.json')))
+    gnash_path = CONFIG['gnash-path']
+except:
+    print "CONFIG File does not exist"
 
 # Set where your current Gnash directory is!
-gnash_path = CONFIG['gnash-path']
+
 
 
 class Gnasher(object):
