@@ -38,7 +38,7 @@ class Mock(object):
         else:
             return Mock()
 
-MOCK_MODULES = ['numpy', 'pandas', 'matplotlib', 'pytz', 'matplotlib.pyplot', 'pandas.io.sql', 'pandas.tseries.offsets']
+MOCK_MODULES = ['numpy', 'pandas', 'matplotlib', 'pytz', 'matplotlib.pyplot', 'pandas.io.sql', 'pandas.tseries.offsets', 'tseries', 'offsets', 'tseries.offsets', 'io', 'sql', 'io.sql', 'pyplot']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 
