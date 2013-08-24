@@ -7,6 +7,9 @@ https://github.com/ElectricityAuthority/EAtools
 Assumes you have the CDS extracted onto your computer
 """
 
+import os
+import sys
+import subprocess
 try:
     import pandas as pd
     import numpy as np
@@ -14,9 +17,6 @@ try:
     from datetime import date, datetime, time, timedelta
     import pandas.io.sql as sql
     #import pyodbc
-    import os
-    import sys
-    import subprocess
     from cStringIO import StringIO
     import time
     from pandas.tseries.offsets import Minute, Hour
