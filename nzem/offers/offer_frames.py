@@ -7,22 +7,25 @@ This master class contains the code necessary for the exposed subclasses
 to function.
 """
 
-# Import Modules
-import pandas as pd
-import numpy as np
-import sys
-import os
-import datetime as dt
-import simplejson as json
-from dateutil.parser import parse
-from collections import defaultdict
-from pandas.tseries.offsets import Minute
-from datetime import datetime, timedelta
+try:
+    # Import Modules
+    import pandas as pd
+    import numpy as np
+    import sys
+    import os
+    import datetime as dt
+    import simplejson as json
+    from dateutil.parser import parse
+    from collections import defaultdict
+    from pandas.tseries.offsets import Minute
+    from datetime import datetime, timedelta
 
 
-sys.path.append(os.path.join(os.path.expanduser("~"),
-                'python', 'pdtools'))
-import pdtools
+    sys.path.append(os.path.join(os.path.expanduser("~"),
+                    'python', 'pdtools'))
+    import pdtools
+except:
+    print "Imports failed"
 
 try:
     CONFIG = json.load(open(os.path.join(

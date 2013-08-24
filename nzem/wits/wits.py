@@ -14,23 +14,25 @@ This script provides the WitsScraper class which is a general purpose scraper
 intended to make interfacing with the WITS free to air site much nicer.
 """
 
-# Module Imports
-import pandas as pd
-import requests as rq
-import simplejson as json
-import os
-import urlparse
-import subprocess
-import sys
-import datetime
+try:
+    # Module Imports
+    import pandas as pd
+    import requests as rq
+    import simplejson as json
+    import os
+    import urlparse
+    import subprocess
+    import sys
+    import datetime
 
 
-# Secondary imports
-from bs4 import BeautifulSoup
-from collections import defaultdict
-from dateutil.parser import parse
-from datetime import timedelta
-
+    # Secondary imports
+    from bs4 import BeautifulSoup
+    from collections import defaultdict
+    from dateutil.parser import parse
+    from datetime import timedelta
+except:
+    print "Imports failed"
 # Load the master CONFIG json file
 try:
     CONFIG = json.load(open(os.path.join(

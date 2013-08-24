@@ -7,23 +7,25 @@ https://github.com/ElectricityAuthority/EAtools
 Assumes you have the CDS extracted onto your computer
 """
 
-import pandas as pd
-import numpy as np
-import datetime as dt
-from datetime import date, datetime, time, timedelta
-import pandas.io.sql as sql
-#import pyodbc
-import os
-import sys
-import subprocess
-from cStringIO import StringIO
-import time
-from pandas.tseries.offsets import Minute, Hour
-import simplejson as json
+try:
+    import pandas as pd
+    import numpy as np
+    import datetime as dt
+    from datetime import date, datetime, time, timedelta
+    import pandas.io.sql as sql
+    #import pyodbc
+    import os
+    import sys
+    import subprocess
+    from cStringIO import StringIO
+    import time
+    from pandas.tseries.offsets import Minute, Hour
+    import simplejson as json
 
-if sys.platform.startswith("linux"):
-   from sh import Command
-
+    if sys.platform.startswith("linux"):
+       from sh import Command
+except:
+    print "Imports failed"
 # Change to the gnash directory, assumes it is extracted in the user home path.
 
 cwd = os.getcwd()
