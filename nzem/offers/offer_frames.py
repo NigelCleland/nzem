@@ -7,25 +7,22 @@ This master class contains the code necessary for the exposed subclasses
 to function.
 """
 
-try:
-    # Import Modules
-    import pandas as pd
-    import numpy as np
-    import sys
-    import os
-    import datetime as dt
-    import simplejson as json
-    from dateutil.parser import parse
-    from collections import defaultdict
-    from pandas.tseries.offsets import Minute
-    from datetime import datetime, timedelta
+# Import Modules
+import pandas as pd
+import numpy as np
+import sys
+import os
+import datetime as dt
+import simplejson as json
+from dateutil.parser import parse
+from collections import defaultdict
+from pandas.tseries.offsets import Minute
+from datetime import datetime, timedelta
 
 
-    sys.path.append(os.path.join(os.path.expanduser("~"),
-                    'python', 'pdtools'))
-    import pdtools
-except:
-    print "Imports failed"
+sys.path.append(os.path.join(os.path.expanduser("~"),
+                'python', 'pdtools'))
+import pdtools
 
 try:
     CONFIG = json.load(open(os.path.join(
@@ -80,6 +77,50 @@ class Offer(object):
 
         """
         self.offer_stack = pd.concat(self._stacker(), ignore_index=True)
+
+
+    def filter_dates(self, begin_date=None, end_date=None,
+            horizontal=False, inplace=True, return_df=False):
+        """ Filter either the Offer DataFrame or Stacked Offer frame
+        between two dates.
+
+        Parameters
+        ----------
+
+        begin_date: str, datetime, default None
+            The first date to take, inclusive
+        end_date: str, datetime, default None
+            The last date to take, inclusive
+        horizontal: bool, default False
+            Whether to apply to the stacked offer frame or the horizontal offer frame
+        inplace: bool, default True
+            Overwrite the current offer with the new one
+        return_df: bool, default False
+            Return the filtered result to the user.
+
+        Returns
+        -------
+
+        offer: DataFrame
+            A subset of the initial offers for the date range specified.
+
+        """
+
+        if horizontal:
+            offers = self.offers
+        else:
+            offers = self.offer_stack
+
+        offers = offers.ge_mask("Trading Date", begin_date).le_mask("Trading Date", end_date)
+
+        if inplace:
+            if horizontal:
+                self.offers = offers
+            else:
+                self.offer_stack = offers
+
+        if return_df:
+            return offers
 
 
     def filter_stack(self, date=None, period=None, product_type=None,
@@ -334,6 +375,7 @@ class ILOffer(Offer):
     Is created by passing a pandas DataFrame in the standard WITS
     template and then modificiations are made from there
     """
+
     def __init__(self, offers):
         super(ILOffer, self).__init__(offers)
 

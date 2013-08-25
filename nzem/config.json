@@ -14,5 +14,8 @@
         "diffbids": "nodal_diffbids"
   },
   "map-location": "/home/nigel/data/maps/Nodal_Information.csv",
-  "gnash-path": "/home/nigel/CDS/CentralisedDataset/HalfHourly"
+  "gnash-path": "/home/nigel/CDS/CentralisedDataset/HalfHourly",
+  "il-file-location": "/home/nigel/data/il_data/monthly_files",
+  "plsr-file-location": "/home/nigel/data/il_data/monthly_files",
+  "energy-file-location": "/home/nigel/data/Energy_Offers"
 }
