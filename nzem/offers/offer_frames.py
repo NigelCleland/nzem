@@ -227,6 +227,7 @@ class Offer(object):
         if requirement < 0:
             raise ValueError("Requirement must be a positive number")
 
+
         if not type(fstack) == pd.core.frame.DataFrame:
             fstack = self.fstack.copy()
 
@@ -253,6 +254,10 @@ class Offer(object):
         marginal_unit = fstack.ge_mask("Cumulative Offers", requirement).index[0]
         fstack["Cleared"] = False
         fstack["Cleared"][:marginal_unit+1] = True
+
+        # Manual flagging if requirement = 0
+        if requirement == 0.:
+            fstack["Cleared"][0] = False
 
         # Determine the dispatched quantity
         fstack["Cleared Quantity"] = 0
