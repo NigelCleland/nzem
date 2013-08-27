@@ -7,25 +7,34 @@ This master class contains the code necessary for the exposed subclasses
 to function.
 """
 
-# Import Modules
-import pandas as pd
-import numpy as np
+# Standard Library
 import sys
 import os
 import datetime as dt
-import simplejson as json
 from dateutil.parser import parse
 from collections import defaultdict
-from pandas.tseries.offsets import Minute
 from datetime import datetime, timedelta
+
+# Non C Dependencies
+import simplejson as json
+
+# C Dependencies
+import pandas as pd
+import numpy as np
 
 
 sys.path.append(os.path.join(os.path.expanduser("~"),
                 'python', 'pdtools'))
-import pdtools
+try:
+    import pdtools
+except:
+    print "Failed to import pdtools"
 
-CONFIG = json.load(open(os.path.join(os.path.expanduser('~/python/nzem/nzem'),
-                         'config.json')))
+try:
+    CONFIG = json.load(open(os.path.join(
+        os.path.expanduser('~/python/nzem/nzem'), 'config.json')))
+except:
+    print "CONFIG File does not exist"
 
 class Offer(object):
     """The Master Offer Class"""
@@ -74,6 +83,50 @@ class Offer(object):
 
         """
         self.offer_stack = pd.concat(self._stacker(), ignore_index=True)
+
+
+    def filter_dates(self, begin_date=None, end_date=None,
+            horizontal=False, inplace=True, return_df=False):
+        """ Filter either the Offer DataFrame or Stacked Offer frame
+        between two dates.
+
+        Parameters
+        ----------
+
+        begin_date: str, datetime, default None
+            The first date to take, inclusive
+        end_date: str, datetime, default None
+            The last date to take, inclusive
+        horizontal: bool, default False
+            Whether to apply to the stacked offer frame or the horizontal offer frame
+        inplace: bool, default True
+            Overwrite the current offer with the new one
+        return_df: bool, default False
+            Return the filtered result to the user.
+
+        Returns
+        -------
+
+        offer: DataFrame
+            A subset of the initial offers for the date range specified.
+
+        """
+
+        if horizontal:
+            offers = self.offers
+        else:
+            offers = self.offer_stack
+
+        offers = offers.ge_mask("Trading Date", begin_date).le_mask("Trading Date", end_date)
+
+        if inplace:
+            if horizontal:
+                self.offers = offers
+            else:
+                self.offer_stack = offers
+
+        if return_df:
+            return offers
 
 
     def filter_stack(self, date=None, period=None, product_type=None,
@@ -180,6 +233,7 @@ class Offer(object):
         if requirement < 0:
             raise ValueError("Requirement must be a positive number")
 
+
         if not type(fstack) == pd.core.frame.DataFrame:
             fstack = self.fstack.copy()
 
@@ -190,6 +244,10 @@ class Offer(object):
         if len(fstack["Reserve Type"].unique()) > 1:
             raise ValueError("Filtered Dataset contains more than one\
                               type of data, this invalidates the clearing")
+
+        # Harsh stop if axis is of zero size
+        if len(fstack) == 0:
+            return None
 
         # Drop the zero offers
         fstack = fstack.gt_mask("Max", 0.0)
@@ -203,9 +261,20 @@ class Offer(object):
         fstack["Cumulative Offers"] = fstack["Max"].cumsum()
 
         # Apply a cleared flag
-        marginal_unit = fstack.ge_mask("Cumulative Offers", requirement).index[0]
+        if fstack["Cumulative Offers"].max() <= requirement:
+            try:
+                marginal_unit = fstack.ge_mask("Cumulative Offers", requirement).index[0]
+            except:
+                return None
+        else:
+
+            marginal_unit = fstack.index[-1]
         fstack["Cleared"] = False
         fstack["Cleared"][:marginal_unit+1] = True
+
+        # Manual flagging if requirement = 0
+        if requirement == 0.:
+            fstack["Cleared"][0] = False
 
         # Determine the dispatched quantity
         fstack["Cleared Quantity"] = 0
@@ -328,6 +397,7 @@ class ILOffer(Offer):
     Is created by passing a pandas DataFrame in the standard WITS
     template and then modificiations are made from there
     """
+
     def __init__(self, offers):
         super(ILOffer, self).__init__(offers)
 

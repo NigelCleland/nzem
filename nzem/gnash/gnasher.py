@@ -7,32 +7,44 @@ https://github.com/ElectricityAuthority/EAtools
 Assumes you have the CDS extracted onto your computer
 """
 
-import pandas as pd
-import numpy as np
-import datetime as dt
-from datetime import date, datetime, time, timedelta
-import pandas.io.sql as sql
-#import pyodbc
+# Standard Library
 import os
 import sys
 import subprocess
+import datetime as dt
+from datetime import date, datetime, time, timedelta
 from cStringIO import StringIO
 import time
-from pandas.tseries.offsets import Minute, Hour
-import simplejson as json
 
+# No C Depencency
+import simplejson as json
 if sys.platform.startswith("linux"):
-   from sh import Command
+    from sh import Command
+
+# C Depencencies
+import pandas as pd
+import numpy as np
+
+# Need to get rid of these...
+try:
+    import pandas.io.sql as sql
+    from pandas.tseries.offsets import Minute, Hour
+except:
+    print "Failed to import pandas modules, most likely in Read the Docs"
 
 # Change to the gnash directory, assumes it is extracted in the user home path.
 
 cwd = os.getcwd()
 
-CONFIG = json.load(open(os.path.join(os.path.expanduser('~/python/nzem/nzem'),
-                         'config.json')))
+try:
+    CONFIG = json.load(open(os.path.join(
+        os.path.expanduser('~/python/nzem/nzem'), 'config.json')))
+    gnash_path = CONFIG['gnash-path']
+except:
+    print "CONFIG File does not exist"
 
 # Set where your current Gnash directory is!
-gnash_path = CONFIG['gnash-path']
+
 
 
 class Gnasher(object):

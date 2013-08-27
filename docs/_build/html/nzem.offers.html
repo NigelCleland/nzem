@@ -131,6 +131,47 @@ template and then modificiations are made from there</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="nzem.offers.offer_frames.Offer.filter_dates">
+<tt class="descname">filter_dates</tt><big>(</big><em>begin_date=None</em>, <em>end_date=None</em>, <em>horizontal=False</em>, <em>inplace=True</em>, <em>return_df=False</em><big>)</big><a class="headerlink" href="#nzem.offers.offer_frames.Offer.filter_dates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter either the Offer DataFrame or Stacked Offer frame
+between two dates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>begin_date: str, datetime, default None</strong> :</p>
+<blockquote>
+<div><p>The first date to take, inclusive</p>
+</div></blockquote>
+<p><strong>end_date: str, datetime, default None</strong> :</p>
+<blockquote>
+<div><p>The last date to take, inclusive</p>
+</div></blockquote>
+<p><strong>horizontal: bool, default False</strong> :</p>
+<blockquote>
+<div><p>Whether to apply to the stacked offer frame or the horizontal offer frame</p>
+</div></blockquote>
+<p><strong>inplace: bool, default True</strong> :</p>
+<blockquote>
+<div><p>Overwrite the current offer with the new one</p>
+</div></blockquote>
+<p><strong>return_df: bool, default False</strong> :</p>
+<blockquote>
+<div><p>Return the filtered result to the user.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>offer: DataFrame</strong> :</p>
+<blockquote class="last">
+<div><p>A subset of the initial offers for the date range specified.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="nzem.offers.offer_frames.Offer.filter_stack">
 <tt class="descname">filter_stack</tt><big>(</big><em>date=None</em>, <em>period=None</em>, <em>product_type=None</em>, <em>reserve_type=None</em>, <em>island=None</em>, <em>company=None</em>, <em>region=None</em>, <em>station=None</em>, <em>non_zero=False</em>, <em>return_df=False</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#Offer.filter_stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.Offer.filter_stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Filter a vertically stacked offer dataframe to obtain a

@@ -10,17 +10,20 @@ e) Create a database from scratch
 
 """
 
-# Module Imports
-import pandas as pd
-#import psycopg2 as psy
+# Standard Library
 import os
 from datetime import datetime, timedelta
-from dateutil.parser import parse
-from pandas.tseries.offsets import Minute
-import nzem
-#from nzem.utilities.utilities import niwa_parse
 import glob
+import nzem
+from dateutil.parser import parse
 
+# C Dependency
+import pandas as pd
+
+try:
+    from pandas.tseries.offsets import Minute
+except:
+    print  "Imports failed, most likely because you're in Read the Docs mode"
 ### Globals
 
 NZEM_DATA_FOLDER = os.path.join(os.path.expanduser('~'), "data")

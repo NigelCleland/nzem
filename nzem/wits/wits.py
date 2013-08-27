@@ -14,26 +14,31 @@ This script provides the WitsScraper class which is a general purpose scraper
 intended to make interfacing with the WITS free to air site much nicer.
 """
 
-# Module Imports
-import pandas as pd
-import requests as rq
-import simplejson as json
+# Standard Library
 import os
 import urlparse
 import subprocess
 import sys
 import datetime
-
-
-# Secondary imports
-from bs4 import BeautifulSoup
 from collections import defaultdict
 from dateutil.parser import parse
-from datetime import timedelta
+
+# Non C Dependency
+import requests as rq
+import simplejson as json
+from bs4 import BeautifulSoup
+
+# C Depencency
+import pandas as pd
 
 # Load the master CONFIG json file
-CONFIG = json.load(open(os.path.join(os.path.expanduser('~/python/nzem/nzem'),
-                         'config.json')))
+try:
+    CONFIG = json.load(open(os.path.join(
+        os.path.expanduser('~/python/nzem/nzem'), 'config.json')))
+    gnash_path = CONFIG['gnash-path']
+except:
+    print "CONFIG File does not exist"
+
 
 class WitsScraper:
 
@@ -176,19 +181,19 @@ class WitsScraper:
         -------
         output_name: The name of the extracted file created by 7z
         """
-        
+
         directory = os.path.split(file_name)[0]
         output_filename = os.path.splitext(os.path.split(file_name)[1])[0]
         outdir = '-o%s' % directory
         output_name = os.path.join(directory, output_filename)
-        s = subprocess.call(['7z', 'e', '-y', outdir, file_name], stderr=subprocess.STDOUT, 
+        s = subprocess.call(['7z', 'e', '-y', outdir, file_name], stderr=subprocess.STDOUT,
                         stdout=subprocess.PIPE)
 
         if delete_original:
             os.remove(file_name)
 
         if output:
-            print "Successfully extracted %s to %s" % (file_name, 
+            print "Successfully extracted %s to %s" % (file_name,
                                                        output_name)
             if delete_original:
                 print "Successfully deleted %s" % file_name
@@ -200,7 +205,7 @@ class WitsScraper:
         """ Find the file(s) which contain the beginning and end date within them
         Return the file for a specific product as required, else return
         a dictionary with lists containing the output.
-        
+
         Parameters
         ----------
         product: The product to be filtered (if any)
@@ -226,23 +231,23 @@ class WitsScraper:
 
         # Try the current files first
         if self._match_true(begin_str, current) and self._match_true(end_str, current):
-            dates = [d.strftime("%Y%m%d") for d in pd.date_range(begin_date, 
+            dates = [d.strftime("%Y%m%d") for d in pd.date_range(begin_date,
                                                                  end_date)]
 
-            search_results = [self._match_iterables(item, current) 
+            search_results = [self._match_iterables(item, current)
                               for item in dates]
 
         # See if it partially matches historic, partially matches current
         elif self._match_true(end_str, current) and not self._match_true(begin_str, current):
-            
-            daily_dates = [d.strftime("%Y%m%d") for d in pd.date_range(begin_date, 
+
+            daily_dates = [d.strftime("%Y%m%d") for d in pd.date_range(begin_date,
                                                                  end_date)]
             monthly_dates = [d.strftime("%Y%m") for d in pd.date_range(
-                                                    begin_date, 
-                                                    end_date + timedelta(days=31), 
+                                                    begin_date,
+                                                    end_date + datetime.timedelta(days=31),
                                                     freq="M", normalize=True)]
 
-            daily_results = [self._match_iterables(item, current) 
+            daily_results = [self._match_iterables(item, current)
                               for item in daily_dates]
             monthly_results = [self._match_iterables(item, historic) for item in
                                 monthly_dates]
@@ -252,8 +257,8 @@ class WitsScraper:
         # Scrape the historic files
         elif begin_str not in current and end_str not in current:
             month_dates = [d.strftime("%Y%m") for d in pd.date_range(
-                                                    begin_date, 
-                                                    end_date + timedelta(days=31), 
+                                                    begin_date,
+                                                    end_date + datetime.timedelta(days=31),
                                                     freq="M", normalize=True)]
 
             search_results = [self._match_iterables(item, historic) for item in
@@ -266,7 +271,7 @@ class WitsScraper:
         return search_results
 
     def _download_search(self, directory, search_results=None, extract=True):
-        
+
         if search_results == None:
             try:
                 search_results = self.search_results
@@ -290,7 +295,7 @@ class WitsScraper:
 
 
     #### Assistance and helper functions
-    
+
     def _match_iterables(self, item, iterable):
         """ Return the string in the iterable which matches the item """
         for it in iterable:
@@ -306,7 +311,7 @@ class WitsScraper:
 
 
     def _parse_to_datetime(self, dt):
-        """ Simple function to parse the datetime if it is not already a 
+        """ Simple function to parse the datetime if it is not already a
         datetime
         """
         if type(dt) != datetime.datetime:
@@ -327,7 +332,7 @@ class WitsScraper:
         """ Return a number of requests text chunks, this is to ensure
         that the scraper does not error before reaching the end.
         Quite a strange bug really...
-        
+
         Parameters
         ----------
         rtext: The requests text to be chunked (not this is typically a string)
@@ -367,7 +372,6 @@ class WitsScraper:
 
 
 
-    
 
 
 
@@ -378,4 +382,5 @@ class WitsScraper:
 
 
 
-    
+
+
