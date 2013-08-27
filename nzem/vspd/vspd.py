@@ -347,9 +347,10 @@ class vSPUD(object):
         return res_results
 
 
-    def _calculate_differentials(self, other, left_name="Control",
+    def calculate_differentials(self, other, left_name="Control",
                            right_name="Override", diff_name="Difference",
-                           diff_only=False, calc_type="reserve_results"):
+                           diff_only=False, calc_type="reserve_results",
+                           method="Subtract"):
         """ Determine the reserve comparison report for two vSPD iterations
 
         Parameters
@@ -391,6 +392,7 @@ class vSPUD(object):
             self.reserve_procurement(overwrite_results=True)
             other.reserve_procurement(overwrite_results=True)
 
+        # Use dictionaries to make these calculations general purpose
         indices = indice_dict[calc_type]
         left = self.__dict__[calc_type].copy()
         right = other.__dict__[calc_type].copy()
@@ -409,7 +411,7 @@ class vSPUD(object):
         for col in compare_columns:
             self._differential(combined, col, left_name=left_name,
                     right_name=right_name, diff_name=diff_name,
-                    method="Subtract")
+                    method=method)
 
         if diff_only:
             cols = indices + [x for x in combined.columns if diff_name in x]
