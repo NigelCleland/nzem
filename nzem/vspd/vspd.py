@@ -86,6 +86,56 @@ class vSPUD(object):
                 system_results=None, bus_results=None, reserve_results=None,
                 trader_results=None, offer_results=None, branch_results=None,
                  **kargs):
+        """ Initialise a blank vSPUD object. It is intended to pass either:
+        a) a folder containing vSPD results
+        b) At least one of the *_results etc as a DataFrame
+
+        if a folder is passed it will over write any other DataFrames passed.
+
+        Usage:
+        ------
+
+        >>>> # Using from a folder
+        >>>> A = vSPUD(folder=str, reserve=True, island=True)
+        >>>> # DataFrames loads for reserve and island
+        >>>> type(A.reserve_results) == DataFrame
+        >>>> type(A.island_results) == DataFrame
+        >>>> # All others are false
+        >>>> type(A.bus_results) == None
+        >>>> # Passing DataFrames
+        >>>> B = vSPUD(island_results=df)
+        >>>> type(B.island_results) == DataFrame
+        >>>> type(B.reserve_results) == None
+
+        Parameters
+        ----------
+
+        folder: str, default None, optional
+            A string which contains the absolute path to a folder of vSPD
+            results. Used in conjunction with **kargs.
+        **kargs: dict, optional
+            Optional key word arguments to pass to the _load_data function
+            when initialising the vSPUD object from a folder
+
+        island_results: DataFrame, default None, optional
+        summary_results: DataFrame, default None, optional
+        system_results: DataFrame, default None, optional
+        bus_results: DataFrame, default None, optional
+        reserve_results: DataFrame, default None, optional
+        trader_results: DataFrame, default None, optional
+        offer_results: DataFrame, default None, optional
+        branch_results: DataFrame, default None, optional
+
+        Returns
+        -------
+
+        vSPUD object: class
+            A vSPUD object with information as defined by the Keyword arugments
+            If a folder is passed the DataFrames can be fine tuned by passing
+            a keyword arguement as according to the _load_data method.
+
+        """
+
         super(vSPUD, self).__init__()
 
         self.island_results = island_results
