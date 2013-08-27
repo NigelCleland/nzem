@@ -229,6 +229,48 @@ class vSPUD(object):
             self._load_data(**kargs)
 
 
+    def price_report(self):
+        """ Create a brief aggregation of the Reference Energy
+        and Reserve prices as well as the reference price differentials
+
+        Parameters
+        ----------
+        self.island_results: DataFrame
+            DataFrame of the Island Results
+
+        Returns
+        -------
+        price_report: DataFrame
+            DataFrame containing basic price information with precompiled
+            aggregations
+
+        Usage
+        -----
+        >>>>preport = spud.price_report()
+        >>>>preport.head()
+
+        """
+
+        ni_prices = self.island_results[self.island_results["Island"] == "NI"]
+        si_prices = self.island_results[self.island_results["Island"] == "SI"]
+
+        columns = ["ReferencePrice ($/MWh)", "FIR Price ($/MWh)", "SIR Price ($/MWh)"]
+
+        nip = ni_prices[["DateTime"] + columns].copy()
+        sip = si_prices[["DateTime"] + columns].copy()
+
+        nip.rename(columns={x: " ".join(["NI", x]) for x in columns}, inplace=True)
+        sip.rename(columns={x: " ".join(["SI", x]) for x in columns}, inplace=True)
+
+        price_report = nip.merge(sip, left_on="DateTime", right_on="DateTime")
+
+        price_report["Island Price Difference ($/MWh)"] = price_report["NI ReferencePrice ($/MWh)"] - price_report["SI ReferencePrice ($/MWh)"]
+
+        price_report["NI Reserve Price ($/MWh)"] = price_report["NI FIR Price ($/MWh)"] + price_report["NI SIR Price ($/MWh)"]
+        price_report["SI Reserve Price ($/MWh)"] = price_report["SI FIR Price ($/MWh)"] + price_report["SI SIR Price ($/MWh)"]
+
+        return price_report
+
     def reserve_procurement(self, overwrite_results=False, apply_time=False,
                             aggregation=None, agg_func=np.sum, **kargs):
         """ Calculate the reserve procurement costs and apply an optional
