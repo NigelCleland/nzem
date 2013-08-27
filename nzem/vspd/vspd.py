@@ -17,7 +17,7 @@ import numpy as np
 
 class vSPUD_Factory(object):
     """docstring for ClassName"""
-    def __init__(self, master_folder, pattern=None):
+    def __init__(self, master_folder, patterns=None):
         """Initialise a vSPUD factory by passing a maser folder
         as well as a directory which contains vSPD sub directories.
         Can optionally pass a pattern to match on the sub directories
@@ -51,11 +51,13 @@ class vSPUD_Factory(object):
         super(vSPUD_Factory, self).__init__()
 
         self.master_folder = master_folder
-        self.pattern = pattern
-        self.sub_folders = glob.glob(os.path.join(master_folder, '*'))
-        self.sub_folders = [x for x in self.sub_folders if os.path.isdir(x)]
-        if pattern:
-            self.sub_folders = [x for x in self.sub_folders if pattern in x]
+        self.patterns = patterns
+        # Recursively walk the directories, this handles a nested structure
+        # if necessary to the factory operation
+        self.sub_folders = [dire for (dire, subdir,
+                files) in os.walk(master_folder) if files]
+        if patterns:
+            self.match_pattern(patterns=patterns)
 
 
     def match_pattern(self, patterns):
@@ -83,7 +85,8 @@ class vSPUD_Factory(object):
         subfolders = [x for x in folders if self._matcher(x, patterns)]
         self.sub_folders = subfolders
 
-    def _matcher(a, p):
+
+    def _matcher(self, a, p):
         for b in p:
             if b not in a:
                 return False
