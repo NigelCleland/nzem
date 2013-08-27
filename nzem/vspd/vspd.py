@@ -347,8 +347,9 @@ class vSPUD(object):
         return res_results
 
 
-    def _reserve_differentials_calculations(self, other, left_name="Control",
-                           right_name="Override", diff_name="Difference"):
+    def _calculate_differentials(self, other, left_name="Control",
+                           right_name="Override", diff_name="Difference",
+                           diff_only=False, calc_type="reserve_results"):
         """ Determine the reserve comparison report for two vSPD iterations
 
         Parameters
@@ -361,6 +362,15 @@ class vSPUD(object):
             Identifying name to apply to the original vSPUD object
         right_name: string, default "Override"
             Identifying name to apply to the second vSPUD object
+        diff_name: string, default "Difference"
+            Identifying name to apply to the difference
+        diff_only: bool, default False
+            If True, return only the resulting columns
+        calc_type: string, default "reserve_results"
+            String to indicate which type of calculation should be made:
+            Implemented so far: ("reserve_results", "island_results",
+                "trader_results", "offer_results", "branch_results",
+                "bus_results")
 
         Returns
         -------
@@ -369,32 +379,41 @@ class vSPUD(object):
 
         """
 
-        indices = ["DateTime", "Island"]
+        indice_dict = {"trader_results": ["Date", "Trader"],
+                       "reserve_results": ["DateTime", "Island"],
+                       "island_results": ["DateTime", "Island"],
+                       "offer_results": ["DateTime", "Offer"],
+                       "branch_results": ["DateTime", "Branch", "FromBus", "ToBus"],
+                       "bus_results": ["DateTime", "Bus"]
+                       }
 
-        # Calculate procurement
-        left = self.reserve_procurement()
-        right = other.reserve_procurement()
+        if calc_type == "reserve_results":
+            self.reserve_procurement(overwrite_results=True)
+            other.reserve_procurement(overwrite_results=True)
+
+        indices = indice_dict[calc_type]
+        left = self.__dict__[calc_type].copy()
+        right = other.__dict__[calc_type].copy()
 
         col_names = left.columns.tolist()
+        compare_columns = [x for x in col_names if self._invmatcher(x,indices)]
 
         left.rename(columns={x: ' '.join([x, left_name]) for
-                    x in col_names if self._invmatcher(x, indices)},
-                    inplace=True)
+                    x in compare_columns}, inplace=True)
 
         right.rename(columns={x: ' '.join([x, right_name]) for
-                    x in col_names if self._invmatcher(x, indices)},
-                    inplace=True)
-
+                    x in compare_columns}, inplace=True)
 
         combined = left.merge(right, left_on=indices, right_on=indices)
-
-        # Grab the columns to compare
-        compare_columns = [x for x in col_names if "IR" in x and not "Violation" in x]
 
         for col in compare_columns:
             self._differential(combined, col, left_name=left_name,
                     right_name=right_name, diff_name=diff_name,
                     method="Subtract")
+
+        if diff_only:
+            cols = indices + [x for x in combined.columns if diff_name in x]
+            combined = combined[cols].copy()
 
         return combined
 
@@ -514,6 +533,22 @@ class vSPUD(object):
 
         return df
 
+
+def setup_vspd():
+    folder = '/home/nigel/data/Pole_Three_Sample_Data'
+
+    CFact = vSPUD_Factory(folder, "Control")
+    OFact = vSPUD_Factory(folder, "Override")
+
+    spud1 = CFact.load_results(island_results=True, summary_results=True,
+                system_results=True, bus_results=True, reserve_results=True,
+                trader_results=True, offer_results=True, branch_results=True)
+
+    spud2 = OFact.load_results(island_results=True, summary_results=True,
+                system_results=True, bus_results=True, reserve_results=True,
+                trader_results=True, offer_results=True, branch_results=True)
+
+    return spud1, spud2
 
 if __name__ == '__main__':
     pass
