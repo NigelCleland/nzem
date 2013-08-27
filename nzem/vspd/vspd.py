@@ -18,7 +18,38 @@ import numpy as np
 class vSPUD_Factory(object):
     """docstring for ClassName"""
     def __init__(self, master_folder, pattern=None):
+        """Initialise a vSPUD factory by passing a maser folder
+        as well as a directory which contains vSPD sub directories.
+        Can optionally pass a pattern to match on the sub directories
+
+        Usage
+        -----
+
+        >>>> # Assume that the folder has sub directories with format
+        >>>> # FP_yyyymmdd_identifier
+        >>>> # To get all of 2009, January you could pass
+        >>>> Factory = vSPUD_Factory(folder, pattern="200901")
+        >>>> # To get all of a particular type
+        >>>> Factory = vSPUD_Factory(folder, pattern="identifier_one")
+
+        Parameters
+        ----------
+
+        master_folder: string
+            An absolute path to a master folder for the vSPD results directory
+        pattern: string, default None, optional
+            An optional string to match the sub folders on
+
+
+        Returns
+        -------
+
+        vSPUD_Factory: class
+            A factory for creating vSPUD objects from the directories
+        """
+
         super(vSPUD_Factory, self).__init__()
+
         self.master_folder = master_folder
         self.pattern = pattern
         self.sub_folders = glob.glob(os.path.join(master_folder, '*'))
@@ -30,8 +61,29 @@ class vSPUD_Factory(object):
     def load_results(self, island_results=None, summary_results=None,
                 system_results=None, bus_results=None, reserve_results=None,
                 trader_results=None, offer_results=None, branch_results=None):
-        """
-        Load all of the reserve results
+        """ Load vSPUD objects with information from the folders as
+        specified by the key word arguments above.
+
+        Parameters
+        ----------
+
+        island_results: bool, default None, optional
+        summary_results: bool, default None, optional
+        system_results: bool, default None, optional
+        bus_results: bool, default None, optional
+        reserve_results: bool, default None, optional
+        trader_results: bool, default None, optional
+        offer_results: bool, default None, optional
+        branch_results: bool, default None, optional
+
+        Returns
+        -------
+
+        vSPUD: class
+            A vSPUD object with information as defined by the Keyword arugments
+            If a folder is passed the DataFrames can be fine tuned by passing
+            a keyword arguement as according to the _load_data method.
+
         """
 
         if reserve_results:
@@ -181,7 +233,7 @@ class vSPUD(object):
         """
 
         folder_contents = glob.glob(os.path.join(self.folder, '*.csv'))
-        folder_dict = {os.path.splitext(os.path.basename(v))[0].split('_')[1]: v for v in folder_contents}
+        folder_dict = {os.path.basename(v).split('_')[1]: v for v in folder_contents}
 
         # Load the data
         if island:
@@ -189,13 +241,13 @@ class vSPUD(object):
         if summary:
             self.summary_results = pd.read_csv(folder_dict["SummaryResults"], parse_dates=True)
         if system:
-            self.system_results = pd.read_csv(folder_dict["SystemResults"], parse_dates=True)
+            self.system_results = pd.read_csv(folder_dict["SystemResults.csv"], parse_dates=True)
         if bus:
             self.bus_results = pd.read_csv(folder_dict["BusResults"], parse_dates=True)
         if reserve:
             self.reserve_results = pd.read_csv(folder_dict["ReserveResults"], parse_dates=True)
         if trader:
-            self.trader_results = pd.read_csv(folder_dict["TraderResults"], parse_dates=True)
+            self.trader_results = pd.read_csv(folder_dict["TraderResults.csv"], parse_dates=True)
         if node:
             self.node_results = pd.read_csv(folder_dict["NodeResults"], parse_dates=True)
         if offer:
