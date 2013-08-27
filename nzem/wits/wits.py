@@ -14,25 +14,23 @@ This script provides the WitsScraper class which is a general purpose scraper
 intended to make interfacing with the WITS free to air site much nicer.
 """
 
-try:
-    # Module Imports
-    import pandas as pd
-    import requests as rq
-    import simplejson as json
-    import os
-    import urlparse
-    import subprocess
-    import sys
-    import datetime
+# Standard Library
+import os
+import urlparse
+import subprocess
+import sys
+import datetime
+from collections import defaultdict
+from dateutil.parser import parse
 
+# Non C Dependency
+import requests as rq
+import simplejson as json
+from bs4 import BeautifulSoup
 
-    # Secondary imports
-    from bs4 import BeautifulSoup
-    from collections import defaultdict
-    from dateutil.parser import parse
-    from datetime import timedelta
-except:
-    print "Imports failed"
+# C Depencency
+import pandas as pd
+
 # Load the master CONFIG json file
 try:
     CONFIG = json.load(open(os.path.join(
@@ -246,7 +244,7 @@ class WitsScraper:
                                                                  end_date)]
             monthly_dates = [d.strftime("%Y%m") for d in pd.date_range(
                                                     begin_date,
-                                                    end_date + timedelta(days=31),
+                                                    end_date + datetime.timedelta(days=31),
                                                     freq="M", normalize=True)]
 
             daily_results = [self._match_iterables(item, current)
@@ -260,7 +258,7 @@ class WitsScraper:
         elif begin_str not in current and end_str not in current:
             month_dates = [d.strftime("%Y%m") for d in pd.date_range(
                                                     begin_date,
-                                                    end_date + timedelta(days=31),
+                                                    end_date + datetime.timedelta(days=31),
                                                     freq="M", normalize=True)]
 
             search_results = [self._match_iterables(item, historic) for item in

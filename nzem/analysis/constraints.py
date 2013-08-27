@@ -1,12 +1,16 @@
 """
 Determine whether constraints are active for a particular trading period
 """
+
+# C dependencies
+
+import pandas as pd
+import numpy as np
+
 try:
-    import pandas as pd
     import matplotlib.pyplot as plt
-    import numpy as np
 except:
-    print "Imports failed"
+    print "Import failed, most likely because you're in Docs mode"
 
 def HVDC_Constraint(series, energy_price_send="", energy_price_receive="",
                     res_price="", abs_tol=None, rel_tol=None, min_split=10):
