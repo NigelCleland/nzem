@@ -58,6 +58,39 @@ class vSPUD_Factory(object):
             self.sub_folders = [x for x in self.sub_folders if pattern in x]
 
 
+    def match_pattern(self, patterns):
+        """
+        Apply a new pattern to the directory structure
+
+        Parameters
+        ----------
+
+        patterns: iterable
+            Pass an iterable of patterns (an iterable of one is okay)
+            to match the sub folders against
+
+        Returns
+        -------
+
+        self.sub_folders: iterable
+            Sub folders containing the vSPD files to load within the
+            factory
+
+        """
+
+        folders = glob.glob(os.path.join(self.master_folder, '*'))
+        folders = [x for x in folders if os.path.isdir(x)]
+        subfolders = [x for x in folders if self._matcher(x, patterns)]
+        self.sub_folders = subfolders
+
+    def _matcher(a, p):
+        for b in p:
+            if b not in a:
+                return False
+        return True
+
+
+
     def load_results(self, island_results=None, summary_results=None,
                 system_results=None, bus_results=None, reserve_results=None,
                 trader_results=None, offer_results=None, branch_results=None):
