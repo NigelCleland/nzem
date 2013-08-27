@@ -362,18 +362,41 @@ class vSPUD(object):
         return res_results
 
 
-    def _apply_time_filters(self, df, DateTime="DateTime", period=True,
-                           day=True, month=True, year=True, inplace=True,
-                           month_year=True, dayofyear=True):
+    def _apply_time_filters(self, df, DateTime="DateTime", period=False,
+                           day=False, month=False, year=False, inplace=False,
+                           month_year=False, dayofyear=False):
         """ Apply a number of time aggregations to the DataFrame for latter
-        groupby operations
+        groupby operations. All arguments are initially set to False to improve
+        speed on some of the aggregation queries. Do not ish to aggregate
+        more than necessary for a result which will be discarded
 
         Parameters
         ----------
 
+        df: DataFrame
+            DataFrame to apply the time aggregations to
+        DateTime: string, default "DateTime"
+            column name of the Datetime objects in the DataFrame
+        period: bool, default False
+            Apply the Trading Period Aggregations
+        day: bool, default False
+            Apply date aggregations
+        month: bool, default False
+            Apply a Month aggregation
+        year: bool, default False
+            Apply a year filter
+        month_year: bool, default False
+            Filter by Month and Year, defaults to first day of month
+        dayofyear: bool, default False
+            Filter by day of the year, e.g. Day 323 of the year
+        inplace: bool, default False
+            Modify the current DataFrame in place if True, else make a copy
+
         Returns
         -------
-
+        df: DataFrame
+            A DataFrame containing the original data as well as the user
+            defined filters as desired
         """
 
         if not inplace:
