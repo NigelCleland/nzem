@@ -24,7 +24,6 @@ class vSPUD_Factory(object):
 
         Usage
         -----
-
         >>>> # Assume that the folder has sub directories with format
         >>>> # FP_yyyymmdd_identifier
         >>>> # To get all of 2009, January you could pass
@@ -34,7 +33,6 @@ class vSPUD_Factory(object):
 
         Parameters
         ----------
-
         master_folder: string
             An absolute path to a master folder for the vSPD results directory
         pattern: string, default None, optional
@@ -43,7 +41,6 @@ class vSPUD_Factory(object):
 
         Returns
         -------
-
         vSPUD_Factory: class
             A factory for creating vSPUD objects from the directories
         """
@@ -66,14 +63,12 @@ class vSPUD_Factory(object):
 
         Parameters
         ----------
-
         patterns: iterable
             Pass an iterable of patterns (an iterable of one is okay)
             to match the sub folders against
 
         Returns
         -------
-
         self.sub_folders: iterable
             Sub folders containing the vSPD files to load within the
             factory
@@ -102,7 +97,6 @@ class vSPUD_Factory(object):
 
         Parameters
         ----------
-
         island_results: bool, default None, optional
         summary_results: bool, default None, optional
         system_results: bool, default None, optional
@@ -114,7 +108,6 @@ class vSPUD_Factory(object):
 
         Returns
         -------
-
         vSPUD: class
             A vSPUD object with information as defined by the Keyword arugments
             If a folder is passed the DataFrames can be fine tuned by passing
@@ -182,7 +175,6 @@ class vSPUD(object):
 
         Usage:
         ------
-
         >>>> # Using from a folder
         >>>> A = vSPUD(folder=str, reserve=True, island=True)
         >>>> # DataFrames loads for reserve and island
@@ -197,7 +189,6 @@ class vSPUD(object):
 
         Parameters
         ----------
-
         folder: str, default None, optional
             A string which contains the absolute path to a folder of vSPD
             results. Used in conjunction with **kargs.
@@ -216,7 +207,6 @@ class vSPUD(object):
 
         Returns
         -------
-
         vSPUD object: class
             A vSPUD object with information as defined by the Keyword arugments
             If a folder is passed the DataFrames can be fine tuned by passing
@@ -251,13 +241,11 @@ class vSPUD(object):
 
         Parameters
         ----------
-
         self.folder : str
             The folder which contains the vSPD results to assess
 
         Returns
         -------
-
         self.island_results: DataFrame
         self.summary_results: DataFrame
         self.system_results: DataFrame
@@ -300,7 +288,6 @@ class vSPUD(object):
 
         Parameters
         ----------
-
         self.reserve_results: DataFrame
             The reserve results by trading periods
         overwrite_results: bool, default False, optional
@@ -326,7 +313,6 @@ class vSPUD(object):
 
         Usage
         -----
-
         >>>> SPUD_Example.reserve_procurement(apply_time=True,
                         aggregation=["Island", "Month_Year"],
                         agg_func=None, month_year=True)
@@ -372,7 +358,6 @@ class vSPUD(object):
 
         Parameters
         ----------
-
         df: DataFrame
             DataFrame to apply the time aggregations to
         DateTime: string, default "DateTime"
