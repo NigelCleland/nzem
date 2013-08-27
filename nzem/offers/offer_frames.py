@@ -7,18 +7,20 @@ This master class contains the code necessary for the exposed subclasses
 to function.
 """
 
-# Import Modules
-import pandas as pd
-import numpy as np
+# Standard Library
 import sys
 import os
 import datetime as dt
-import simplejson as json
 from dateutil.parser import parse
 from collections import defaultdict
-from pandas.tseries.offsets import Minute
 from datetime import datetime, timedelta
 
+# Non C Dependencies
+import simplejson as json
+
+# C Dependencies
+import pandas as pd
+import numpy as np
 
 sys.path.append(os.path.join(os.path.expanduser("~"),
                 'python', 'pdtools'))

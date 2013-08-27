@@ -2,17 +2,19 @@
 Offer Input Output
 """
 
-
-
-import simplejson as json
+# Standard Library
 import glob
 import os
-import pandas as pd
 import datetime
+from dateutil.parser import parse
+
+# Non C dependency
+import simplejson as json
+
+# C Depencency
+import pandas as pd
 
 from nzem import ILOffer, PLSROffer, EnergyOffer
-
-from dateutil.parser import parse
 
 try:
     CONFIG = json.load(open(os.path.join(
