@@ -293,6 +293,46 @@ class vSPUD(object):
 
     def reserve_procurement(self, overwrite_results=False, apply_time=False,
                             aggregation=None, agg_func=np.sum, **kargs):
+        """ Calculate the reserve procurement costs and apply an optional
+        aggregation to the calculated result. This aggregation can be general,
+        and is applied to a groupby function as specified by a list containing
+        the aggregation columns.
+
+        Parameters
+        ----------
+
+        self.reserve_results: DataFrame
+            The reserve results by trading periods
+        overwrite_results: bool, default False, optional
+            Whether to overwrite the original reserve_results DataFrame with
+            one containing the procurement information
+        apply_time: bool, default False, optional
+            Apply the time aggregations if needed with details specified in
+            **kargs
+        **kargs: booleans,
+            What optional time aggregation values to apply, defaults to all
+            aggregations.
+        aggregation: list, default None, optional
+            A list of columns to aggregate the procurement by
+        agg_func: function, default np.sum
+            Aggregation function to apply to the result, must take many an
+            array and return a single value
+
+        Returns
+        -------
+        res_results: DataFrame
+            A DataFrame containing the reserve procurement information
+            with any aggregations applied
+
+        Usage
+        -----
+
+        >>>> SPUD_Example.reserve_procurement(apply_time=True,
+                        aggregation=["Island", "Month_Year"],
+                        agg_func=None, month_year=True)
+        >>>> # Returns procurement costs aggregated by month of year and island
+        >>>> # For both FIR and SIR
+        """
 
         if not self.reserve_results:
             raise ValueError("You must have created a vSPUD instance \
@@ -315,7 +355,9 @@ class vSPUD(object):
             self.reserve_results = res_results
 
         if aggregation:
-            res_results = res_results.groupby(aggregation)["FIR Procurement ($)", "SIR Procurement ($)"].aggregate(agg_func)
+            res_results = res_results.groupby(aggregation)[
+                "FIR Procurement ($)",
+                "SIR Procurement ($)"].aggregate(agg_func)
 
         return res_results
 
