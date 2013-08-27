@@ -239,6 +239,10 @@ class Offer(object):
             raise ValueError("Filtered Dataset contains more than one\
                               type of data, this invalidates the clearing")
 
+        # Harsh stop if axis is of zero size
+        if len(fstack) == 0:
+            return None
+
         # Drop the zero offers
         fstack = fstack.gt_mask("Max", 0.0)
         # Sort by price
@@ -251,7 +255,14 @@ class Offer(object):
         fstack["Cumulative Offers"] = fstack["Max"].cumsum()
 
         # Apply a cleared flag
-        marginal_unit = fstack.ge_mask("Cumulative Offers", requirement).index[0]
+        if fstack["Cumulative Offers"].max() <= requirement:
+            try:
+                marginal_unit = fstack.ge_mask("Cumulative Offers", requirement).index[0]
+            except:
+                return None
+        else:
+
+            marginal_unit = fstack.index[-1]
         fstack["Cleared"] = False
         fstack["Cleared"][:marginal_unit+1] = True
 
