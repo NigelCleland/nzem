@@ -22,9 +22,13 @@ import simplejson as json
 import pandas as pd
 import numpy as np
 
+
 sys.path.append(os.path.join(os.path.expanduser("~"),
                 'python', 'pdtools'))
-import pdtools
+try:
+    import pdtools
+except:
+    print "Failed to import pdtools"
 
 try:
     CONFIG = json.load(open(os.path.join(

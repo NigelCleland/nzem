@@ -15,7 +15,7 @@ import os
 from datetime import datetime, timedelta
 import glob
 import nzem
-from dateutil.parser impor parse
+from dateutil.parser import parse
 
 # C Dependency
 import pandas as pd

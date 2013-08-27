@@ -36,6 +36,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="nzem.wits.html" title="wits Package"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -53,8 +56,238 @@
             
   <div class="section" id="offers-package">
 <h1>offers Package<a class="headerlink" href="#offers-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="offer-frames-module">
-<h2><tt class="xref py py-mod docutils literal"><span class="pre">offer_frames</span></tt> Module<a class="headerlink" href="#offer-frames-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-nzem.offers.offer_frames">
+<span id="offer-frames-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">offer_frames</span></tt> Module<a class="headerlink" href="#module-nzem.offers.offer_frames" title="Permalink to this headline">¶</a></h2>
+<p>A collection of classes to make working with energy and reserve offers
+from the New Zealand Electricity Market a bit more painless.</p>
+<p>Contains a master class, Offer, which publically exposed subclasses
+inherit from.
+This master class contains the code necessary for the exposed subclasses
+to function.</p>
+<dl class="class">
+<dt id="nzem.offers.offer_frames.EnergyOffer">
+<em class="property">class </em><tt class="descclassname">nzem.offers.offer_frames.</tt><tt class="descname">EnergyOffer</tt><big>(</big><em>offers</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#EnergyOffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.EnergyOffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nzem.offers.offer_frames.Offer" title="nzem.offers.offer_frames.Offer"><tt class="xref py py-class docutils literal"><span class="pre">nzem.offers.offer_frames.Offer</span></tt></a></p>
+<p>Wrapper around an Energy Offer dataframe which provides a number
+of useful functions in assessing the Energy Offers.
+Is created by passing a pandas DataFrame in the standard WITS
+template and then modificiations are made from there</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nzem.offers.offer_frames.ILOffer">
+<em class="property">class </em><tt class="descclassname">nzem.offers.offer_frames.</tt><tt class="descname">ILOffer</tt><big>(</big><em>offers</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#ILOffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.ILOffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nzem.offers.offer_frames.Offer" title="nzem.offers.offer_frames.Offer"><tt class="xref py py-class docutils literal"><span class="pre">nzem.offers.offer_frames.Offer</span></tt></a></p>
+<p>Wrapper around an IL Offer dataframe which provides a number
+of useful functions in assessing the Energy Offers.
+Is created by passing a pandas DataFrame in the standard WITS
+template and then modificiations are made from there</p>
+<dl class="method">
+<dt id="nzem.offers.offer_frames.ILOffer.merge_stacked_offers">
+<tt class="descname">merge_stacked_offers</tt><big>(</big><em>plsr_offer</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#ILOffer.merge_stacked_offers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.ILOffer.merge_stacked_offers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nzem.offers.offer_frames.Offer">
+<em class="property">class </em><tt class="descclassname">nzem.offers.offer_frames.</tt><tt class="descname">Offer</tt><big>(</big><em>offers</em>, <em>run_operations=True</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#Offer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.Offer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>The Master Offer Class</p>
+<dl class="method">
+<dt id="nzem.offers.offer_frames.Offer.clear_offers">
+<tt class="descname">clear_offers</tt><big>(</big><em>requirement</em>, <em>fstack=None</em>, <em>return_df=True</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#Offer.clear_offers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.Offer.clear_offers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the offer stack against a requirement</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>self.fstack</strong> : pandas DataFrame</p>
+<blockquote>
+<div><p>The filter query, must be for a single period and date</p>
+</div></blockquote>
+<p><strong>requirement</strong> : float</p>
+<blockquote>
+<div><p>The requirement for energy or reserve, must be a positive number</p>
+</div></blockquote>
+<p><strong>fstack</strong> : pandas DataFrame, bool default None</p>
+<blockquote>
+<div><p>Optional argument to not use the current query</p>
+</div></blockquote>
+<p><strong>return_df</strong> : bool, default True</p>
+<blockquote>
+<div><p>Return the DataFrame to the user, or keep as query</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>self.cleared_fstack</strong> : pandas DataFrame</p>
+<blockquote class="last">
+<div><p>A DataFrame which has been cleared against the requirement</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nzem.offers.offer_frames.Offer.filter_dates">
+<tt class="descname">filter_dates</tt><big>(</big><em>begin_date=None</em>, <em>end_date=None</em>, <em>horizontal=False</em>, <em>inplace=True</em>, <em>return_df=False</em><big>)</big><a class="headerlink" href="#nzem.offers.offer_frames.Offer.filter_dates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter either the Offer DataFrame or Stacked Offer frame
+between two dates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>begin_date: str, datetime, default None</strong> :</p>
+<blockquote>
+<div><p>The first date to take, inclusive</p>
+</div></blockquote>
+<p><strong>end_date: str, datetime, default None</strong> :</p>
+<blockquote>
+<div><p>The last date to take, inclusive</p>
+</div></blockquote>
+<p><strong>horizontal: bool, default False</strong> :</p>
+<blockquote>
+<div><p>Whether to apply to the stacked offer frame or the horizontal offer frame</p>
+</div></blockquote>
+<p><strong>inplace: bool, default True</strong> :</p>
+<blockquote>
+<div><p>Overwrite the current offer with the new one</p>
+</div></blockquote>
+<p><strong>return_df: bool, default False</strong> :</p>
+<blockquote>
+<div><p>Return the filtered result to the user.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>offer: DataFrame</strong> :</p>
+<blockquote class="last">
+<div><p>A subset of the initial offers for the date range specified.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nzem.offers.offer_frames.Offer.filter_stack">
+<tt class="descname">filter_stack</tt><big>(</big><em>date=None</em>, <em>period=None</em>, <em>product_type=None</em>, <em>reserve_type=None</em>, <em>island=None</em>, <em>company=None</em>, <em>region=None</em>, <em>station=None</em>, <em>non_zero=False</em>, <em>return_df=False</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#Offer.filter_stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.Offer.filter_stack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter a vertically stacked offer dataframe to obtain a
+subset of the data within it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>self.offer_stack</strong> : Pandas DataFrame</p>
+<blockquote>
+<div><p>Stacked data, if it does not exist it will be created</p>
+</div></blockquote>
+<p><strong>date</strong> : str, bool default None</p>
+<blockquote>
+<div><p>The trading date to filter by</p>
+</div></blockquote>
+<p><strong>period</strong> : str, bool default None</p>
+<blockquote>
+<div><p>The Trading Period to filter by</p>
+</div></blockquote>
+<p><strong>product_type</strong> : str, bool default None</p>
+<blockquote>
+<div><p>Which product, IL, PLSR, TWDSR, Energy to filter by</p>
+</div></blockquote>
+<p><strong>reserve_type</strong> : str, bool default None</p>
+<blockquote>
+<div><p>FIR, SIR or Energy, which reserve type to use</p>
+</div></blockquote>
+<p><strong>island</strong> : str, bool default None</p>
+<blockquote>
+<div><p>Whether to filter by a specific Island e.g. (North Island)</p>
+</div></blockquote>
+<p><strong>company</strong> : str, bool default None</p>
+<blockquote>
+<div><p>Filter a specific company (e.g. MRPL)</p>
+</div></blockquote>
+<p><strong>region</strong> : str, bool, default None</p>
+<blockquote>
+<div><p>Filter a specific region (e.g. Auckland)</p>
+</div></blockquote>
+<p><strong>station</strong> : str, bool, default None</p>
+<blockquote>
+<div><p>Which Station to filter, Generators optionally</p>
+</div></blockquote>
+<p><strong>non_zero</strong> : bool, default False</p>
+<blockquote>
+<div><p>Return only non zero offers</p>
+</div></blockquote>
+<p><strong>return_df</strong> : bool, default False</p>
+<blockquote>
+<div><p>Return the filtered DataFrame as well as saving to latest query</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>fstack</strong> : Pandas DataFrame</p>
+<blockquote>
+<div><p>The filtered DataFrame</p>
+</div></blockquote>
+<p><strong>self.fstack</strong> : Pandas DataFrame</p>
+<blockquote class="last">
+<div><p>The filtered DataFrame applied to a class method</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nzem.offers.offer_frames.Offer.stack_columns">
+<tt class="descname">stack_columns</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#Offer.stack_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.Offer.stack_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stack a horizontal dataframe into a vertical configuration to
+improve functionality</p>
+<p>Exists as an exposed wrapper around the _stacker() class which
+is a python generator yielding stacked DataFrames.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>self.offer_stack</strong> : type Pandas DataFrame</p>
+<blockquote class="last">
+<div><p>A DataFrame containing offer data with identifiers that has
+been stacked vertically</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nzem.offers.offer_frames.PLSROffer">
+<em class="property">class </em><tt class="descclassname">nzem.offers.offer_frames.</tt><tt class="descname">PLSROffer</tt><big>(</big><em>offers</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#PLSROffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.PLSROffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nzem.offers.offer_frames.Offer" title="nzem.offers.offer_frames.Offer"><tt class="xref py py-class docutils literal"><span class="pre">nzem.offers.offer_frames.Offer</span></tt></a></p>
+<p>Wrapper around an PLSR Offer dataframe which provides a number
+of useful functions in assessing the Energy Offers.
+Is created by passing a pandas DataFrame in the standard WITS
+template and then modificiations are made from there</p>
+<dl class="method">
+<dt id="nzem.offers.offer_frames.PLSROffer.merge_stacked_offers">
+<tt class="descname">merge_stacked_offers</tt><big>(</big><em>il_offer</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#PLSROffer.merge_stacked_offers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.PLSROffer.merge_stacked_offers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nzem.offers.offer_frames.ReserveOffer">
+<em class="property">class </em><tt class="descclassname">nzem.offers.offer_frames.</tt><tt class="descname">ReserveOffer</tt><big>(</big><em>offers</em><big>)</big><a class="reference internal" href="_modules/nzem/offers/offer_frames.html#ReserveOffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.offers.offer_frames.ReserveOffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nzem.offers.offer_frames.Offer" title="nzem.offers.offer_frames.Offer"><tt class="xref py py-class docutils literal"><span class="pre">nzem.offers.offer_frames.Offer</span></tt></a></p>
+<p>Container for mixed PLSR, IL and TWDSR Offers.
+Created by using the merge offers method of either the ILOffer
+or PLSROffer classes.</p>
+</dd></dl>
+
 </div>
 </div>
 
@@ -67,7 +300,7 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">offers Package</a><ul>
-<li><a class="reference internal" href="#offer-frames-module"><tt class="docutils literal"><span class="pre">offer_frames</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-nzem.offers.offer_frames"><tt class="docutils literal"><span class="pre">offer_frames</span></tt> Module</a></li>
 </ul>
 </li>
 </ul>
@@ -106,6 +339,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="nzem.wits.html" title="wits Package"
              >next</a> |</li>
