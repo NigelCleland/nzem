@@ -229,55 +229,6 @@ class vSPUD(object):
             self._load_data(**kargs)
 
 
-    def _load_data(self, island=False, summary=False, system=False,
-        bus=False, reserve=False, trader=False, offer=False, branch=False,
-        node=False):
-        """
-        Load all of the vSPD data from the given folder.
-        If possible pass the folder as an absolute path to minimise issues.
-        It is called once on initiation of the class
-
-        Parameters
-        ----------
-        self.folder : str
-            The folder which contains the vSPD results to assess
-
-        Returns
-        -------
-        self.island_results: DataFrame
-        self.summary_results: DataFrame
-        self.system_results: DataFrame
-        self.bus_results: DataFrame
-        self.reserve_results: DataFrame
-        self.trader_results: DataFrame
-        self.offer_results: DataFrame
-        self.branch_results: DataFrame
-        """
-
-        folder_contents = glob.glob(os.path.join(self.folder, '*.csv'))
-        folder_dict = {os.path.basename(v).split('_')[1]: v for v in folder_contents}
-
-        # Load the data
-        if island:
-            self.island_results = pd.read_csv(folder_dict["IslandResults"])
-        if summary:
-            self.summary_results = pd.read_csv(folder_dict["SummaryResults"])
-        if system:
-            self.system_results = pd.read_csv(folder_dict["SystemResults.csv"])
-        if bus:
-            self.bus_results = pd.read_csv(folder_dict["BusResults"])
-        if reserve:
-            self.reserve_results = pd.read_csv(folder_dict["ReserveResults"])
-        if trader:
-            self.trader_results = pd.read_csv(folder_dict["TraderResults.csv"])
-        if node:
-            self.node_results = pd.read_csv(folder_dict["NodeResults"])
-        if offer:
-            self.offer_results = pd.read_csv(folder_dict["OfferResults"])
-        if branch:
-            self.branch_results = pd.read_csv(folder_dict["BranchResults"])
-
-
     def reserve_procurement(self, overwrite_results=False, apply_time=False,
                             aggregation=None, agg_func=np.sum, **kargs):
         """ Calculate the reserve procurement costs and apply an optional
@@ -534,6 +485,55 @@ class vSPUD(object):
             df["Period"] = df[DateTime].apply(lambda x: x.hour * 2 + 1 + x.minute / 30)
 
         return df
+
+
+    def _load_data(self, island=False, summary=False, system=False,
+        bus=False, reserve=False, trader=False, offer=False, branch=False,
+        node=False):
+        """
+        Load all of the vSPD data from the given folder.
+        If possible pass the folder as an absolute path to minimise issues.
+        It is called once on initiation of the class
+
+        Parameters
+        ----------
+        self.folder : str
+            The folder which contains the vSPD results to assess
+
+        Returns
+        -------
+        self.island_results: DataFrame
+        self.summary_results: DataFrame
+        self.system_results: DataFrame
+        self.bus_results: DataFrame
+        self.reserve_results: DataFrame
+        self.trader_results: DataFrame
+        self.offer_results: DataFrame
+        self.branch_results: DataFrame
+        """
+
+        folder_contents = glob.glob(os.path.join(self.folder, '*.csv'))
+        folder_dict = {os.path.basename(v).split('_')[1]: v for v in folder_contents}
+
+        # Load the data
+        if island:
+            self.island_results = pd.read_csv(folder_dict["IslandResults"])
+        if summary:
+            self.summary_results = pd.read_csv(folder_dict["SummaryResults"])
+        if system:
+            self.system_results = pd.read_csv(folder_dict["SystemResults.csv"])
+        if bus:
+            self.bus_results = pd.read_csv(folder_dict["BusResults"])
+        if reserve:
+            self.reserve_results = pd.read_csv(folder_dict["ReserveResults"])
+        if trader:
+            self.trader_results = pd.read_csv(folder_dict["TraderResults.csv"])
+        if node:
+            self.node_results = pd.read_csv(folder_dict["NodeResults"])
+        if offer:
+            self.offer_results = pd.read_csv(folder_dict["OfferResults"])
+        if branch:
+            self.branch_results = pd.read_csv(folder_dict["BranchResults"])
 
 
 def setup_vspd():
