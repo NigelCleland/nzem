@@ -15,6 +15,7 @@ import numpy as np
 
 # Import nzem
 
+
 class vSPUD_Factory(object):
     """docstring for ClassName"""
     def __init__(self, master_folder, patterns=None):
@@ -24,7 +25,6 @@ class vSPUD_Factory(object):
 
         Usage
         -----
-
         >>>> # Assume that the folder has sub directories with format
         >>>> # FP_yyyymmdd_identifier
         >>>> # To get all of 2009, January you could pass
@@ -34,7 +34,6 @@ class vSPUD_Factory(object):
 
         Parameters
         ----------
-
         master_folder: string
             An absolute path to a master folder for the vSPD results directory
         pattern: string, default None, optional
@@ -43,7 +42,6 @@ class vSPUD_Factory(object):
 
         Returns
         -------
-
         vSPUD_Factory: class
             A factory for creating vSPUD objects from the directories
         """
@@ -55,7 +53,7 @@ class vSPUD_Factory(object):
         # Recursively walk the directories, this handles a nested structure
         # if necessary to the factory operation
         self.sub_folders = [dire for (dire, subdir,
-                files) in os.walk(master_folder) if files]
+                files) in os.walk(master_folder) if files and '.csv' in files[0]]
         if patterns:
             self.match_pattern(patterns=patterns)
 
@@ -66,14 +64,12 @@ class vSPUD_Factory(object):
 
         Parameters
         ----------
-
         patterns: iterable
             Pass an iterable of patterns (an iterable of one is okay)
             to match the sub folders against
 
         Returns
         -------
-
         self.sub_folders: iterable
             Sub folders containing the vSPD files to load within the
             factory
@@ -93,7 +89,6 @@ class vSPUD_Factory(object):
         return True
 
 
-
     def load_results(self, island_results=None, summary_results=None,
                 system_results=None, bus_results=None, reserve_results=None,
                 trader_results=None, offer_results=None, branch_results=None):
@@ -102,7 +97,6 @@ class vSPUD_Factory(object):
 
         Parameters
         ----------
-
         island_results: bool, default None, optional
         summary_results: bool, default None, optional
         system_results: bool, default None, optional
@@ -114,7 +108,6 @@ class vSPUD_Factory(object):
 
         Returns
         -------
-
         vSPUD: class
             A vSPUD object with information as defined by the Keyword arugments
             If a folder is passed the DataFrames can be fine tuned by passing
@@ -167,7 +160,6 @@ class vSPUD_Factory(object):
             yield vSPUD(folder, **kargs)
 
 
-
 class vSPUD(object):
     """docstring for vSPUD"""
     def __init__(self, folder=None, island_results=None, summary_results=None,
@@ -182,7 +174,6 @@ class vSPUD(object):
 
         Usage:
         ------
-
         >>>> # Using from a folder
         >>>> A = vSPUD(folder=str, reserve=True, island=True)
         >>>> # DataFrames loads for reserve and island
@@ -197,7 +188,6 @@ class vSPUD(object):
 
         Parameters
         ----------
-
         folder: str, default None, optional
             A string which contains the absolute path to a folder of vSPD
             results. Used in conjunction with **kargs.
@@ -216,7 +206,6 @@ class vSPUD(object):
 
         Returns
         -------
-
         vSPUD object: class
             A vSPUD object with information as defined by the Keyword arugments
             If a folder is passed the DataFrames can be fine tuned by passing
@@ -240,7 +229,6 @@ class vSPUD(object):
             self._load_data(**kargs)
 
 
-
     def _load_data(self, island=False, summary=False, system=False,
         bus=False, reserve=False, trader=False, offer=False, branch=False,
         node=False):
@@ -251,13 +239,11 @@ class vSPUD(object):
 
         Parameters
         ----------
-
         self.folder : str
             The folder which contains the vSPD results to assess
 
         Returns
         -------
-
         self.island_results: DataFrame
         self.summary_results: DataFrame
         self.system_results: DataFrame
@@ -291,6 +277,7 @@ class vSPUD(object):
         if branch:
             self.branch_results = pd.read_csv(folder_dict["BranchResults"])
 
+
     def reserve_procurement(self, overwrite_results=False, apply_time=False,
                             aggregation=None, agg_func=np.sum, **kargs):
         """ Calculate the reserve procurement costs and apply an optional
@@ -300,7 +287,6 @@ class vSPUD(object):
 
         Parameters
         ----------
-
         self.reserve_results: DataFrame
             The reserve results by trading periods
         overwrite_results: bool, default False, optional
@@ -326,7 +312,6 @@ class vSPUD(object):
 
         Usage
         -----
-
         >>>> SPUD_Example.reserve_procurement(apply_time=True,
                         aggregation=["Island", "Month_Year"],
                         agg_func=None, month_year=True)
@@ -362,6 +347,112 @@ class vSPUD(object):
         return res_results
 
 
+    def _reserve_differentials_calculations(self, other, left_name="Control",
+                           right_name="Override", diff_name="Difference"):
+        """ Determine the reserve comparison report for two vSPD iterations
+
+        Parameters
+        ----------
+        self: class vSPUD
+            A vSPUD class with reserve results present
+        other: class vSPUD
+            Another vSPUD class with reserve results present
+        left_name: string, default "Control"
+            Identifying name to apply to the original vSPUD object
+        right_name: string, default "Override"
+            Identifying name to apply to the second vSPUD object
+
+        Returns
+        -------
+        combined: DataFrame
+            A DataFrame of the combined results including the differences
+
+        """
+
+        indices = ["DateTime", "Island"]
+
+        # Calculate procurement
+        left = self.reserve_procurement()
+        right = other.reserve_procurement()
+
+        col_names = left.columns.tolist()
+
+        left.rename(columns={x: ' '.join([x, left_name]) for
+                    x in col_names if self._invmatcher(x, indices)},
+                    inplace=True)
+
+        right.rename(columns={x: ' '.join([x, right_name]) for
+                    x in col_names if self._invmatcher(x, indices)},
+                    inplace=True)
+
+
+        combined = left.merge(right, left_on=indices, right_on=indices)
+
+        # Grab the columns to compare
+        compare_columns = [x for x in col_names if "IR" in x and not "Violation" in x]
+
+        for col in compare_columns:
+            self._differential(combined, col, left_name=left_name,
+                    right_name=right_name, diff_name=diff_name,
+                    method="Subtract")
+
+        return combined
+
+
+
+    def _differential(self, df, column, left_name=None, right_name=None,
+                      diff_name=None, method="Subtract"):
+        """ Calculate the differentials between columns in a DataFrame
+
+        Parameters
+        ----------
+        df: DataFrame
+            The Merged DataFrame to work on
+        column: string,
+            The column name to apply the differential to
+        left_name: string, default None
+            The name which has been applied to the columns of the left df
+        right_name: string, default None
+            The name which has been applied to the columns of the right df
+        diff_name: string, default None
+            The name to call the result
+        method: string ("Subtract", "Add")
+            What method to apply
+
+        Returns
+        -------
+        df: DataFrame
+            The DataFrame with the differential calculated
+
+        """
+
+        left = " ".join([column, left_name])
+        right = " ".join([column, right_name])
+        diff = " ".join([column, diff_name])
+
+        if method == 'Subtract':
+            df[diff] = df[left] - df[right]
+
+        if method == "Add":
+            df[diff] = df[left] + df[right]
+
+        return df
+
+
+    def _matcher(self, a, p):
+        for b in p:
+            if b not in a:
+                return False
+        return True
+
+
+    def _invmatcher(self, a, p):
+        for b in p:
+            if b in a:
+                return False
+        return True
+
+
     def _apply_time_filters(self, df, DateTime="DateTime", period=False,
                            day=False, month=False, year=False, inplace=False,
                            month_year=False, dayofyear=False):
@@ -372,7 +463,6 @@ class vSPUD(object):
 
         Parameters
         ----------
-
         df: DataFrame
             DataFrame to apply the time aggregations to
         DateTime: string, default "DateTime"
@@ -422,8 +512,8 @@ class vSPUD(object):
         if period:
             df["Period"] = df[DateTime].apply(lambda x: x.hour * 2 + 1 + x.minute / 30)
 
-
         return df
+
 
 if __name__ == '__main__':
     pass
