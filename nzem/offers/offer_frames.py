@@ -14,6 +14,8 @@ import datetime as dt
 from dateutil.parser import parse
 from collections import defaultdict
 from datetime import datetime, timedelta
+import collections
+import functools
 
 # Non C Dependencies
 import simplejson as json
@@ -292,7 +294,6 @@ class Offer(object):
 
 
 
-
     def _stacker(self):
         """ General Stacker designed to handle all forms of
         offer dataframe, energy, plsr, and IL
@@ -379,7 +380,9 @@ class Offer(object):
     def _apply_datetime(self, date_col="Trading Date",
             period_col="Trading Period", datetime_col="Trading Datetime"):
 
-        self.offers[datetime_col] = self.offers[date_col] + self.offers[period_col].apply(self._period_minutes)
+        period_map = {x: self._period_minutes(x) for x in set(self.offers[period_col])}
+
+        self.offers[datetime_col] = self.offers[date_col] + self.offers[period_col].map(period_map)
 
 
     def _period_minutes(self, period):
@@ -462,3 +465,5 @@ class EnergyOffer(Offer):
         super(EnergyOffer, self).__init__(offers)
 
 
+if __name__ == '__main__':
+    pass
