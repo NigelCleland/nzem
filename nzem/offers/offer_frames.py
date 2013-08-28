@@ -210,8 +210,68 @@ class Offer(object):
         if return_df:
             return fstack
 
+    def clear_offer(self, requirement, fstack=None, return_df=True):
+        """ Clear the offer stack against a requirement
 
-    def clear_offers(self, requirement, fstack=None, return_df=True):
+        Parameters
+        ----------
+        self.fstack : pandas DataFrame
+            The filter query, must be for a single period and date
+        requirement : float
+            The requirement for energy or reserve, must be a positive number
+        fstack : pandas DataFrame, bool default None
+            Optional argument to not use the current query
+        return_df : bool, default True
+            Return the DataFrame to the user, or keep as query
+
+        Returns
+        -------
+        cleared_stack : DataFrame
+            A DataFrame which has been cleared against the requirement
+        uncleared_stack: DataFrame
+            A DataFrame containing the offers which were not cleared
+
+        """
+
+        if not isinstance(fstack, pd.DataFrame):
+            fstack = self.fstack.copy()
+
+        if len(fstack) == 0:
+            raise ValueError("fstack must be a DataFrame, \
+                                current size is zero")
+
+        if requirement <= 0:
+            return (None, fstack)
+
+        # Drop all non-zero offers
+        fstack = fstack[fstack["Max"] > 0]
+
+        # Sort by price
+        fstack = fstack.sort(columns=["Price"])
+
+        # Cumulative Offer
+        fstack["Cumulative Offer"] = fstack["Max"].cumsum()
+
+        # Reindex
+        fstack.index = np.arange(len(fstack))
+
+        # Get marginal unit index
+        marginal_unit = fstack[fstack["Cumulative Offer"] >= requirement].index[0]
+
+        # Get the stacks
+        cleared_stack = fstack.iloc[:marginal_unit+1].copy()
+        uncleared_stack = fstack.iloc[marginal_unit:].copy()
+
+        # Change the marginal unit to reflect the true params
+        remain = uncleared_stack["Cumulative Offer"][marginal_unit] - requirement
+
+        uncleared_stack["Max"][marginal_unit] = remain
+        cleared_stack["Max"][marginal_unit] = cleared_stack["Max"][marginal_unit] - remain
+
+        return cleared_stack, uncleared_stack
+
+
+    def _clear_offers(self, requirement, fstack=None, return_df=True):
         """ Clear the offer stack against a requirement
 
         Parameters
@@ -453,6 +513,8 @@ class ReserveOffer(Offer):
         # Note, a raw Offer frame isn't passed, therefore manually add it
         # to the offer stack
         self.offer_stack = offers
+
+
 
 
 class EnergyOffer(Offer):
