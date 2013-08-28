@@ -18,7 +18,7 @@ from nzem import ILOffer, PLSROffer, EnergyOffer
 
 try:
     CONFIG = json.load(open(os.path.join(
-        os.path.expanduser('~/python/nzem/nzem'), 'config.json')))
+        os.path.expanduser('~/python/nzem/nzem/_static'), 'config.json')))
 except:
     print "CONFIG File does not exist"
 
