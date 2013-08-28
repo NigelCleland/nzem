@@ -271,7 +271,7 @@ class Offer(object):
         return cleared_stack, uncleared_stack
 
 
-    def _clear_offers(self, requirement, fstack=None, return_df=True):
+    def _clear_offers(self, requirement=0, fstack=None, return_df=True):
         """ Clear the offer stack against a requirement
 
         Parameters
@@ -513,6 +513,63 @@ class ReserveOffer(Offer):
         # Note, a raw Offer frame isn't passed, therefore manually add it
         # to the offer stack
         self.offer_stack = offers
+
+    def NRM_Clear(self, fstack=None, max_req=0, ni_min=0, si_min=0):
+        """ Clear the reserve offers as though the National Reserve Market
+        was in effect
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+
+        """
+
+        if not isinstance(fstack, pd.DataFrame):
+            fstack = self.fstack.copy()
+
+        national_requirement = max(max_req - ni_min - si_min, 0.)
+
+        (nat_clear, nat_remain) = self.clear_offer(requirement=national_requirement, fstack=fstack)
+
+        ni_stack = nat_remain.eq_mask("Island", "North Island")
+        si_stack = nat_remain.eq_mask("Island", "South Island")
+
+        (ni_clear, ni_remain) = self.clear_offer(requirement=ni_min,
+                fstack=ni_stack)
+        (si_clear, si_remain) = self.clear_offer(requirement=si_min,
+                fstack=si_stack)
+
+        # Set the prices
+        nat_price = 0
+        if isinstance(nat_clear, pd.DataFrame):
+            nat_price = max(nat_clear.iloc[-1]["Price"],0)
+
+        if isinstance(ni_clear, pd.DataFrame):
+            ni_price = max(ni_clear.iloc[-1]["Price"],nat_price)
+        else:
+            ni_price = nat_price
+
+        if isinstance(si_clear, pd.DataFrame):
+            si_price = max(si_clear.iloc[-1]["Price"],nat_price)
+        else:
+            si_price = nat_price
+
+        all_clear = pd.concat((nat_clear, ni_clear, si_clear), ignore_index=True)
+        all_clear["NI Price"] = ni_price
+        all_clear["SI Price"] = si_price
+
+        return all_clear
+
+
+
+
+
+
+
+
 
 
 
