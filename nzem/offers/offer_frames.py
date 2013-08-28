@@ -171,7 +171,7 @@ class Offer(object):
         """
 
 
-        if not type(self.offer_stack) == pd.core.frame.DataFrame:
+        if not isinstance(self.offer_stack, pd.DataFrame):
             self.stack_columns()
 
         fstack = self.offer_stack.copy()
@@ -234,7 +234,7 @@ class Offer(object):
             raise ValueError("Requirement must be a positive number")
 
 
-        if not type(fstack) == pd.core.frame.DataFrame:
+        if not isinstance(fstack, pd.DataFrame):
             fstack = self.fstack.copy()
 
         if len(fstack["Trading Datetime"].unique()) > 1:
@@ -363,7 +363,8 @@ class Offer(object):
 
         if not user_map:
             user_map = pd.read_csv(CONFIG['map-location'])
-            user_map = user_map[["Node", "Load Area", "Island Name"]]
+            user_map = user_map[["Node", "Load Area", "Island Name",
+                                 "Generation Type"]]
             user_map.rename(columns={"Node": "Grid Exit Point",
                 "Load Area": "Region", "Island Name": "Island"}, inplace=True)
 
@@ -404,10 +405,10 @@ class ILOffer(Offer):
 
     def merge_stacked_offers(self, plsr_offer):
 
-        if not type(self.offer_stack) == pd.core.frame.DataFrame:
+        if not isinstance(self.offer_stack, pd.DataFrame):
             self.stack_columns()
 
-        if not type(plsr_offer.offer_stack) == pd.core.frame.DataFrame:
+        if not isinstance(plsr_offer.offer_stack, pd.DataFrame):
             plsr_offer.stack_columns()
 
         return ReserveOffer(pd.concat([self.offer_stack,
@@ -427,10 +428,10 @@ class PLSROffer(Offer):
 
     def merge_stacked_offers(self, il_offer):
 
-        if not type(self.offer_stack) == pd.core.frame.DataFrame:
+        if not isinstance(self.offer_stack, pd.DataFrame):
             self.stack_columns()
 
-        if not type(il_offer.offer_stack) == pd.core.frame.DataFrame:
+        if not isinstance(il_offer.offer_stack, pd.DataFrame):
             il_offer.stack_columns()
 
         return ReserveOffer(pd.concat([self.offer_stack,
