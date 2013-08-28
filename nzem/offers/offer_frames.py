@@ -271,89 +271,6 @@ class Offer(object):
         return cleared_stack, uncleared_stack
 
 
-    def _clear_offers(self, requirement=0, fstack=None, return_df=True):
-        """ Clear the offer stack against a requirement
-
-        Parameters
-        ----------
-        self.fstack : pandas DataFrame
-            The filter query, must be for a single period and date
-        requirement : float
-            The requirement for energy or reserve, must be a positive number
-        fstack : pandas DataFrame, bool default None
-            Optional argument to not use the current query
-        return_df : bool, default True
-            Return the DataFrame to the user, or keep as query
-
-        Returns
-        -------
-        self.cleared_fstack : pandas DataFrame
-            A DataFrame which has been cleared against the requirement
-
-        """
-
-        if requirement < 0:
-            raise ValueError("Requirement must be a positive number")
-
-
-        if not isinstance(fstack, pd.DataFrame):
-            fstack = self.fstack.copy()
-
-        if len(fstack["Trading Datetime"].unique()) > 1:
-            raise ValueError("Filtered Dataset contains more than one\
-                              date, this invalidates the clearing")
-
-        if len(fstack["Reserve Type"].unique()) > 1:
-            raise ValueError("Filtered Dataset contains more than one\
-                              type of data, this invalidates the clearing")
-
-        # Harsh stop if axis is of zero size
-        if len(fstack) == 0:
-            return None
-
-        # Drop the zero offers
-        fstack = fstack.gt_mask("Max", 0.0)
-        # Sort by price
-        fstack.sort(columns=["Price"], inplace=True)
-
-        # Reindex
-        fstack.index = np.arange(len(fstack))
-
-        # Cumulative Offers
-        fstack["Cumulative Offers"] = fstack["Max"].cumsum()
-
-        # Apply a cleared flag
-        if fstack["Cumulative Offers"].max() <= requirement:
-            try:
-                marginal_unit = fstack.ge_mask("Cumulative Offers", requirement).index[0]
-            except:
-                return None
-        else:
-
-            marginal_unit = fstack.index[-1]
-        fstack["Cleared"] = False
-        fstack["Cleared"][:marginal_unit+1] = True
-
-        # Manual flagging if requirement = 0
-        if requirement == 0.:
-            fstack["Cleared"][0] = False
-
-        # Determine the dispatched quantity
-        fstack["Cleared Quantity"] = 0
-        fstack["Cleared Quantity"][:marginal_unit] = fstack["Max"][:marginal_unit]
-
-        # Special case for the marginal unit.
-        fstack["Cleared Quantity"][marginal_unit] = requirement - fstack["Max"][:marginal_unit].sum()
-
-        # Determine the dispatched price
-        fstack["Clearing Price"] = fstack.eq_mask("Cleared", True)["Price"].max()
-
-        self.cleared_fstack = fstack
-        if return_df:
-            return fstack
-
-
-
     def _stacker(self):
         """ General Stacker designed to handle all forms of
         offer dataframe, energy, plsr, and IL
@@ -516,14 +433,28 @@ class ReserveOffer(Offer):
 
     def NRM_Clear(self, fstack=None, max_req=0, ni_min=0, si_min=0):
         """ Clear the reserve offers as though the National Reserve Market
-        was in effect
+        was in effect. In effect will clear the market three times, with
+        a reduced offer DataFrame each time.
+
+        Note fstack must have been filtered already.
 
         Parameters
         ----------
+        fstack: DataFrame, default None
+            If desired don't use the "saved" filtered stack
+        max_req: int, float, default 0
+            The maximum requirement for reserves across the whole country.
+        ni_min: int, float, default 0
+            The North Island minimum requirement for reserve
+        si_min: int, float, default 0
+            The South Island minimum requirement for reserve
 
         Returns
         -------
-
+        all_clear: DataFrame
+            DataFrame which contains only the units which were cleared
+            in the dispatch along with the respective North and South
+            Island prices.
 
         """
 
@@ -537,6 +468,7 @@ class ReserveOffer(Offer):
         ni_stack = nat_remain.eq_mask("Island", "North Island")
         si_stack = nat_remain.eq_mask("Island", "South Island")
 
+        # Clear each island individually
         (ni_clear, ni_remain) = self.clear_offer(requirement=ni_min,
                 fstack=ni_stack)
         (si_clear, si_remain) = self.clear_offer(requirement=si_min,
