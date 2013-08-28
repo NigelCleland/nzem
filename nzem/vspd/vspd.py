@@ -235,8 +235,18 @@ class vSPUD(object):
             self.folder = folder
             self._load_data(**kargs)
 
-    def generation_dispatch(self):
-        """
+    def map_dispatch(self):
+        """ Map the offer dispatch DataFrame to nodal metadata
+
+        Parameters
+        ----------
+        self.offer_results: DataFrame
+            The Offer DataFrame
+
+        Returns
+        -------
+        mapoffers: DataFrame
+            A DataFrame with the units mapped to location and generation type
 
         """
 
@@ -244,14 +254,21 @@ class vSPUD(object):
         offers = self.offer_results.copy()
         mapoffers = self._map_nodes(offers, left_on="Offer")
 
-
         return mapoffers
 
-
-
-
-
     def dispatch_report(self):
+        """ Construct a dispatch report based upon the Offer DataFrame,
+        Can perform a variety of aggregations and grouping.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        report: DataFrame
+            A DataFrame containing the specified report
+
+        """
 
         pass
 
