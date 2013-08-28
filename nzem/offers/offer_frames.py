@@ -454,27 +454,6 @@ class ReserveOffer(Offer):
         # to the offer stack
         self.offer_stack = offers
 
-    def mixed_clear(self, nat_req, ni_req, si_req,
-                    transfer_cap=0, fstack=None):
-        """
-        perform a mixed clear...
-        """
-
-        if not isinstance(fstack, pd.DataFrame):
-            fstack = self.fstack.copy()
-
-        # Determine how much is required from a general source.
-        rem_nat_req = max(nat_req - ni_req - si_req, 0)
-
-        # Clear the remainder first.
-        fstack.sort(columns=["Price"], inplace=True)
-        fstack.index = np.arange(len(fstack))
-        fstack["Cumualtive Offer"] = fstack["Max"].cumsum()
-
-        # Get the marginal unit
-
-
-
 
 class EnergyOffer(Offer):
     """ Wrapper around an Energy Offer dataframe which provides a number
