@@ -32,18 +32,18 @@ def offer_from_file(begin_date=None, end_date=None, offer_type="IL",
 
     Parameters
     ----------
-
-    begin_date: str, default None
+    begin_date: string, default None
         The beginning date, forms what range to load files for
-    end_date: str, default None
+    end_date: string, default None
         The end date, forms the end of the range to load files for
-    offer_type: str, default "IL"
-        The type of offer to load the data for.
+    offer_type: string, default "IL"
+        The type of offer to load the data for
+    file_date_format: string, default "%b_%Y"
+        The file date formats of the offer file name
 
 
     Returns
     -------
-
     ILOffer: type ILOffer
         Container around an IL Offer
     PLSROffer: type PLSROffer
@@ -86,6 +86,36 @@ def offer_from_file(begin_date=None, end_date=None, offer_type="IL",
 
     return offer
 
+def reserve_offer_from_file(begin_date=None, end_date=None,
+                            file_date_format="%b_%Y"):
+    """ Import both IL, PLSR and TWDSR data from file and merge the two
+    together to reduce the number of redundant steps which need to be taken.
+
+    Parameters
+    ----------
+    begin_date: string, default None
+        The beginning date, forms what range to load files for
+    end_date: string, default None
+        The end date, forms the end of the range to load files for
+    offer_type: string, default "IL"
+        The type of offer to load the data for
+    file_date_format: string, default "%b_%Y"
+        The file date formats of the offer file name
+
+    Returns
+    -------
+    ReserveOffer: class
+        The ReserveOffer container which has stacked reserve offer data
+
+    """
+
+    il_offer = offer_from_file(begin_date=begin_date, end_date=end_date,
+            file_date_format=file_date_format, offer_type="IL")
+
+    plsr_offer = offer_from_file(begin_date=begin_date, end_date=end_date,
+            file_date_format=file_date_format, offer_type="PLSR")
+
+    return il_offer.merge_stacked_offers(plsr_offer)
 
 def offer_from_wits():
     pass
