@@ -7,6 +7,7 @@ import sys
 import os
 import datetime
 import glob
+import simplejson as json
 
 # C Library Imports
 
@@ -15,6 +16,12 @@ import numpy as np
 
 # Import nzem
 
+# Get the config file
+try:
+    CONFIG = json.load(open(os.path.join(
+    os.path.expanduser('~/python/nzem/nzem/_static'), 'config.json')))
+except:
+    print "CONFIG File does not exist"
 
 class vSPUD_Factory(object):
     """docstring for ClassName"""
@@ -227,6 +234,26 @@ class vSPUD(object):
         if folder:
             self.folder = folder
             self._load_data(**kargs)
+
+    def generation_dispatch(self):
+        """
+
+        """
+
+        # Map the Locations
+        offers = self.offer_results.copy()
+        mapoffers = self._map_nodes(offers, left_on="Offer")
+
+
+        return mapoffers
+
+
+
+
+
+    def dispatch_report(self):
+
+        pass
 
 
     def price_report(self):
@@ -576,6 +603,19 @@ class vSPUD(object):
             self.offer_results = pd.read_csv(folder_dict["OfferResults"])
         if branch:
             self.branch_results = pd.read_csv(folder_dict["BranchResults"])
+
+    def _map_nodes(self, df, map_frame=None, left_on=None, right_on="Node"):
+        """
+
+        """
+
+        if not map_frame:
+            map_frame = pd.read_csv(CONFIG['map-location'])
+            map_frame = map_frame[["Node", "Region", "Island Name", "Generation Type"]]
+
+        map_df = df.merge(map_frame, left_on=left_on, right_on=right_on)
+        return map_df
+
 
 
 def setup_vspd():
