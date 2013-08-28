@@ -456,6 +456,25 @@ class ReserveOffer(Offer):
             in the dispatch along with the respective North and South
             Island prices.
 
+        Usage
+        -----
+        Note, this solver can be used to run a number of different
+        possibilities depending upon the requirements passed.
+        This improves the utility and flexibility of the method
+        substantially, see the examples below for how to do this.
+        The mixed market approach is intended for assessing a national
+        reserve market in the presence of an HVDC link.
+
+        Example One: Pure National Reserve Market
+        >>> NRM_Clear(max_req=requirement, ni_min=0, si_min=0)
+
+        Example Two: Stand alone Reserve Market
+        >>> NRM_clear(max_req=0, ni_min=ni_risk, si_min=si_risk)
+
+        Example Three: Mixed Market (exporting island reserve cannot
+                                     securve importing island risk)
+        >>> NRM_Clear(max_req=max_risk, ni_min=ni_hvdc, si_min=si_hvdc)
+
         """
 
         if not isinstance(fstack, pd.DataFrame):
@@ -495,15 +514,78 @@ class ReserveOffer(Offer):
 
         return all_clear
 
+    def clear_all_NRM(self, clearing_requirements):
+        """ Clear all of the NRM for a particular Reserve Offer
+        DataFrame. Will iterate through all reserve types,
+        trading dates and trading periods and match these with requirements
+        for solving as a NRM.
+
+        Parameters
+        ----------
+        self: ReserveOffer object
+        clearing_requirements: DataFrame
+            Multiindexed DataFrame containing the requirements for
+            reserve both in total and for each island.
+
+        Returns
+        -------
+        NRM_Cleared_Stack: DataFrame
+            A DataFrame containing information for all units which were
+            cleared in the operation of a NRM.
+
+
+        """
+        combinations = list(itertools.product(
+                    self.offer_stack["Trading Date"].unique(),
+                    self.offer_stack["Trading Period"].unique(),
+                    self.offer_stack["Reserve Type"].unique()
+                            ))
+
+        return pd.concat(self._yield_NRM_result(clearing_requirements,
+                             combinations), ignore_index=True)
 
 
 
+    def _yield_NRM_result(self, clearing_requirements, combinations):
+        """ Generator to calculate the solved solution to the NRM
+        result to be computationally lazy.
 
+        Parameters
+        ----------
+        self: class
+            To perform the Filter assessment on
+        clearing_requirements: DataFrame
+            DataFrame with a multi index of (date, period, reserve_type)
+            Is index to determine the requirements
+        combinations: list
+            List of all combinations to assess
 
+        Returns
+        -------
+        nrm_solution: DataFrame
+            The solution to a single iteration of the NRM clearer
+            Is a generator object to feed into a concatenation
 
+        """
 
+        for (date, period, reserve_type) in combinations:
 
+            # Get the requirements
+            try:
+                max_req, ni_min, si_min = clearing_requirements.ix[(date,
+                                             period, reserve_type)].values
+            except:
+                yield None
 
+            # Filter the data
+            fstack = self.filter_stack(date=date, period=period,
+                                        reserve_type=reserve_type)
+
+            # Run the NRM Solver
+            nrm_solution = self.NRM_Clear(fstack=fstack, max_req=max_req,
+                        ni_min=ni_min, si_min=si_min)
+
+            yield nrm_solution
 
 
 class EnergyOffer(Offer):
