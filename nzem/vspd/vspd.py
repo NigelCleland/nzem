@@ -7,6 +7,7 @@ import sys
 import os
 import datetime
 import glob
+import simplejson as json
 
 # C Library Imports
 
@@ -15,6 +16,12 @@ import numpy as np
 
 # Import nzem
 
+# Get the config file
+try:
+    CONFIG = json.load(open(os.path.join(
+    os.path.expanduser('~/python/nzem/nzem/_static'), 'config.json')))
+except:
+    print "CONFIG File does not exist"
 
 class vSPUD_Factory(object):
     """docstring for ClassName"""
@@ -227,6 +234,91 @@ class vSPUD(object):
         if folder:
             self.folder = folder
             self._load_data(**kargs)
+
+    def map_dispatch(self):
+        """ Map the offer dispatch DataFrame to nodal metadata
+
+        Parameters
+        ----------
+        self.offer_results: DataFrame
+            The Offer DataFrame
+
+        Returns
+        -------
+        mapoffers: DataFrame
+            A DataFrame with the units mapped to location and generation type
+
+        """
+
+        # Map the Locations
+        offers = self.offer_results.copy()
+        mapoffers = self._map_nodes(offers, left_on="Offer")
+
+        return mapoffers
+
+    def dispatch_report(self, time_aggregation="DateTime",
+                        location_aggregation="Island Name",
+                        company_aggregation=False,
+                        generation_aggregation=False,
+                        agg_func=np.sum):
+        """ Construct a dispatch report based upon the Offer DataFrame,
+        Can perform a variety of aggregations and grouping.
+
+        Parameters
+        ----------
+        time_aggregation: string, default "DateTime"
+            Column name of the time aggregation to be applied options include
+            ("Period", "Day", "Month", "Year", "Month_Year", "Day_Of_Year")
+        location_aggregation: string, default "Island Name"
+            Column name of the location aggregation to be applied options
+            ("Island Name", "Region", "Offers")
+        company_aggregation: bool, default False
+            Not currently implemented, will be what column name of the company
+            to aggregate by
+        generation_aggregation: bool, default False
+            Whether to aggregate by generation type or not
+
+
+        Returns
+        -------
+        report: DataFrame
+            A DataFrame containing the specified report
+
+        """
+
+        # If company aggregation applied set the column name
+        # Not implemented currently
+        if company_aggregation:
+            company_aggregation = False
+
+        # If generation aggregation set the column name
+        if generation_aggregation:
+            generation_aggregation = "Generation Type"
+
+        aggregations = (time_aggregation, location_aggregation,
+                        company_aggregation, generation_aggregation)
+
+        # Construct a keyword argument dict for the time aggregation
+        karg_dict = {"DateTime": {"day": False},
+                     "Period": {"period": True},
+                     "Day": {"day": True},
+                     "Year": {"year": True},
+                     "Day_Of_Year": {"dayofyear": True},
+                     "Month_Year": {"month_year": True}}
+
+        kargs = karg_dict[time_aggregation]
+
+        # Map the Offers
+        mapoffers = self.map_dispatch()
+        timeoffers = self._apply_time_filters(mapoffers, **kargs)
+
+        # Construct the group by columns
+        group_col = [x for x in aggregations if x]
+
+        # Construct the report
+        return timeoffers.groupby(group_col).aggregate(agg_func)
+
+
 
 
     def price_report(self):
@@ -576,6 +668,19 @@ class vSPUD(object):
             self.offer_results = pd.read_csv(folder_dict["OfferResults"])
         if branch:
             self.branch_results = pd.read_csv(folder_dict["BranchResults"])
+
+    def _map_nodes(self, df, map_frame=None, left_on=None, right_on="Node"):
+        """
+
+        """
+
+        if not map_frame:
+            map_frame = pd.read_csv(CONFIG['map-location'])
+            map_frame = map_frame[["Node", "Region", "Island Name", "Generation Type"]]
+
+        map_df = df.merge(map_frame, left_on=left_on, right_on=right_on)
+        return map_df
+
 
 
 def setup_vspd():
