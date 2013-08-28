@@ -62,9 +62,9 @@ def offer_from_file(begin_date=None, end_date=None, offer_type="IL",
 
 
     # Begin filtering the data...
-    if not type(begin_date) == datetime.datetime:
+    if not isinstance(begin_date, datetime.datetime):
         begin_date = parse(begin_date)
-    if not type(end_date) == datetime.datetime:
+    if not isinstance(end_date, datetime.datetime):
         end_date = parse(end_date)
 
     dates = tuple(set([x.strftime(file_date_format) for x in pd.date_range(begin_date, end_date)]))
