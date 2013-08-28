@@ -465,14 +465,5 @@ class EnergyOffer(Offer):
         super(EnergyOffer, self).__init__(offers)
 
 
-class memoize:
-  def __init__(self, function):
-    self.function = function
-    self.memoized = {}
-
-  def __call__(self, *args):
-    try:
-      return self.memoized[args]
-    except KeyError:
-      self.memoized[args] = self.function(*args)
-      return self.memoized[args]
+if __name__ == '__main__':
+    pass
