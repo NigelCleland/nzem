@@ -256,12 +256,28 @@ class vSPUD(object):
 
         return mapoffers
 
-    def dispatch_report(self):
+    def dispatch_report(self, time_aggregation="DateTime",
+                        location_aggregation="Island Name",
+                        company_aggregation=False,
+                        generation_aggregation=False,
+                        agg_func=np.sum):
         """ Construct a dispatch report based upon the Offer DataFrame,
         Can perform a variety of aggregations and grouping.
 
         Parameters
         ----------
+        time_aggregation: string, default "DateTime"
+            Column name of the time aggregation to be applied options include
+            ("Period", "Day", "Month", "Year", "Month_Year", "Day_Of_Year")
+        location_aggregation: string, default "Island Name"
+            Column name of the location aggregation to be applied options
+            ("Island Name", "Region", "Offers")
+        company_aggregation: bool, default False
+            Not currently implemented, will be what column name of the company
+            to aggregate by
+        generation_aggregation: bool, default False
+            Whether to aggregate by generation type or not
+
 
         Returns
         -------
@@ -270,7 +286,39 @@ class vSPUD(object):
 
         """
 
-        pass
+        # If company aggregation applied set the column name
+        # Not implemented currently
+        if company_aggregation:
+            company_aggregation = False
+
+        # If generation aggregation set the column name
+        if generation_aggregation:
+            generation_aggregation = "Generation Type"
+
+        aggregations = (time_aggregation, location_aggregation,
+                        company_aggregation, generation_aggregation)
+
+        # Construct a keyword argument dict for the time aggregation
+        karg_dict = {"DateTime": {"day": False},
+                     "Period": {"period": True},
+                     "Day": {"day": True},
+                     "Year": {"year": True},
+                     "Day_Of_Year": {"dayofyear": True},
+                     "Month_Year": {"month_year": True}}
+
+        kargs = karg_dict[time_aggregation]
+
+        # Map the Offers
+        mapoffers = self.map_dispatch()
+        timeoffers = self._apply_time_filters(mapoffers, **kargs)
+
+        # Construct the group by columns
+        group_col = [x for x in aggregations if x]
+
+        # Construct the report
+        return timeoffers.groupby(group_col).aggregate(agg_func)
+
+
 
 
     def price_report(self):
