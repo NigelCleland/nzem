@@ -670,7 +670,26 @@ class vSPUD(object):
             self.branch_results = pd.read_csv(folder_dict["BranchResults"])
 
     def _map_nodes(self, df, map_frame=None, left_on=None, right_on="Node"):
-        """
+        """ Map a DataFrame by its nodal location to a range of metadata
+        Can either pass a DataFrame of metadata to use, or rely upon the
+        built in set provided
+
+        Parameters
+        ----------
+        df: DataFrame
+            The DataFrame to be mapped
+        map_frame: DataFrame, bool, default None
+            Optional, the mapping frame to use
+        left_on: string, default None
+            What column to merge the meta data on
+        right_on: string, default None
+            What column in the mapping frame to merge by
+
+        Returns
+        -------
+        map_df: DataFrame
+            A DataFrame consisting of the original DataFrame plus the
+            additional Metadata merged in.
 
         """
 
@@ -678,9 +697,7 @@ class vSPUD(object):
             map_frame = pd.read_csv(CONFIG['map-location'])
             map_frame = map_frame[["Node", "Region", "Island Name", "Generation Type"]]
 
-        map_df = df.merge(map_frame, left_on=left_on, right_on=right_on)
-        return map_df
-
+        return df.merge(map_frame, left_on=left_on, right_on=right_on)
 
 
 def setup_vspd():
