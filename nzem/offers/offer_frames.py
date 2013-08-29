@@ -488,17 +488,18 @@ class ReserveOffer(Offer):
 
         (nat_clear, nat_remain) = self.clear_offer(requirement=national_requirement, fstack=fstack)
 
-        # Calculate how much has been cleared from each island
-        if isinstance(nat_clear, pd.DataFrame):
-            ni_cleared = nat_clear.eq_mask("Island", "North Island")["Max"].sum()
-            si_cleared = nat_clear.eq_mask("Island", "South Island")["Max"].sum()
-        else:
-            ni_cleared = 0
-            si_cleared = 0
+        # I don't think this section is write, hence commenting out for now
+        # # Calculate how much has been cleared from each island
+        # if isinstance(nat_clear, pd.DataFrame):
+        #     ni_cleared = nat_clear.eq_mask("Island", "North Island")["Max"].sum()
+        #     si_cleared = nat_clear.eq_mask("Island", "South Island")["Max"].sum()
+        # else:
+        #     ni_cleared = 0
+        #     si_cleared = 0
 
-        # Adjust the minimum requirements appropriately
-        ni_min = max(ni_min - ni_cleared, 0)
-        si_min = max(si_min - si_cleared, 0)
+        # # Adjust the minimum requirements appropriately
+        # ni_min = max(ni_min - ni_cleared, 0)
+        # si_min = max(si_min - si_cleared, 0)
 
         # Calculate the new stacks
         ni_stack = nat_remain.eq_mask("Island", "North Island")
