@@ -16,6 +16,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 import collections
 import functools
+import itertools
 
 # Non C Dependencies
 import simplejson as json
@@ -256,7 +257,10 @@ class Offer(object):
         fstack.index = np.arange(len(fstack))
 
         # Get marginal unit index
-        marginal_unit = fstack[fstack["Cumulative Offer"] >= requirement].index[0]
+        try:
+            marginal_unit = fstack[fstack["Cumulative Offer"] >= requirement].index[0]
+        except:
+            marginal_unit = fstack.iloc[-1].name
 
         # Get the stacks
         cleared_stack = fstack.iloc[:marginal_unit+1].copy()
@@ -484,6 +488,19 @@ class ReserveOffer(Offer):
 
         (nat_clear, nat_remain) = self.clear_offer(requirement=national_requirement, fstack=fstack)
 
+        # Calculate how much has been cleared from each island
+        if isinstance(nat_clear, pd.DataFrame):
+            ni_cleared = nat_clear.eq_mask("Island", "North Island")["Max"].sum()
+            si_cleared = nat_clear.eq_mask("Island", "South Island")["Max"].sum()
+        else:
+            ni_cleared = 0
+            si_cleared = 0
+
+        # Adjust the minimum requirements appropriately
+        ni_min = max(ni_min - ni_cleared, 0)
+        si_min = max(si_min - si_cleared, 0)
+
+        # Calculate the new stacks
         ni_stack = nat_remain.eq_mask("Island", "North Island")
         si_stack = nat_remain.eq_mask("Island", "South Island")
 
@@ -572,8 +589,7 @@ class ReserveOffer(Offer):
 
             # Get the requirements
             try:
-                max_req, ni_min, si_min = clearing_requirements.ix[(date,
-                                             period, reserve_type)].values
+                max_req, ni_min, si_min = clearing_requirements.ix[date].ix[period].ix[reserve_type].values
             except:
                 yield None
 
