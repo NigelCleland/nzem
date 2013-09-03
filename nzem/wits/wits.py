@@ -34,7 +34,7 @@ import pandas as pd
 # Load the master CONFIG json file
 try:
     CONFIG = json.load(open(os.path.join(
-        os.path.expanduser('~/python/nzem/nzem'), 'config.json')))
+        os.path.expanduser('~/python/nzem/nzem/_static'), 'config.json')))
     gnash_path = CONFIG['gnash-path']
 except:
     print "CONFIG File does not exist"

@@ -7,6 +7,7 @@ import sys
 import os
 import datetime
 import glob
+import simplejson as json
 
 # C Library Imports
 
@@ -14,6 +15,13 @@ import pandas as pd
 import numpy as np
 
 # Import nzem
+
+# Get the config file
+try:
+    CONFIG = json.load(open(os.path.join(
+    os.path.expanduser('~/python/nzem/nzem/_static'), 'config.json')))
+except:
+    print "CONFIG File does not exist"
 
 class vSPUD_Factory(object):
     """docstring for ClassName"""
@@ -24,7 +32,6 @@ class vSPUD_Factory(object):
 
         Usage
         -----
-
         >>>> # Assume that the folder has sub directories with format
         >>>> # FP_yyyymmdd_identifier
         >>>> # To get all of 2009, January you could pass
@@ -34,7 +41,6 @@ class vSPUD_Factory(object):
 
         Parameters
         ----------
-
         master_folder: string
             An absolute path to a master folder for the vSPD results directory
         pattern: string, default None, optional
@@ -43,7 +49,6 @@ class vSPUD_Factory(object):
 
         Returns
         -------
-
         vSPUD_Factory: class
             A factory for creating vSPUD objects from the directories
         """
@@ -55,7 +60,7 @@ class vSPUD_Factory(object):
         # Recursively walk the directories, this handles a nested structure
         # if necessary to the factory operation
         self.sub_folders = [dire for (dire, subdir,
-                files) in os.walk(master_folder) if files]
+                files) in os.walk(master_folder) if files and '.csv' in files[0]]
         if patterns:
             self.match_pattern(patterns=patterns)
 
@@ -66,14 +71,12 @@ class vSPUD_Factory(object):
 
         Parameters
         ----------
-
         patterns: iterable
             Pass an iterable of patterns (an iterable of one is okay)
             to match the sub folders against
 
         Returns
         -------
-
         self.sub_folders: iterable
             Sub folders containing the vSPD files to load within the
             factory
@@ -93,7 +96,6 @@ class vSPUD_Factory(object):
         return True
 
 
-
     def load_results(self, island_results=None, summary_results=None,
                 system_results=None, bus_results=None, reserve_results=None,
                 trader_results=None, offer_results=None, branch_results=None):
@@ -102,7 +104,6 @@ class vSPUD_Factory(object):
 
         Parameters
         ----------
-
         island_results: bool, default None, optional
         summary_results: bool, default None, optional
         system_results: bool, default None, optional
@@ -114,7 +115,6 @@ class vSPUD_Factory(object):
 
         Returns
         -------
-
         vSPUD: class
             A vSPUD object with information as defined by the Keyword arugments
             If a folder is passed the DataFrames can be fine tuned by passing
@@ -167,7 +167,6 @@ class vSPUD_Factory(object):
             yield vSPUD(folder, **kargs)
 
 
-
 class vSPUD(object):
     """docstring for vSPUD"""
     def __init__(self, folder=None, island_results=None, summary_results=None,
@@ -182,7 +181,6 @@ class vSPUD(object):
 
         Usage:
         ------
-
         >>>> # Using from a folder
         >>>> A = vSPUD(folder=str, reserve=True, island=True)
         >>>> # DataFrames loads for reserve and island
@@ -197,7 +195,6 @@ class vSPUD(object):
 
         Parameters
         ----------
-
         folder: str, default None, optional
             A string which contains the absolute path to a folder of vSPD
             results. Used in conjunction with **kargs.
@@ -216,7 +213,6 @@ class vSPUD(object):
 
         Returns
         -------
-
         vSPUD object: class
             A vSPUD object with information as defined by the Keyword arugments
             If a folder is passed the DataFrames can be fine tuned by passing
@@ -239,57 +235,133 @@ class vSPUD(object):
             self.folder = folder
             self._load_data(**kargs)
 
-
-
-    def _load_data(self, island=False, summary=False, system=False,
-        bus=False, reserve=False, trader=False, offer=False, branch=False,
-        node=False):
-        """
-        Load all of the vSPD data from the given folder.
-        If possible pass the folder as an absolute path to minimise issues.
-        It is called once on initiation of the class
+    def map_dispatch(self):
+        """ Map the offer dispatch DataFrame to nodal metadata
 
         Parameters
         ----------
-
-        self.folder : str
-            The folder which contains the vSPD results to assess
+        self.offer_results: DataFrame
+            The Offer DataFrame
 
         Returns
         -------
+        mapoffers: DataFrame
+            A DataFrame with the units mapped to location and generation type
 
-        self.island_results: DataFrame
-        self.summary_results: DataFrame
-        self.system_results: DataFrame
-        self.bus_results: DataFrame
-        self.reserve_results: DataFrame
-        self.trader_results: DataFrame
-        self.offer_results: DataFrame
-        self.branch_results: DataFrame
         """
 
-        folder_contents = glob.glob(os.path.join(self.folder, '*.csv'))
-        folder_dict = {os.path.basename(v).split('_')[1]: v for v in folder_contents}
+        # Map the Locations
+        offers = self.offer_results.copy()
+        mapoffers = self._map_nodes(offers, left_on="Offer")
 
-        # Load the data
-        if island:
-            self.island_results = pd.read_csv(folder_dict["IslandResults"])
-        if summary:
-            self.summary_results = pd.read_csv(folder_dict["SummaryResults"])
-        if system:
-            self.system_results = pd.read_csv(folder_dict["SystemResults.csv"])
-        if bus:
-            self.bus_results = pd.read_csv(folder_dict["BusResults"])
-        if reserve:
-            self.reserve_results = pd.read_csv(folder_dict["ReserveResults"])
-        if trader:
-            self.trader_results = pd.read_csv(folder_dict["TraderResults.csv"])
-        if node:
-            self.node_results = pd.read_csv(folder_dict["NodeResults"])
-        if offer:
-            self.offer_results = pd.read_csv(folder_dict["OfferResults"])
-        if branch:
-            self.branch_results = pd.read_csv(folder_dict["BranchResults"])
+        return mapoffers
+
+    def dispatch_report(self, time_aggregation="DateTime",
+                        location_aggregation="Island Name",
+                        company_aggregation=False,
+                        generation_aggregation=False,
+                        agg_func=np.sum):
+        """ Construct a dispatch report based upon the Offer DataFrame,
+        Can perform a variety of aggregations and grouping.
+
+        Parameters
+        ----------
+        time_aggregation: string, default "DateTime"
+            Column name of the time aggregation to be applied options include
+            ("Period", "Day", "Month", "Year", "Month_Year", "Day_Of_Year")
+        location_aggregation: string, default "Island Name"
+            Column name of the location aggregation to be applied options
+            ("Island Name", "Region", "Offers")
+        company_aggregation: bool, default False
+            Not currently implemented, will be what column name of the company
+            to aggregate by
+        generation_aggregation: bool, default False
+            Whether to aggregate by generation type or not
+
+
+        Returns
+        -------
+        report: DataFrame
+            A DataFrame containing the specified report
+
+        """
+
+        # If company aggregation applied set the column name
+        # Not implemented currently
+        if company_aggregation:
+            company_aggregation = False
+
+        # If generation aggregation set the column name
+        if generation_aggregation:
+            generation_aggregation = "Generation Type"
+
+        aggregations = (time_aggregation, location_aggregation,
+                        company_aggregation, generation_aggregation)
+
+        # Construct a keyword argument dict for the time aggregation
+        karg_dict = {"DateTime": {"day": False},
+                     "Period": {"period": True},
+                     "Day": {"day": True},
+                     "Year": {"year": True},
+                     "Day_Of_Year": {"dayofyear": True},
+                     "Month_Year": {"month_year": True}}
+
+        kargs = karg_dict[time_aggregation]
+
+        # Map the Offers
+        mapoffers = self.map_dispatch()
+        timeoffers = self._apply_time_filters(mapoffers, **kargs)
+
+        # Construct the group by columns
+        group_col = [x for x in aggregations if x]
+
+        # Construct the report
+        return timeoffers.groupby(group_col).aggregate(agg_func)
+
+
+
+
+    def price_report(self):
+        """ Create a brief aggregation of the Reference Energy
+        and Reserve prices as well as the reference price differentials
+
+        Parameters
+        ----------
+        self.island_results: DataFrame
+            DataFrame of the Island Results
+
+        Returns
+        -------
+        price_report: DataFrame
+            DataFrame containing basic price information with precompiled
+            aggregations
+
+        Usage
+        -----
+        >>>>preport = spud.price_report()
+        >>>>preport.head()
+
+        """
+
+        ni_prices = self.island_results[self.island_results["Island"] == "NI"]
+        si_prices = self.island_results[self.island_results["Island"] == "SI"]
+
+        columns = ["ReferencePrice ($/MWh)", "FIR Price ($/MWh)", "SIR Price ($/MWh)"]
+
+        nip = ni_prices[["DateTime"] + columns].copy()
+        sip = si_prices[["DateTime"] + columns].copy()
+
+        nip.rename(columns={x: " ".join(["NI", x]) for x in columns}, inplace=True)
+        sip.rename(columns={x: " ".join(["SI", x]) for x in columns}, inplace=True)
+
+        price_report = nip.merge(sip, left_on="DateTime", right_on="DateTime")
+
+        price_report["Island Price Difference ($/MWh)"] = price_report["NI ReferencePrice ($/MWh)"] - price_report["SI ReferencePrice ($/MWh)"]
+
+        price_report["NI Reserve Price ($/MWh)"] = price_report["NI FIR Price ($/MWh)"] + price_report["NI SIR Price ($/MWh)"]
+        price_report["SI Reserve Price ($/MWh)"] = price_report["SI FIR Price ($/MWh)"] + price_report["SI SIR Price ($/MWh)"]
+
+        return price_report
 
     def reserve_procurement(self, overwrite_results=False, apply_time=False,
                             aggregation=None, agg_func=np.sum, **kargs):
@@ -300,7 +372,6 @@ class vSPUD(object):
 
         Parameters
         ----------
-
         self.reserve_results: DataFrame
             The reserve results by trading periods
         overwrite_results: bool, default False, optional
@@ -326,7 +397,6 @@ class vSPUD(object):
 
         Usage
         -----
-
         >>>> SPUD_Example.reserve_procurement(apply_time=True,
                         aggregation=["Island", "Month_Year"],
                         agg_func=None, month_year=True)
@@ -362,6 +432,133 @@ class vSPUD(object):
         return res_results
 
 
+    def calculate_differentials(self, other, left_name="Control",
+                           right_name="Override", diff_name="Difference",
+                           diff_only=False, calc_type="reserve_results",
+                           method="Subtract"):
+        """ Determine the reserve comparison report for two vSPD iterations
+
+        Parameters
+        ----------
+        self: class vSPUD
+            A vSPUD class with reserve results present
+        other: class vSPUD
+            Another vSPUD class with reserve results present
+        left_name: string, default "Control"
+            Identifying name to apply to the original vSPUD object
+        right_name: string, default "Override"
+            Identifying name to apply to the second vSPUD object
+        diff_name: string, default "Difference"
+            Identifying name to apply to the difference
+        diff_only: bool, default False
+            If True, return only the resulting columns
+        calc_type: string, default "reserve_results"
+            String to indicate which type of calculation should be made:
+            Implemented so far: ("reserve_results", "island_results",
+                "trader_results", "offer_results", "branch_results",
+                "bus_results")
+
+        Returns
+        -------
+        combined: DataFrame
+            A DataFrame of the combined results including the differences
+
+        """
+
+        indice_dict = {"trader_results": ["Date", "Trader"],
+                       "reserve_results": ["DateTime", "Island"],
+                       "island_results": ["DateTime", "Island"],
+                       "offer_results": ["DateTime", "Offer"],
+                       "branch_results": ["DateTime", "Branch", "FromBus", "ToBus"],
+                       "bus_results": ["DateTime", "Bus"]
+                       }
+
+        if calc_type == "reserve_results":
+            self.reserve_procurement(overwrite_results=True)
+            other.reserve_procurement(overwrite_results=True)
+
+        # Use dictionaries to make these calculations general purpose
+        indices = indice_dict[calc_type]
+        left = self.__dict__[calc_type].copy()
+        right = other.__dict__[calc_type].copy()
+
+        col_names = left.columns.tolist()
+        compare_columns = [x for x in col_names if self._invmatcher(x,indices)]
+
+        left.rename(columns={x: ' '.join([x, left_name]) for
+                    x in compare_columns}, inplace=True)
+
+        right.rename(columns={x: ' '.join([x, right_name]) for
+                    x in compare_columns}, inplace=True)
+
+        combined = left.merge(right, left_on=indices, right_on=indices)
+
+        for col in compare_columns:
+            self._differential(combined, col, left_name=left_name,
+                    right_name=right_name, diff_name=diff_name,
+                    method=method)
+
+        if diff_only:
+            cols = indices + [x for x in combined.columns if diff_name in x]
+            combined = combined[cols].copy()
+
+        return combined
+
+
+
+    def _differential(self, df, column, left_name=None, right_name=None,
+                      diff_name=None, method="Subtract"):
+        """ Calculate the differentials between columns in a DataFrame
+
+        Parameters
+        ----------
+        df: DataFrame
+            The Merged DataFrame to work on
+        column: string,
+            The column name to apply the differential to
+        left_name: string, default None
+            The name which has been applied to the columns of the left df
+        right_name: string, default None
+            The name which has been applied to the columns of the right df
+        diff_name: string, default None
+            The name to call the result
+        method: string ("Subtract", "Add")
+            What method to apply
+
+        Returns
+        -------
+        df: DataFrame
+            The DataFrame with the differential calculated
+
+        """
+
+        left = " ".join([column, left_name])
+        right = " ".join([column, right_name])
+        diff = " ".join([column, diff_name])
+
+        if method == 'Subtract':
+            df[diff] = df[left] - df[right]
+
+        if method == "Add":
+            df[diff] = df[left] + df[right]
+
+        return df
+
+
+    def _matcher(self, a, p):
+        for b in p:
+            if b not in a:
+                return False
+        return True
+
+
+    def _invmatcher(self, a, p):
+        for b in p:
+            if b in a:
+                return False
+        return True
+
+
     def _apply_time_filters(self, df, DateTime="DateTime", period=False,
                            day=False, month=False, year=False, inplace=False,
                            month_year=False, dayofyear=False):
@@ -372,7 +569,6 @@ class vSPUD(object):
 
         Parameters
         ----------
-
         df: DataFrame
             DataFrame to apply the time aggregations to
         DateTime: string, default "DateTime"
@@ -422,8 +618,103 @@ class vSPUD(object):
         if period:
             df["Period"] = df[DateTime].apply(lambda x: x.hour * 2 + 1 + x.minute / 30)
 
-
         return df
+
+
+    def _load_data(self, island=False, summary=False, system=False,
+        bus=False, reserve=False, trader=False, offer=False, branch=False,
+        node=False):
+        """
+        Load all of the vSPD data from the given folder.
+        If possible pass the folder as an absolute path to minimise issues.
+        It is called once on initiation of the class
+
+        Parameters
+        ----------
+        self.folder : str
+            The folder which contains the vSPD results to assess
+
+        Returns
+        -------
+        self.island_results: DataFrame
+        self.summary_results: DataFrame
+        self.system_results: DataFrame
+        self.bus_results: DataFrame
+        self.reserve_results: DataFrame
+        self.trader_results: DataFrame
+        self.offer_results: DataFrame
+        self.branch_results: DataFrame
+        """
+
+        folder_contents = glob.glob(os.path.join(self.folder, '*.csv'))
+        folder_dict = {os.path.basename(v).split('_')[1]: v for v in folder_contents}
+
+        # Load the data
+        if island:
+            self.island_results = pd.read_csv(folder_dict["IslandResults"])
+        if summary:
+            self.summary_results = pd.read_csv(folder_dict["SummaryResults"])
+        if system:
+            self.system_results = pd.read_csv(folder_dict["SystemResults.csv"])
+        if bus:
+            self.bus_results = pd.read_csv(folder_dict["BusResults"])
+        if reserve:
+            self.reserve_results = pd.read_csv(folder_dict["ReserveResults"])
+        if trader:
+            self.trader_results = pd.read_csv(folder_dict["TraderResults.csv"])
+        if node:
+            self.node_results = pd.read_csv(folder_dict["NodeResults"])
+        if offer:
+            self.offer_results = pd.read_csv(folder_dict["OfferResults"])
+        if branch:
+            self.branch_results = pd.read_csv(folder_dict["BranchResults"])
+
+    def _map_nodes(self, df, map_frame=None, left_on=None, right_on="Node"):
+        """ Map a DataFrame by its nodal location to a range of metadata
+        Can either pass a DataFrame of metadata to use, or rely upon the
+        built in set provided
+
+        Parameters
+        ----------
+        df: DataFrame
+            The DataFrame to be mapped
+        map_frame: DataFrame, bool, default None
+            Optional, the mapping frame to use
+        left_on: string, default None
+            What column to merge the meta data on
+        right_on: string, default None
+            What column in the mapping frame to merge by
+
+        Returns
+        -------
+        map_df: DataFrame
+            A DataFrame consisting of the original DataFrame plus the
+            additional Metadata merged in.
+
+        """
+
+        if not map_frame:
+            map_frame = pd.read_csv(CONFIG['map-location'])
+            map_frame = map_frame[["Node", "Region", "Island Name", "Generation Type"]]
+
+        return df.merge(map_frame, left_on=left_on, right_on=right_on)
+
+
+def setup_vspd():
+    folder = '/home/nigel/data/Pole_Three_Sample_Data'
+
+    CFact = vSPUD_Factory(folder, "Control")
+    OFact = vSPUD_Factory(folder, "Override")
+
+    spud1 = CFact.load_results(island_results=True, summary_results=True,
+                system_results=True, bus_results=True, reserve_results=True,
+                trader_results=True, offer_results=True, branch_results=True)
+
+    spud2 = OFact.load_results(island_results=True, summary_results=True,
+                system_results=True, bus_results=True, reserve_results=True,
+                trader_results=True, offer_results=True, branch_results=True)
+
+    return spud1, spud2
 
 if __name__ == '__main__':
     pass

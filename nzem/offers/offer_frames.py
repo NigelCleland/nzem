@@ -14,6 +14,9 @@ import datetime as dt
 from dateutil.parser import parse
 from collections import defaultdict
 from datetime import datetime, timedelta
+import collections
+import functools
+import itertools
 
 # Non C Dependencies
 import simplejson as json
@@ -32,7 +35,7 @@ except:
 
 try:
     CONFIG = json.load(open(os.path.join(
-        os.path.expanduser('~/python/nzem/nzem'), 'config.json')))
+        os.path.expanduser('~/python/nzem/nzem/_static/'), 'config.json')))
 except:
     print "CONFIG File does not exist"
 
@@ -171,7 +174,7 @@ class Offer(object):
         """
 
 
-        if not type(self.offer_stack) == pd.core.frame.DataFrame:
+        if not isinstance(self.offer_stack, pd.DataFrame):
             self.stack_columns()
 
         fstack = self.offer_stack.copy()
@@ -208,8 +211,7 @@ class Offer(object):
         if return_df:
             return fstack
 
-
-    def clear_offers(self, requirement, fstack=None, return_df=True):
+    def clear_offer(self, requirement, fstack=None, return_df=True):
         """ Clear the offer stack against a requirement
 
         Parameters
@@ -225,72 +227,52 @@ class Offer(object):
 
         Returns
         -------
-        self.cleared_fstack : pandas DataFrame
+        cleared_stack : DataFrame
             A DataFrame which has been cleared against the requirement
+        uncleared_stack: DataFrame
+            A DataFrame containing the offers which were not cleared
 
         """
 
-        if requirement < 0:
-            raise ValueError("Requirement must be a positive number")
-
-
-        if not type(fstack) == pd.core.frame.DataFrame:
+        if not isinstance(fstack, pd.DataFrame):
             fstack = self.fstack.copy()
 
-        if len(fstack["Trading Datetime"].unique()) > 1:
-            raise ValueError("Filtered Dataset contains more than one\
-                              date, this invalidates the clearing")
-
-        if len(fstack["Reserve Type"].unique()) > 1:
-            raise ValueError("Filtered Dataset contains more than one\
-                              type of data, this invalidates the clearing")
-
-        # Harsh stop if axis is of zero size
         if len(fstack) == 0:
-            return None
+            raise ValueError("fstack must be a DataFrame, \
+                                current size is zero")
 
-        # Drop the zero offers
-        fstack = fstack.gt_mask("Max", 0.0)
+        if requirement <= 0:
+            return (None, fstack)
+
+        # Drop all non-zero offers
+        fstack = fstack[fstack["Max"] > 0]
+
         # Sort by price
-        fstack.sort(columns=["Price"], inplace=True)
+        fstack = fstack.sort(columns=["Price"])
+
+        # Cumulative Offer
+        fstack["Cumulative Offer"] = fstack["Max"].cumsum()
 
         # Reindex
         fstack.index = np.arange(len(fstack))
 
-        # Cumulative Offers
-        fstack["Cumulative Offers"] = fstack["Max"].cumsum()
+        # Get marginal unit index
+        try:
+            marginal_unit = fstack[fstack["Cumulative Offer"] >= requirement].index[0]
+        except:
+            marginal_unit = fstack.iloc[-1].name
 
-        # Apply a cleared flag
-        if fstack["Cumulative Offers"].max() <= requirement:
-            try:
-                marginal_unit = fstack.ge_mask("Cumulative Offers", requirement).index[0]
-            except:
-                return None
-        else:
+        # Get the stacks
+        cleared_stack = fstack.iloc[:marginal_unit+1].copy()
+        uncleared_stack = fstack.iloc[marginal_unit:].copy()
 
-            marginal_unit = fstack.index[-1]
-        fstack["Cleared"] = False
-        fstack["Cleared"][:marginal_unit+1] = True
+        # Change the marginal unit to reflect the true params
+        remain = uncleared_stack["Cumulative Offer"][marginal_unit] - requirement
 
-        # Manual flagging if requirement = 0
-        if requirement == 0.:
-            fstack["Cleared"][0] = False
+        uncleared_stack["Max"][marginal_unit] = remain
+        cleared_stack["Max"][marginal_unit] = cleared_stack["Max"][marginal_unit] - remain
 
-        # Determine the dispatched quantity
-        fstack["Cleared Quantity"] = 0
-        fstack["Cleared Quantity"][:marginal_unit] = fstack["Max"][:marginal_unit]
-
-        # Special case for the marginal unit.
-        fstack["Cleared Quantity"][marginal_unit] = requirement - fstack["Max"][:marginal_unit].sum()
-
-        # Determine the dispatched price
-        fstack["Clearing Price"] = fstack.eq_mask("Cleared", True)["Price"].max()
-
-        self.cleared_fstack = fstack
-        if return_df:
-            return fstack
-
-
+        return cleared_stack, uncleared_stack
 
 
     def _stacker(self):
@@ -363,7 +345,8 @@ class Offer(object):
 
         if not user_map:
             user_map = pd.read_csv(CONFIG['map-location'])
-            user_map = user_map[["Node", "Load Area", "Island Name"]]
+            user_map = user_map[["Node", "Load Area", "Island Name",
+                                 "Generation Type"]]
             user_map.rename(columns={"Node": "Grid Exit Point",
                 "Load Area": "Region", "Island Name": "Island"}, inplace=True)
 
@@ -378,7 +361,9 @@ class Offer(object):
     def _apply_datetime(self, date_col="Trading Date",
             period_col="Trading Period", datetime_col="Trading Datetime"):
 
-        self.offers[datetime_col] = self.offers[date_col] + self.offers[period_col].apply(self._period_minutes)
+        period_map = {x: self._period_minutes(x) for x in set(self.offers[period_col])}
+
+        self.offers[datetime_col] = self.offers[date_col] + self.offers[period_col].map(period_map)
 
 
     def _period_minutes(self, period):
@@ -404,10 +389,10 @@ class ILOffer(Offer):
 
     def merge_stacked_offers(self, plsr_offer):
 
-        if not type(self.offer_stack) == pd.core.frame.DataFrame:
+        if not isinstance(self.offer_stack, pd.DataFrame):
             self.stack_columns()
 
-        if not type(plsr_offer.offer_stack) == pd.core.frame.DataFrame:
+        if not isinstance(plsr_offer.offer_stack, pd.DataFrame):
             plsr_offer.stack_columns()
 
         return ReserveOffer(pd.concat([self.offer_stack,
@@ -427,10 +412,10 @@ class PLSROffer(Offer):
 
     def merge_stacked_offers(self, il_offer):
 
-        if not type(self.offer_stack) == pd.core.frame.DataFrame:
+        if not isinstance(self.offer_stack, pd.DataFrame):
             self.stack_columns()
 
-        if not type(il_offer.offer_stack) == pd.core.frame.DataFrame:
+        if not isinstance(il_offer.offer_stack, pd.DataFrame):
             il_offer.stack_columns()
 
         return ReserveOffer(pd.concat([self.offer_stack,
@@ -450,6 +435,175 @@ class ReserveOffer(Offer):
         # to the offer stack
         self.offer_stack = offers
 
+    def NRM_Clear(self, fstack=None, max_req=0, ni_min=0, si_min=0):
+        """ Clear the reserve offers as though the National Reserve Market
+        was in effect. In effect will clear the market three times, with
+        a reduced offer DataFrame each time.
+
+        Note fstack must have been filtered already.
+
+        Parameters
+        ----------
+        fstack: DataFrame, default None
+            If desired don't use the "saved" filtered stack
+        max_req: int, float, default 0
+            The maximum requirement for reserves across the whole country.
+        ni_min: int, float, default 0
+            The North Island minimum requirement for reserve
+        si_min: int, float, default 0
+            The South Island minimum requirement for reserve
+
+        Returns
+        -------
+        all_clear: DataFrame
+            DataFrame which contains only the units which were cleared
+            in the dispatch along with the respective North and South
+            Island prices.
+
+        Usage
+        -----
+        Note, this solver can be used to run a number of different
+        possibilities depending upon the requirements passed.
+        This improves the utility and flexibility of the method
+        substantially, see the examples below for how to do this.
+        The mixed market approach is intended for assessing a national
+        reserve market in the presence of an HVDC link.
+
+        Example One: Pure National Reserve Market
+        >>> NRM_Clear(max_req=requirement, ni_min=0, si_min=0)
+
+        Example Two: Stand alone Reserve Market
+        >>> NRM_clear(max_req=0, ni_min=ni_risk, si_min=si_risk)
+
+        Example Three: Mixed Market (exporting island reserve cannot
+                                     securve importing island risk)
+        >>> NRM_Clear(max_req=max_risk, ni_min=ni_hvdc, si_min=si_hvdc)
+
+        """
+
+        if not isinstance(fstack, pd.DataFrame):
+            fstack = self.fstack.copy()
+
+        national_requirement = max(max_req - ni_min - si_min, 0.)
+
+        (nat_clear, nat_remain) = self.clear_offer(requirement=national_requirement, fstack=fstack)
+
+        # I don't think this section is write, hence commenting out for now
+        # # Calculate how much has been cleared from each island
+        # if isinstance(nat_clear, pd.DataFrame):
+        #     ni_cleared = nat_clear.eq_mask("Island", "North Island")["Max"].sum()
+        #     si_cleared = nat_clear.eq_mask("Island", "South Island")["Max"].sum()
+        # else:
+        #     ni_cleared = 0
+        #     si_cleared = 0
+
+        # # Adjust the minimum requirements appropriately
+        # ni_min = max(ni_min - ni_cleared, 0)
+        # si_min = max(si_min - si_cleared, 0)
+
+        # Calculate the new stacks
+        ni_stack = nat_remain.eq_mask("Island", "North Island")
+        si_stack = nat_remain.eq_mask("Island", "South Island")
+
+        # Clear each island individually
+        (ni_clear, ni_remain) = self.clear_offer(requirement=ni_min,
+                fstack=ni_stack)
+        (si_clear, si_remain) = self.clear_offer(requirement=si_min,
+                fstack=si_stack)
+
+        # Set the prices
+        nat_price = 0
+        if isinstance(nat_clear, pd.DataFrame):
+            nat_price = max(nat_clear.iloc[-1]["Price"],0)
+
+        if isinstance(ni_clear, pd.DataFrame):
+            ni_price = max(ni_clear.iloc[-1]["Price"],nat_price)
+        else:
+            ni_price = nat_price
+
+        if isinstance(si_clear, pd.DataFrame):
+            si_price = max(si_clear.iloc[-1]["Price"],nat_price)
+        else:
+            si_price = nat_price
+
+        all_clear = pd.concat((nat_clear, ni_clear, si_clear), ignore_index=True)
+        all_clear["NI Price"] = ni_price
+        all_clear["SI Price"] = si_price
+
+        return all_clear
+
+    def clear_all_NRM(self, clearing_requirements):
+        """ Clear all of the NRM for a particular Reserve Offer
+        DataFrame. Will iterate through all reserve types,
+        trading dates and trading periods and match these with requirements
+        for solving as a NRM.
+
+        Parameters
+        ----------
+        self: ReserveOffer object
+        clearing_requirements: DataFrame
+            Multiindexed DataFrame containing the requirements for
+            reserve both in total and for each island.
+
+        Returns
+        -------
+        NRM_Cleared_Stack: DataFrame
+            A DataFrame containing information for all units which were
+            cleared in the operation of a NRM.
+
+
+        """
+        combinations = list(itertools.product(
+                    self.offer_stack["Trading Date"].unique(),
+                    self.offer_stack["Trading Period"].unique(),
+                    self.offer_stack["Reserve Type"].unique()
+                            ))
+
+        return pd.concat(self._yield_NRM_result(clearing_requirements,
+                             combinations), ignore_index=True)
+
+
+
+    def _yield_NRM_result(self, clearing_requirements, combinations):
+        """ Generator to calculate the solved solution to the NRM
+        result to be computationally lazy.
+
+        Parameters
+        ----------
+        self: class
+            To perform the Filter assessment on
+        clearing_requirements: DataFrame
+            DataFrame with a multi index of (date, period, reserve_type)
+            Is index to determine the requirements
+        combinations: list
+            List of all combinations to assess
+
+        Returns
+        -------
+        nrm_solution: DataFrame
+            The solution to a single iteration of the NRM clearer
+            Is a generator object to feed into a concatenation
+
+        """
+
+        for (date, period, reserve_type) in combinations:
+
+            # Get the requirements
+            try:
+                max_req, ni_min, si_min = clearing_requirements.ix[date].ix[period].ix[reserve_type].values
+            except:
+                yield None
+
+            # Filter the data
+            fstack = self.filter_stack(date=date, period=period,
+                                        reserve_type=reserve_type)
+
+            # Run the NRM Solver
+            nrm_solution = self.NRM_Clear(fstack=fstack, max_req=max_req,
+                        ni_min=ni_min, si_min=si_min)
+
+            yield nrm_solution
+
 
 class EnergyOffer(Offer):
     """ Wrapper around an Energy Offer dataframe which provides a number
@@ -461,3 +615,5 @@ class EnergyOffer(Offer):
         super(EnergyOffer, self).__init__(offers)
 
 
+if __name__ == '__main__':
+    pass
