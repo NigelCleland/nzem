@@ -60,7 +60,7 @@ class vSPUD_Factory(object):
         # Recursively walk the directories, this handles a nested structure
         # if necessary to the factory operation
         self.sub_folders = [dire for (dire, subdir,
-                files) in os.walk(master_folder) if files and '.csv' in files[0]]
+                files) in os.walk(master_folder) if files and '.csv' in files[3]]
         if patterns:
             self.match_pattern(patterns=patterns)
 
@@ -83,8 +83,9 @@ class vSPUD_Factory(object):
 
         """
 
-        folders = glob.glob(os.path.join(self.master_folder, '*'))
-        folders = [x for x in folders if os.path.isdir(x)]
+        folders = [dire for (dire, subdir,
+                files) in os.walk(self.master_folder) if files and
+                '.csv' in files[3]]
         subfolders = [x for x in folders if self._matcher(x, patterns)]
         self.sub_folders = subfolders
 
@@ -94,6 +95,31 @@ class vSPUD_Factory(object):
             if b not in a:
                 return False
         return True
+
+
+    def load_all(self, pattern=None):
+        """ Convenience wrapper to load the entirety of data from a folder
+
+        Parameters
+        ----------
+        self: Must have had
+        pattern: tuple, default None
+            Optional apply a pattern
+
+        Returns
+        -------
+        vSPUD: class
+            A vSPUD object with all data fully loaded
+
+        """
+
+        if isinstance(pattern, tuple):
+            self.match_pattern(pattern)
+
+        return self.load_results(island_results=True, summary_results=True,
+                system_results=True, bus_results=True, reserve_results=True,
+                trader_results=True, offer_results=True, branch_results=True)
+
 
 
     def load_results(self, island_results=None, summary_results=None,
