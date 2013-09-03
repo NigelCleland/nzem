@@ -438,8 +438,8 @@ class vSPUD(object):
         res_results = self.reserve_results.copy()
 
 
-        fir_cols = [x for x in res_results.columns if "FIR" in x and not "Violation" in x]
-        sir_cols = [x for x in res_results.columns if "SIR" in x and not "Violation" in x]
+        fir_cols = ["FIR Reqd (MW)", "FIR Price ($/MW)"]
+        sir_cols = ["SIR Reqd (MW)" ,"SIR Price ($/MW)"]
 
         res_results["FIR Procurement ($)"] = res_results[fir_cols].product(axis=1)
         res_results["SIR Procurement ($)"] = res_results[sir_cols].product(axis=1)
