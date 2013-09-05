@@ -13,6 +13,7 @@ import simplejson as json
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Import nzem
 
@@ -878,8 +879,61 @@ class vSPUD(object):
         return df.merge(map_frame, left_on=left_on, right_on=right_on)
 
 
-        # PLOTTING
+    def _time_keywords(self, x=None):
+        time_dict = {"Month_Year": {'month_year': True},
+                     "Period": {"period": True},
+                     "Day": {'day': True},
+                     "Month": {'month': True},
+                     "Year": {'year': True},
+                     "Day_Of_Year": {'day_of_year': True}
+                     }
 
+        if isinstance(x, str):
+            return time_dict[x]
+
+        elif isinstance(x, tuple) or isinstance(x, list):
+            return {k: v for i in x for k, v in time_dict[i].iteritems()}
+
+
+
+
+    # PLOT COMMANDS
+
+    def energy_price_series(self, fig=None, axes=None,
+                time_aggregation="Month_Year",
+                agg_func=np.mean):
+
+
+        karg_dict = self._time_keywords(time_aggregation)
+        # Create a figure and axes
+        if not fig and not axes:
+            fig, axes = plt.subplots(1,1, figsize=(16,9))
+
+
+        # Aggregate the data
+        price_report = self.price_report()
+
+        if time_aggregation:
+            price_report = self._apply_time_filters(price_report, **karg_dict)
+
+        # Aggregate
+        pseries = price_report.groupby(time_aggregation).aggregate(np.mean)
+
+        return pseries
+
+
+    # Plot work horses
+
+    def _frequency_plot(self, data, axes, alpha=0.5, bins=50,
+                        facecolor='green'):
+
+        return axes.hist(data, bins=bins, alpha=alpha, facecolor=facecolor)
+
+    def _timeseries_plot(self, tdata, ydata, axes, marker='.',
+                         linestyle='-', c='g', alpha=0.5):
+
+        return axes.plot(tdata, ydata, c=c, linestyle=linestyle,
+                          alpha=alpha, marker=marker)
 
 
 
