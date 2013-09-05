@@ -493,6 +493,38 @@ class vSPUD(object):
         return df
 
 
+    def price_series(self, time_aggregation="Month_Year", agg_func=np.mean):
+        """ Construct an aggregated price series according to the aggregation
+        metric and function specified
+
+        Parameters
+        ----------
+        self:
+        time_aggregation: string, default "Month_Year"
+            The time aggregation to be applied
+        agg_func: func
+            The aggregation function to apply
+
+        Returns
+        -------
+        price_report: DataFrame
+            An aggregated price report of time series data
+
+        """
+
+        karg_dict = self._time_keywords(time_aggregation)
+
+        # Create a report
+        price_report = self.price_report()
+
+        if time_aggregation:
+            price_report = self._apply_time_filters(price_report, **karg_dict)
+            # Aggregate
+            price_report = price_report.groupby(
+                                    time_aggregation).aggregate(np.mean)
+
+        return price_report
+
 
     def price_report(self):
         """ Create a brief aggregation of the Reference Energy
@@ -898,30 +930,6 @@ class vSPUD(object):
 
 
     # PLOT COMMANDS
-
-    def energy_price_series(self, fig=None, axes=None,
-                time_aggregation="Month_Year",
-                agg_func=np.mean):
-
-
-        karg_dict = self._time_keywords(time_aggregation)
-        # Create a figure and axes
-        if not fig and not axes:
-            fig, axes = plt.subplots(1,1, figsize=(16,9))
-
-
-        # Aggregate the data
-        price_report = self.price_report()
-
-        if time_aggregation:
-            price_report = self._apply_time_filters(price_report, **karg_dict)
-
-        # Aggregate
-        pseries = price_report.groupby(time_aggregation).aggregate(np.mean)
-
-        return pseries
-
-
     # Plot work horses
 
     def _frequency_plot(self, data, axes, alpha=0.5, bins=50,
