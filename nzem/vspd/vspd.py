@@ -353,7 +353,7 @@ class vSPUD(object):
                         location_aggregation="Island Name",
                         company_aggregation=False,
                         generation_aggregation=True,
-                        agg_func=np.sum, , left_name="Control",
+                        agg_func=np.sum,left_name="Control",
                         right_name="Override", diff_name="Diff"):
         """ Construct a dispatch table and optionally output this to
         a LaTeX file for inclusion in a document.
