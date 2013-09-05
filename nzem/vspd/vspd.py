@@ -345,6 +345,72 @@ class vSPUD(object):
         return timeoffers.groupby(group_col).aggregate(agg_func)
 
 
+    def dispatch_table(self, other, time_aggregation="Year",
+                        location_aggregation="Island Name",
+                        company_aggregation=False,
+                        generation_aggregation=False,
+                        agg_func=np.sum,
+                        report_unit="MWh",
+                        left_name="Control",
+                        right_name="Override",
+                        latex_fName=None):
+        """ Construct a dispatch table
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
+
+        # Multiplication factors to scale from the given MW values
+        report_scale = {"kWh": 500, "MWh": 0.5, "GWh": 0.0005, "TWh": 0.000005}
+
+        # Construct the dispatch reports
+        init_dispatch = self.dispatch_report(
+                        time_aggregation=time_aggregation,
+                        location_aggregation=location_aggregation,
+                        company_aggregation=company_aggregation,
+                        generation_aggregation=generation_aggregation,
+                        agg_func=agg_func)
+
+        other_dispatch = other.dispatch_report(
+                        time_aggregation=time_aggregation,
+                        location_aggregation=location_aggregation,
+                        company_aggregation=company_aggregation,
+                        generation_aggregation=generation_aggregation,
+                        agg_func=agg_func)
+
+
+        # Scale the values
+        init_dispatch = init_dispatch * report_scale[report_unit]
+        other_dispatch = other_dispatch * report_scale[report_unit]
+
+        compare_columns = init_dispatch.columns.tolist()
+
+        # Rename the columns
+        init_dispatch.rename(columns={x: " ".join([left_name, x]) for x in init_dispatch.columns}, inplace=True)
+
+        other_dispatch.rename(columns={x: " ".join([left_name, x]) for x in other_dispatch.columns}, inplace=True)
+
+        # Merge the DataFrames
+        combined = init_dispatch.merge(other_dispatch, left_index=True,
+                                                       right_index=True)
+
+        # Calculate the differences
+
+        for col in compare_columns:
+            self._differential(combined, col, left_name=left_name,
+                    right_name=right_name, diff_name=diff_name,
+                    method=method)
+
+        # Get rid of the multi index and return as DataFrame
+
+        if latex_fName:
+            combined.to_latex(latex_fName)
+
+        return combined
 
 
     def price_report(self):
