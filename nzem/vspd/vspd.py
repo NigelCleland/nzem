@@ -326,15 +326,7 @@ class vSPUD(object):
         aggregations = (time_aggregation, location_aggregation,
                         company_aggregation, generation_aggregation)
 
-        # Construct a keyword argument dict for the time aggregation
-        karg_dict = {"DateTime": {"day": False},
-                     "Period": {"period": True},
-                     "Day": {"day": True},
-                     "Year": {"year": True},
-                     "Day_Of_Year": {"dayofyear": True},
-                     "Month_Year": {"month_year": True}}
-
-        kargs = karg_dict[time_aggregation]
+        kargs = self._time_keywords(time_aggregation)
 
         # Map the Offers
         mapoffers = self.map_dispatch()
@@ -511,13 +503,11 @@ class vSPUD(object):
             An aggregated price report of time series data
 
         """
-
-        karg_dict = self._time_keywords(time_aggregation)
-
         # Create a report
         price_report = self.price_report()
 
         if time_aggregation:
+            karg_dict = self._time_keywords(time_aggregation)
             price_report = self._apply_time_filters(price_report, **karg_dict)
             # Aggregate
             price_report = price_report.groupby(
@@ -582,12 +572,8 @@ class vSPUD(object):
         overwrite_results: bool, default False, optional
             Whether to overwrite the original reserve_results DataFrame with
             one containing the procurement information
-        apply_time: bool, default False, optional
-            Apply the time aggregations if needed with details specified in
-            **kargs
-        **kargs: booleans,
-            What optional time aggregation values to apply, defaults to all
-            aggregations.
+        apply_time: string, default False, optional
+            Apply the time aggregations, must be a recognizable string.
         aggregation: list, default None, optional
             A list of columns to aggregate the procurement by
         agg_func: function, default np.sum
@@ -624,7 +610,8 @@ class vSPUD(object):
         res_results["SIR Procurement ($)"] = res_results[sir_cols].product(axis=1)
 
         if apply_time:
-            res_results = self._apply_time_filters(res_results, **kargs)
+            karg_dict = self._time_keywords(apply_time)
+            res_results = self._apply_time_filters(res_results, **karg_dict)
 
         if overwrite_results:
             self.reserve_results = res_results
