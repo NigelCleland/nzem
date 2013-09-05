@@ -408,7 +408,7 @@ class vSPUD(object):
                     method="Subtract")
 
         # Report Columns
-        report_col = [x for x in combined.columns if self._matcher(x,
+        report_col = [x for x in combined.columns if self._matchiter(x,
                                                 report_columns)]
 
         combined = combined[report_col].copy()
@@ -440,7 +440,7 @@ class vSPUD(object):
         """
 
         index_array = np.array(df.index.tolist())
-        for i, name in df.index.names:
+        for i, name in enumerate(df.index.names):
             df[name] = index_array[:,i]
 
         if int_index:
@@ -686,6 +686,12 @@ class vSPUD(object):
             if b in a:
                 return False
         return True
+
+    def _matchiter(self, a, p):
+        for b in p:
+            if b in a:
+                return True
+        return False
 
 
     def _apply_time_filters(self, df, DateTime="DateTime", period=False,
