@@ -878,6 +878,11 @@ class vSPUD(object):
         return df.merge(map_frame, left_on=left_on, right_on=right_on)
 
 
+        # PLOTTING
+
+
+
+
 def setup_vspd():
     folder = '/home/nigel/data/Pole_Three_Sample_Data'
 
