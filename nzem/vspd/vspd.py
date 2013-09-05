@@ -13,6 +13,7 @@ import simplejson as json
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Import nzem
 
@@ -325,15 +326,7 @@ class vSPUD(object):
         aggregations = (time_aggregation, location_aggregation,
                         company_aggregation, generation_aggregation)
 
-        # Construct a keyword argument dict for the time aggregation
-        karg_dict = {"DateTime": {"day": False},
-                     "Period": {"period": True},
-                     "Day": {"day": True},
-                     "Year": {"year": True},
-                     "Day_Of_Year": {"dayofyear": True},
-                     "Month_Year": {"month_year": True}}
-
-        kargs = karg_dict[time_aggregation]
+        kargs = self._time_keywords(time_aggregation)
 
         # Map the Offers
         mapoffers = self.map_dispatch()
@@ -492,6 +485,36 @@ class vSPUD(object):
         return df
 
 
+    def price_series(self, time_aggregation="Month_Year", agg_func=np.mean):
+        """ Construct an aggregated price series according to the aggregation
+        metric and function specified
+
+        Parameters
+        ----------
+        self:
+        time_aggregation: string, default "Month_Year"
+            The time aggregation to be applied
+        agg_func: func
+            The aggregation function to apply
+
+        Returns
+        -------
+        price_report: DataFrame
+            An aggregated price report of time series data
+
+        """
+        # Create a report
+        price_report = self.price_report()
+
+        if time_aggregation:
+            karg_dict = self._time_keywords(time_aggregation)
+            price_report = self._apply_time_filters(price_report, **karg_dict)
+            # Aggregate
+            price_report = price_report.groupby(
+                                    time_aggregation).aggregate(np.mean)
+
+        return price_report
+
 
     def price_report(self):
         """ Create a brief aggregation of the Reference Energy
@@ -549,12 +572,8 @@ class vSPUD(object):
         overwrite_results: bool, default False, optional
             Whether to overwrite the original reserve_results DataFrame with
             one containing the procurement information
-        apply_time: bool, default False, optional
-            Apply the time aggregations if needed with details specified in
-            **kargs
-        **kargs: booleans,
-            What optional time aggregation values to apply, defaults to all
-            aggregations.
+        apply_time: string, default False, optional
+            Apply the time aggregations, must be a recognizable string.
         aggregation: list, default None, optional
             A list of columns to aggregate the procurement by
         agg_func: function, default np.sum
@@ -591,7 +610,8 @@ class vSPUD(object):
         res_results["SIR Procurement ($)"] = res_results[sir_cols].product(axis=1)
 
         if apply_time:
-            res_results = self._apply_time_filters(res_results, **kargs)
+            karg_dict = self._time_keywords(apply_time)
+            res_results = self._apply_time_filters(res_results, **karg_dict)
 
         if overwrite_results:
             self.reserve_results = res_results
@@ -878,8 +898,37 @@ class vSPUD(object):
         return df.merge(map_frame, left_on=left_on, right_on=right_on)
 
 
-        # PLOTTING
+    def _time_keywords(self, x=None):
+        time_dict = {"Month_Year": {'month_year': True},
+                     "Period": {"period": True},
+                     "Day": {'day': True},
+                     "Month": {'month': True},
+                     "Year": {'year': True},
+                     "Day_Of_Year": {'day_of_year': True}
+                     }
 
+        if isinstance(x, str):
+            return time_dict[x]
+
+        elif isinstance(x, tuple) or isinstance(x, list):
+            return {k: v for i in x for k, v in time_dict[i].iteritems()}
+
+
+
+
+    # PLOT COMMANDS
+    # Plot work horses
+
+    def _frequency_plot(self, data, axes, alpha=0.5, bins=50,
+                        facecolor='green'):
+
+        return axes.hist(data, bins=bins, alpha=alpha, facecolor=facecolor)
+
+    def _timeseries_plot(self, tdata, ydata, axes, marker='.',
+                         linestyle='-', c='g', alpha=0.5):
+
+        return axes.plot(tdata, ydata, c=c, linestyle=linestyle,
+                          alpha=alpha, marker=marker)
 
 
 
