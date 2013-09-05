@@ -303,7 +303,8 @@ class vSPUD(object):
             to aggregate by
         generation_aggregation: bool, default False
             Whether to aggregate by generation type or not
-
+        agg_func: function
+            Aggregation function to apply in the report
 
         Returns
         -------
@@ -345,25 +346,61 @@ class vSPUD(object):
         return timeoffers.groupby(group_col).aggregate(agg_func)
 
 
-    def dispatch_table(self, other, time_aggregation="Year",
+    def dispatch_table(self, other, report_unit="GWh",
+                        latex_fName=None, force_int=True,
+                        report_columns=("Generation", "FIR", "SIR"),
+                        time_aggregation="Year",
                         location_aggregation="Island Name",
                         company_aggregation=False,
                         generation_aggregation=True,
-                        agg_func=np.sum,
-                        report_unit="GWh",
-                        left_name="Control",
-                        right_name="Override",
-                        diff_name="Diff",
-                        latex_fName=None,
-                        report_columns=("Generation", "FIR", "SIR")):
-        """ Construct a dispatch table
+                        agg_func=np.sum, , left_name="Control",
+                        right_name="Override", diff_name="Diff"):
+        """ Construct a dispatch table and optionally output this to
+        a LaTeX file for inclusion in a document.
+
+        Currently a few issues with formatting the LaTeX tables.
+        Need to work on this. Most likely with the formatters?
+        Not sure. Currently option to force integer results exist.
 
         Parameters
         ----------
+        self: class vSPUD
+            A vSPUD class with dispatch results present
+        other: class vSPUD
+            Another vSPUD class with dispatch results present
+        report_unit: string, default "GWh"
+            What unit the results should be reported in.
+        latex_fName: string, default None
+            Optional, save the result to a LaTeX file
+        force_int: bool, default True
+            Force the output to be as integers, not floats
+        report_columns: tuple, default ("Generation", "FIR", "SIR")
+            What metrics to compute, may be a subset of the default tuple
+            only.
+        time_aggregation: string, default "DateTime"
+            Column name of the time aggregation to be applied options include
+            ("Period", "Day", "Month", "Year", "Month_Year", "Day_Of_Year")
+        location_aggregation: string, default "Island Name"
+            Column name of the location aggregation to be applied options
+            ("Island Name", "Region", "Offers")
+        company_aggregation: bool, default False
+            Not currently implemented, will be what column name of the company
+            to aggregate by
+        generation_aggregation: bool, default False
+            Whether to aggregate by generation type or not
+        agg_func: function
+            Aggregation function to apply in the report
+        left_name: string, default "Control"
+            Identifying name to apply to the original vSPUD object
+        right_name: string, default "Override"
+            Identifying name to apply to the second vSPUD object
+        diff_name: string, default "Difference"
+            Identifying name to apply to the difference
 
         Returns
         -------
-
+        combined: DataFrame
+            DataFrame with the tabulated report data present
         """
 
         # Multiplication factors to scale from the given MW values
@@ -407,15 +444,20 @@ class vSPUD(object):
                     right_name=right_name, diff_name=diff_name,
                     method="Subtract")
 
+        if force_int:
+            combined = combined.astype(np.int64)
+
         # Report Columns
         report_col = [x for x in combined.columns if self._matchiter(x,
                                                 report_columns)]
 
         combined = combined[report_col].copy()
 
+        # Change the reporting unit
+        combined.rename(columns={x: x.replace("MW", report_unit) for x in combined.columns if "MW" in x}, inplace=True)
+
         # Get rid of the multi index and return as DataFrame
         combined = self._mindex_to_col(combined)
-
 
         if latex_fName:
             combined.to_latex(latex_fName)
@@ -424,6 +466,7 @@ class vSPUD(object):
 
     def _mindex_to_col(self, df, int_index=True):
         """ Convert a multi index back to DataFrame columns
+        Will preserve the ordering of the multi index as column indices
 
         Parameters
         ----------
@@ -441,7 +484,7 @@ class vSPUD(object):
 
         index_array = np.array(df.index.tolist())
         for i, name in enumerate(df.index.names):
-            df[name] = index_array[:,i]
+            df.insert(i, name, index_array[:,i])
 
         if int_index:
             df.index = np.arange(len(df))
