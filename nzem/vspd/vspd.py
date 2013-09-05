@@ -348,12 +348,14 @@ class vSPUD(object):
     def dispatch_table(self, other, time_aggregation="Year",
                         location_aggregation="Island Name",
                         company_aggregation=False,
-                        generation_aggregation=False,
+                        generation_aggregation=True,
                         agg_func=np.sum,
-                        report_unit="MWh",
+                        report_unit="GWh",
                         left_name="Control",
                         right_name="Override",
-                        latex_fName=None):
+                        diff_name="Diff",
+                        latex_fName=None,
+                        report_columns=("Generation", "FIR", "SIR")):
         """ Construct a dispatch table
 
         Parameters
@@ -390,9 +392,9 @@ class vSPUD(object):
         compare_columns = init_dispatch.columns.tolist()
 
         # Rename the columns
-        init_dispatch.rename(columns={x: " ".join([left_name, x]) for x in init_dispatch.columns}, inplace=True)
+        init_dispatch.rename(columns={x: " ".join([x, left_name]) for x in init_dispatch.columns}, inplace=True)
 
-        other_dispatch.rename(columns={x: " ".join([left_name, x]) for x in other_dispatch.columns}, inplace=True)
+        other_dispatch.rename(columns={x: " ".join([x, right_name]) for x in other_dispatch.columns}, inplace=True)
 
         # Merge the DataFrames
         combined = init_dispatch.merge(other_dispatch, left_index=True,
@@ -403,14 +405,49 @@ class vSPUD(object):
         for col in compare_columns:
             self._differential(combined, col, left_name=left_name,
                     right_name=right_name, diff_name=diff_name,
-                    method=method)
+                    method="Subtract")
+
+        # Report Columns
+        report_col = [x for x in combined.columns if self._matcher(x,
+                                                report_columns)]
+
+        combined = combined[report_col].copy()
 
         # Get rid of the multi index and return as DataFrame
+        combined = self._mindex_to_col(combined)
+
 
         if latex_fName:
             combined.to_latex(latex_fName)
 
         return combined
+
+    def _mindex_to_col(self, df, int_index=True):
+        """ Convert a multi index back to DataFrame columns
+
+        Parameters
+        ----------
+        df: DataFrame
+            A DataFrame which is named and has a multi index
+        int_index: bool, default True
+            Replace the current index with an integer index
+
+        Returns
+        -------
+        df: DataFrame
+            DataFrame with a multi index as columns
+
+        """
+
+        index_array = np.array(df.index.tolist())
+        for i, name in df.index.names:
+            df[name] = index_array[:,i]
+
+        if int_index:
+            df.index = np.arange(len(df))
+
+        return df
+
 
 
     def price_report(self):
