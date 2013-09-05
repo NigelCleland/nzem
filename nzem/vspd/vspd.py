@@ -303,7 +303,8 @@ class vSPUD(object):
             to aggregate by
         generation_aggregation: bool, default False
             Whether to aggregate by generation type or not
-
+        agg_func: function
+            Aggregation function to apply in the report
 
         Returns
         -------
@@ -344,6 +345,151 @@ class vSPUD(object):
         # Construct the report
         return timeoffers.groupby(group_col).aggregate(agg_func)
 
+
+    def dispatch_table(self, other, report_unit="GWh",
+                        latex_fName=None, force_int=True,
+                        report_columns=("Generation", "FIR", "SIR"),
+                        time_aggregation="Year",
+                        location_aggregation="Island Name",
+                        company_aggregation=False,
+                        generation_aggregation=True,
+                        agg_func=np.sum,left_name="Control",
+                        right_name="Override", diff_name="Diff"):
+        """ Construct a dispatch table and optionally output this to
+        a LaTeX file for inclusion in a document.
+
+        Currently a few issues with formatting the LaTeX tables.
+        Need to work on this. Most likely with the formatters?
+        Not sure. Currently option to force integer results exist.
+
+        Parameters
+        ----------
+        self: class vSPUD
+            A vSPUD class with dispatch results present
+        other: class vSPUD
+            Another vSPUD class with dispatch results present
+        report_unit: string, default "GWh"
+            What unit the results should be reported in.
+        latex_fName: string, default None
+            Optional, save the result to a LaTeX file
+        force_int: bool, default True
+            Force the output to be as integers, not floats
+        report_columns: tuple, default ("Generation", "FIR", "SIR")
+            What metrics to compute, may be a subset of the default tuple
+            only.
+        time_aggregation: string, default "DateTime"
+            Column name of the time aggregation to be applied options include
+            ("Period", "Day", "Month", "Year", "Month_Year", "Day_Of_Year")
+        location_aggregation: string, default "Island Name"
+            Column name of the location aggregation to be applied options
+            ("Island Name", "Region", "Offers")
+        company_aggregation: bool, default False
+            Not currently implemented, will be what column name of the company
+            to aggregate by
+        generation_aggregation: bool, default False
+            Whether to aggregate by generation type or not
+        agg_func: function
+            Aggregation function to apply in the report
+        left_name: string, default "Control"
+            Identifying name to apply to the original vSPUD object
+        right_name: string, default "Override"
+            Identifying name to apply to the second vSPUD object
+        diff_name: string, default "Difference"
+            Identifying name to apply to the difference
+
+        Returns
+        -------
+        combined: DataFrame
+            DataFrame with the tabulated report data present
+        """
+
+        # Multiplication factors to scale from the given MW values
+        report_scale = {"kWh": 500, "MWh": 0.5, "GWh": 0.0005, "TWh": 0.000005}
+
+        # Construct the dispatch reports
+        init_dispatch = self.dispatch_report(
+                        time_aggregation=time_aggregation,
+                        location_aggregation=location_aggregation,
+                        company_aggregation=company_aggregation,
+                        generation_aggregation=generation_aggregation,
+                        agg_func=agg_func)
+
+        other_dispatch = other.dispatch_report(
+                        time_aggregation=time_aggregation,
+                        location_aggregation=location_aggregation,
+                        company_aggregation=company_aggregation,
+                        generation_aggregation=generation_aggregation,
+                        agg_func=agg_func)
+
+
+        # Scale the values
+        init_dispatch = init_dispatch * report_scale[report_unit]
+        other_dispatch = other_dispatch * report_scale[report_unit]
+
+        compare_columns = init_dispatch.columns.tolist()
+
+        # Rename the columns
+        init_dispatch.rename(columns={x: " ".join([x, left_name]) for x in init_dispatch.columns}, inplace=True)
+
+        other_dispatch.rename(columns={x: " ".join([x, right_name]) for x in other_dispatch.columns}, inplace=True)
+
+        # Merge the DataFrames
+        combined = init_dispatch.merge(other_dispatch, left_index=True,
+                                                       right_index=True)
+
+        # Calculate the differences
+
+        for col in compare_columns:
+            self._differential(combined, col, left_name=left_name,
+                    right_name=right_name, diff_name=diff_name,
+                    method="Subtract")
+
+        if force_int:
+            combined = combined.astype(np.int64)
+
+        # Report Columns
+        report_col = [x for x in combined.columns if self._matchiter(x,
+                                                report_columns)]
+
+        combined = combined[report_col].copy()
+
+        # Change the reporting unit
+        combined.rename(columns={x: x.replace("MW", report_unit) for x in combined.columns if "MW" in x}, inplace=True)
+
+        # Get rid of the multi index and return as DataFrame
+        combined = self._mindex_to_col(combined)
+
+        if latex_fName:
+            combined.to_latex(latex_fName)
+
+        return combined
+
+    def _mindex_to_col(self, df, int_index=True):
+        """ Convert a multi index back to DataFrame columns
+        Will preserve the ordering of the multi index as column indices
+
+        Parameters
+        ----------
+        df: DataFrame
+            A DataFrame which is named and has a multi index
+        int_index: bool, default True
+            Replace the current index with an integer index
+
+        Returns
+        -------
+        df: DataFrame
+            DataFrame with a multi index as columns
+
+        """
+
+        index_array = np.array(df.index.tolist())
+        for i, name in enumerate(df.index.names):
+            df.insert(i, name, index_array[:,i])
+
+        if int_index:
+            df.index = np.arange(len(df))
+
+        return df
 
 
 
@@ -583,6 +729,12 @@ class vSPUD(object):
             if b in a:
                 return False
         return True
+
+    def _matchiter(self, a, p):
+        for b in p:
+            if b in a:
+                return True
+        return False
 
 
     def _apply_time_filters(self, df, DateTime="DateTime", period=False,
