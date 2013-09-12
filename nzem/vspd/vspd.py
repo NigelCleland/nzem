@@ -919,54 +919,97 @@ class vSPUD(object):
 
     # PLOT COMMANDS
 
-    def mixed_compare_plot(self, other, colour_dict='greyscale_line',
+    def mixed_price_plot(self, other, colour_dict='greyscale_line',
                            time_aggregation='Month_Year', agg_func=np.mean):
+        """ Create a three part plot of energy and reserve prices
 
+        Parameters
+        ----------
+        self: Reserves prices for instance one
+        other: Reserve Prices for the second comparison object
+        colour_dict: What colour dictionary to use
+        time_aggregation: What time aggregation to use
+        agg_func: What aggregation function to use on the prices
 
-        fig, axes = plt.subplots(3,1)
+        Returns
+        -------
+        fig, axes: A Matplotlib plot object
 
-        self.energy_price_plot(axes[0], colour_dict=colour_dict,
+        """
+
+        # Create two price series to cut down on duplication of effort
+        self_prices = self.price_series(time_aggregation=time_aggregation,
+                                        agg_func=agg_func)
+
+        other_prices = other.price_series(time_aggregation=time_aggregation,
+                                        agg_func=agg_func)
+
+        fig, axes = plt.subplots(3,1, figsize=(9,15))
+
+        self.energy_price_plot(axes[0], prices=self_prices,
+                               colour_dict=colour_dict,
                                time_aggregation=time_aggregation,
                                agg_func=agg_func, comp='orig')
 
-        other.energy_price_plot(axes[0], colour_dict=colour_dict,
+        other.energy_price_plot(axes[0], prices=other_prices,
+                               colour_dict=colour_dict,
                                time_aggregation=time_aggregation,
                                agg_func=agg_func, comp='alt')
 
-        self.reserve_price_plot(axes[1], colour_dict=colour_dict,
+        self.reserve_price_plot(axes[1], prices=self_prices,
+                               colour_dict=colour_dict,
                                time_aggregation=time_aggregation,
                                agg_func=agg_func, comp='orig',
                                island="NI")
 
-        other.reserve_price_plot(axes[1], colour_dict=colour_dict,
+        other.reserve_price_plot(axes[1], prices=other_prices,
+                               colour_dict=colour_dict,
                                time_aggregation=time_aggregation,
                                agg_func=agg_func, comp='alt',
                                island="NI")
 
-        self.reserve_price_plot(axes[2], colour_dict=colour_dict,
+        self.reserve_price_plot(axes[2], prices=self_prices,
+                               colour_dict=colour_dict,
                                time_aggregation=time_aggregation,
                                agg_func=agg_func, comp='orig',
                                island="SI")
 
-        other.reserve_price_plot(axes[2], colour_dict=colour_dict,
+        other.reserve_price_plot(axes[2], prices=other_prices,
+                               colour_dict=colour_dict,
                                time_aggregation=time_aggregation,
                                agg_func=agg_func, comp='alt',
                                island="SI")
 
         return fig, axes
 
-    def energy_price_plot(self, axes, time_aggregation="Month_Year",
+    def energy_price_plot(self, axes, prices=None,
+                          time_aggregation="Month_Year",
                           colour_dict='greyscale_line', comp='orig',
                           agg_func=np.mean):
         """ Plot the Energy Prices on a given Axes
         Ideal is to pass an aggregation and then let the function take
         care of the rest.
+
+        Parameters
+        ----------
+        axes: The matplotlib axes to plot the data on
+        prices: Optional, pass a Price report with aggregations.
+        time_aggregation: Aggregation to accomplish
+        colour_dict: The colour styles to use
+        comp: Original or Alternative colour styles
+        agg_func: Aggregation function to apply
+
+        Returns
+        -------
+        axes: Plotted energy price series plot
+
         """
         # Grab the colour directory
         styling = PLOT_STYLES[colour_dict]
 
         # Get the Prices
-        prices = self.price_series(time_aggregation=time_aggregation,
+        if not prices:
+            prices = self.price_series(time_aggregation=time_aggregation,
                                    agg_func=agg_func)
         haywards = prices["NI ReferencePrice ($/MWh)"]
         benmore = prices["SI ReferencePrice ($/MWh)"]
@@ -984,14 +1027,34 @@ class vSPUD(object):
 
         return axes
 
-    def reserve_price_plot(self, axes, time_aggregation="Month_Year",
+    def reserve_price_plot(self, axes, prices=None,
+                           time_aggregation="Month_Year",
                            island="NI", colour_dict="greyscale_line",
                            comp="orig", agg_func=np.mean):
+        """ Create a Reserve Price plot of both FIR and SIR for a
+        particular island
+
+        Parameters
+        ----------
+        axes: The matplotlib axes to plot the data on
+        prices: Optional, pass a price series report
+        time_aggregation: Aggregation to accomplish
+        colour_dict: The colour styles to use
+        comp: Original or Alternative colour styles
+        agg_func: Aggregation function to apply
+        island: What islands reserve prices to plot
+
+        Returns
+        -------
+        axes: Plotted energy price series plot
+
+        """
 
         styling = PLOT_STYLES[colour_dict]
 
         # Get the prices
-        prices = self.price_series(time_aggregation=time_aggregation,
+        if not prices:
+            prices = self.price_series(time_aggregation=time_aggregation,
                                    agg_func=np.mean)
 
         # Name the variables
