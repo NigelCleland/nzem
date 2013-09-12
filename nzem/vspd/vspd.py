@@ -978,6 +978,10 @@ class vSPUD(object):
         haywards.plot(ax=axes, **styling[hps])
         benmore.plot(ax=axes, **styling[bps])
 
+        # Handle the Axes Labelling
+        axes.set_ylabel('Energy Price ($/MWh)')
+        axes.set_xlabel('')
+
         return axes
 
     def reserve_price_plot(self, axes, time_aggregation="Month_Year",
@@ -1000,6 +1004,10 @@ class vSPUD(object):
         # Plot the Prices
         prices[fir_name].plot(ax=axes, **styling[fps])
         prices[sir_name].plot(ax=axes, **styling[sps])
+
+        # Axes Labelling
+        axes.set_ylabel("NI Reserve Prices ($/MWh)")
+        axes.set_xlabel('')
 
         return axes
 
