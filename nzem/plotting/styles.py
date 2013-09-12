@@ -1,15 +1,22 @@
 """ Plotting styles for the NZEM module.
 
 Provides a series of colour schemes for consistent plot styling
+Because comparison plotting will often occur the major dictionaries
+provide at least two styles for each major factor.
+E.g. haywards_price will have both _orig and _compare.
 
 Currently Implemented:
 ----------------------
-grey_scale: Colour Scheme which uses line types, markets and opacity to
+greyscale: Grey Scheme which uses line types, markets and opacity to
             distinguish between different variables. Intended for black
             and white printing, or publications
-colour: Colour scheme which utilises different colours to distinguish
-        between plots. Intended for interactive viewing, electronic
-        reports or web based requirements.
+
+
+To Be Implements
+----------------
+colour: Utilise different colours to differentiate between options
+
+generic: A generic colour scheme to cycle through as needed
 
 gen_styles: Generic Styles which are utilised for both kinds of plots
 
@@ -18,13 +25,15 @@ gen_styles: Generic Styles which are utilised for both kinds of plots
 import matplotlib as mpl
 
 
-gs_line_dict = {'haywards_price': {'c': 'black', 'alpha': 0.7, 'linestyle': '-'},
-             'benmore_price': {'c': 'black', 'alpha': 0.3, 'linestyle': '-'},
-             'fir_price': {'c': 'black', 'alpha': 0.7, 'linestyle': '--'},
-             'sir_price': {'c': 'black', 'alpha': 0.3, 'linestyle': '--'},
-             'ni_reserve_price': {'c': 'black', 'alpha': 0.7,
+gs_line_dict = {'haywards_price_orig': {'c': 'black', 'alpha': 0.7,
+                                   'linestyle': '-'},
+             'benmore_price_orig': {'c': 'black', 'alpha': 0.3,
+                                    'linestyle': '-'},
+             'fir_price_orig': {'c': 'black', 'alpha': 0.7, 'linestyle': '--'},
+             'sir_price_orig': {'c': 'black', 'alpha': 0.3, 'linestyle': '--'},
+             'ni_reserve_price_orig': {'c': 'black', 'alpha': 0.7,
                                   'linestyle': '.-'},
-             'si_reserve_price': {'c': 'black', 'alpha': 0.3,
+             'si_reserve_price_orig': {'c': 'black', 'alpha': 0.3,
                                   'linestyle': '.-'}
              }
 
@@ -45,7 +54,8 @@ colour_schemes = {'greyscale_line': gs_line_dict,
 
 
 style_dict = {'figsize': (16,9),
-              'dpi': 100}
+              'dpi': 100,
+              }
 
 
 # Update the Styles

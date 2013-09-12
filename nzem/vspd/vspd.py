@@ -917,41 +917,91 @@ class vSPUD(object):
         elif isinstance(x, tuple) or isinstance(x, list):
             return {k: v for i in x for k, v in time_dict[i].iteritems()}
 
-
-
-
     # PLOT COMMANDS
 
-    def energy_price_plot(self, axes, time_aggregation="Month_Year", colour_dict=):
+    def mixed_compare_plot(self, other, colour_dict='greyscale_line',
+                           time_aggregation='Month_Year', agg_func=np.mean):
+
+
+        fig, axes = plt.subplots(3,1)
+
+        self.energy_price_plot(axes[0], colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='orig')
+
+        other.energy_price_plot(axes[0], colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='alt')
+
+        self.reserve_price_plot(axes[1], colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='orig',
+                               island="NI")
+
+        other.reserve_price_plot(axes[1], colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='alt',
+                               island="NI")
+
+        self.reserve_price_plot(axes[2], colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='orig',
+                               island="SI")
+
+        other.reserve_price_plot(axes[2], colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='alt',
+                               island="SI")
+
+        return fig, axes
+
+    def energy_price_plot(self, axes, time_aggregation="Month_Year",
+                          colour_dict='greyscale_line', comp='orig',
+                          agg_func=np.mean):
         """ Plot the Energy Prices on a given Axes
         Ideal is to pass an aggregation and then let the function take
         care of the rest.
         """
+        # Grab the colour directory
+        styling = PLOT_STYLES[colour_dict]
 
-        prices = self.price_series(time_aggregation=time_aggregation)
-
+        # Get the Prices
+        prices = self.price_series(time_aggregation=time_aggregation,
+                                   agg_func=agg_func)
         haywards = prices["NI ReferencePrice ($/MWh)"]
         benmore = prices["SI ReferencePrice ($/MWh)"]
 
-        haywards.plot(ax=axes,
+        hps = '_'.join(['haywards_price', comp])
+        bps = '_'.join(['benmore_price', comp])
 
+        # Plot the Data
+        haywards.plot(ax=axes, **styling[hps])
+        benmore.plot(ax=axes, **styling[bps])
 
+        return axes
 
+    def reserve_price_plot(self, axes, time_aggregation="Month_Year",
+                           island="NI", colour_dict="greyscale_line",
+                           comp="orig", agg_func=np.mean):
 
-    # Plot work horses
+        styling = PLOT_STYLES[colour_dict]
 
-    def _frequency_plot(self, data, axes, alpha=0.5, bins=50,
-                        facecolor='green'):
+        # Get the prices
+        prices = self.price_series(time_aggregation=time_aggregation,
+                                   agg_func=np.mean)
 
-        return axes.hist(data, bins=bins, alpha=alpha, facecolor=facecolor)
+        # Name the variables
+        fir_name = " ".join([island, "FIR Price ($/MWh)"])
+        sir_name = " ".join([island, "SIR Price ($/MWh)"])
 
-    def _timeseries_plot(self, tdata, ydata, axes, marker='.',
-                         linestyle='-', c='g', alpha=0.5):
+        fps = '_'.join(['fir_price', comp])
+        sps = '_'.join(['sir_price', comp])
 
-        return axes.plot(tdata, ydata, c=c, linestyle=linestyle,
-                          alpha=alpha, marker=marker)
+        # Plot the Prices
+        prices[fir_name].plot(ax=axes, **styling[fps])
+        prices[sir_name].plot(ax=axes, **styling[sps])
 
-
+        return axes
 
 def setup_vspd():
     folder = '/home/nigel/data/Pole_Three_Sample_Data'
