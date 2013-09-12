@@ -920,17 +920,16 @@ class vSPUD(object):
 
     # PLOT COMMANDS
 
-    def reserve_frequency(self, axes, colour_dict='greyscale_bar',
-                          reserve_type="FIR", island="NI",
-                          comp='orig'):
+    def frequency_plot(self, axes, colour_dict='greyscale_bar',
+                       freq_name=None, comp='orig'):
         """ Create a frequency distribution for a reserve type
 
         Parameters
         ----------
         axes:
         colour_dict:
-        reserve_type:
-        island:
+        freq_name:
+        comp:
 
         Returns
         -------
@@ -939,9 +938,8 @@ class vSPUD(object):
         """
         styling = PLOT_STYLES[colour_dict]
 
-        name = ""
-        st_name = '_'.join([name.lower(), comp])
-        axes.hist(self.island_results[name], bins=50, **styling[st_name])
+        st_name = '_'.join([freq_name.lower(), comp])
+        axes.hist(self.island_results[freq_name], bins=50, **styling[st_name])
 
         axes.set_xlabel(name)
         axes.set_ylabel('Frequency')
