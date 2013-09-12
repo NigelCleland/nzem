@@ -921,7 +921,8 @@ class vSPUD(object):
     # PLOT COMMANDS
 
     def reserve_frequency(self, axes, colour_dict='greyscale_bar',
-                          reserve_type="FIR", island="NI"):
+                          reserve_type="FIR", island="NI",
+                          comp='orig'):
         """ Create a frequency distribution for a reserve type
 
         Parameters
@@ -936,7 +937,16 @@ class vSPUD(object):
         axes: Matplotlib axes with plotted data
 
         """
+        styling = PLOT_STYLES[colour_dict]
 
+        name = ""
+        st_name = '_'.join([name.lower(), comp])
+        axes.hist(self.island_results[name], bins=50, **styling[st_name])
+
+        axes.set_xlabel(name)
+        axes.set_ylabel('Frequency')
+
+        return axes
 
 
     def mixed_price_plot(self, other, colour_dict='greyscale_line',
