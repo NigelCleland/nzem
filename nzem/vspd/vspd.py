@@ -812,13 +812,15 @@ class vSPUD(object):
             df["Year"] = df[DateTime].apply(lambda x: x.year)
 
         if month_year:
-            df["Month_Year"] = df[DateTime].apply(lambda x: datetime.datetime(x.year, x.month, 1))
+            my = lambda x: datetime.datetime(x.year, x.month, 1)
+            df["Month_Year"] = df[DateTime].apply(my)
 
         if dayofyear:
             df["Day_Of_Year"] = df[DateTime].apply(lambda x: x.dayofyear)
 
         if period:
-            df["Period"] = df[DateTime].apply(lambda x: x.hour * 2 + 1 + x.minute / 30)
+            pc = lambda x: x.hour * 2 + 1 + x.minute / 30
+            df["Period"] = df[DateTime].apply(pc)
 
         return df
 
@@ -895,7 +897,7 @@ class vSPUD(object):
 
         """
 
-        if not map_frame:
+        if not isinstance(map_frame, pd.DataFrame):
             map_frame = pd.read_csv(CONFIG['map-location'])
             map_frame = map_frame[["Node", "Region", "Island Name", "Generation Type"]]
 
@@ -917,6 +919,25 @@ class vSPUD(object):
             return {k: v for i in x for k, v in time_dict[i].iteritems()}
 
     # PLOT COMMANDS
+
+    def reserve_frequency(self, axes, colour_dict='greyscale_bar',
+                          reserve_type="FIR", island="NI"):
+        """ Create a frequency distribution for a reserve type
+
+        Parameters
+        ----------
+        axes:
+        colour_dict:
+        reserve_type:
+        island:
+
+        Returns
+        -------
+        axes: Matplotlib axes with plotted data
+
+        """
+
+
 
     def mixed_price_plot(self, other, colour_dict='greyscale_line',
                            time_aggregation='Month_Year', agg_func=np.mean):

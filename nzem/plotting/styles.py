@@ -51,6 +51,10 @@ gs_scatter_dict = {
 
                 }
 
+gs_bar_dict = {
+
+}
+
 co_line_dict = {}
 
 co_scatter_dict = {}
@@ -58,6 +62,7 @@ co_scatter_dict = {}
 # Aggregate the style dictionaries together.
 colour_schemes = {'greyscale_line': gs_line_dict,
                   'greyscale_scatter': gs_scatter_dict,
+                  'greyscale_bar': gs_bar_dict,
                   'colour_line': co_line_dict,
                   'colour_scatter': co_scatter_dict
                   }
