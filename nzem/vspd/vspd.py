@@ -901,7 +901,6 @@ class vSPUD(object):
 
         return df.merge(map_frame, left_on=left_on, right_on=right_on)
 
-
     def _time_keywords(self, x=None):
         time_dict = {"Month_Year": {'month_year': True},
                      "Period": {"period": True},
