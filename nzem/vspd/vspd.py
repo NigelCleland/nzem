@@ -946,7 +946,6 @@ class vSPUD(object):
 
         return axes
 
-
     def mixed_price_plot(self, other, colour_dict='greyscale_line',
                            time_aggregation='Month_Year', agg_func=np.mean):
         """ Create a three part plot of energy and reserve prices
