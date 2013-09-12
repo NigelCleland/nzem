@@ -34,7 +34,17 @@ gs_line_dict = {'haywards_price_orig': {'c': 'black', 'alpha': 0.7,
              'ni_reserve_price_orig': {'c': 'black', 'alpha': 0.7,
                                   'linestyle': '.-'},
              'si_reserve_price_orig': {'c': 'black', 'alpha': 0.3,
-                                  'linestyle': '.-'}
+                                  'linestyle': '.-'},
+             'haywards_price_alt': {'c': 'black', 'alpha': 0.7,
+                                   'linestyle': 'x-'},
+             'benmore_price_alt': {'c': 'black', 'alpha': 0.3,
+                                    'linestyle': 'x-'},
+             'fir_price_alt': {'c': 'black', 'alpha': 0.7, 'linestyle': '-x-'},
+             'sir_price_alt': {'c': 'black', 'alpha': 0.3, 'linestyle': '-x-'},
+             'ni_reserve_price_alt': {'c': 'black', 'alpha': 0.7,
+                                  'linestyle': 'o--'},
+             'si_reserve_price_alt': {'c': 'black', 'alpha': 0.3,
+                                  'linestyle': 'o--'}
              }
 
 gs_scatter_dict = {
