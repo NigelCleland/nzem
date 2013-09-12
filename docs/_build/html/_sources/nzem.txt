@@ -19,5 +19,6 @@ Subpackages
     nzem.gnash
     nzem.offers
     nzem.plotting
+    nzem.vspd
     nzem.wits
 

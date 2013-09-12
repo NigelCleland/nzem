@@ -8,7 +8,7 @@
     
     <title>frequent_io Package &mdash; nzem 0.2.1 documentation</title>
     
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -36,9 +36,6 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="nzem.gnash.html" title="gnash Package"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -56,170 +53,11 @@
             
   <div class="section" id="frequent-io-package">
 <h1>frequent_io Package<a class="headerlink" href="#frequent-io-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-nzem.frequent_io.data_import">
-<span id="data-import-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">data_import</span></tt> Module<a class="headerlink" href="#module-nzem.frequent_io.data_import" title="Permalink to this headline">¶</a></h2>
-<p>Functionality to handle the importing and exporting of data</p>
-<p>Broadly contains the functionality to
-a) Download csv data
-b) Import csv data to a databse
-c) Query a database for specific information
-d) Import csv files with improved headers and mapping
-e) Create a database from scratch</p>
-<dl class="function">
-<dt id="nzem.frequent_io.data_import.create_il_dataset">
-<tt class="descclassname">nzem.frequent_io.data_import.</tt><tt class="descname">create_il_dataset</tt><big>(</big><em>folder_name='il_data'</em>, <em>quick_parse=True</em>, <em>date_time_index=False</em>, <em>title_columns=True</em>, <em>date_period=True</em>, <em>date='TRADING_DATE'</em>, <em>period='TRADING_PERIOD'</em>, <em>date_time='Date Time'</em>, <em>map_dataframe=True</em><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/data_import.html#create_il_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.data_import.create_il_dataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the full IL data set as a raw group of data</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="nzem.frequent_io.data_import.execute_query">
-<tt class="descclassname">nzem.frequent_io.data_import.</tt><tt class="descname">execute_query</tt><big>(</big><em>SQL</em>, <em>dbname='Electricity_Database'</em>, <em>password='Hammertime'</em>, <em>user='local_host'</em>, <em>something=None</em><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/data_import.html#execute_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.data_import.execute_query" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will connect to a database, execute a query and return a DataFrame
-containing the queried information</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><strong>SQL</strong> : The SQL query to be executed</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><strong>df</strong> : A Pandas DataFrame containing the queried data</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="nzem.frequent_io.data_import.load_csvfile">
-<tt class="descclassname">nzem.frequent_io.data_import.</tt><tt class="descname">load_csvfile</tt><big>(</big><em>csv_name</em>, <em>quick_parse=True</em>, <em>date_time_index=True</em>, <em>title_columns=True</em>, <em>date_period=False</em>, <em>trading_period_id=False</em>, <em>date='Trading Date'</em>, <em>period='Trading Period'</em>, <em>tpid='Trading Period Id'</em>, <em>date_time='Date Time'</em>, <em>niwa_date=False</em><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/data_import.html#load_csvfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.data_import.load_csvfile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Master function to handle the importation of data files for analysis.
-Has capabilities of handling a broadish range of dates which is pretty sweet.
-All the is needed to run the file is a file and information about what the
-date column names are</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>csv_name</strong> : The name of the CSV file to be loaded</p>
-<p><strong>quick_parse</strong> : Whether to apply a memoised version of the date time parsing</p>
-<p><strong>date_time_index</strong> : Apply the date time column as the new index</p>
-<p><strong>title_columns</strong> : Change column names to a &#8220;title&#8221; format</p>
-<p><strong>date_period</strong> : Whether to apply the date_period parse method</p>
-<p><strong>trading_period_id</strong> : Whether to first convert a TPID to date_period syntax</p>
-<p><strong>date</strong> : The column name of the Trading Date</p>
-<p><strong>period</strong> : Column name of the Trading Period</p>
-<p><strong>tpid</strong> : Column name of the Trading Period ID</p>
-<p><strong>date_time</strong> : Column name of the datetime index</p>
-<p><strong>niwa_date</strong> : Whether the horrible NIWA date format is used (hydrology data..)</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first last"><strong>df</strong> : A sorted dataframe with the date time index loaded and working</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="nzem.frequent_io.data_import.load_map">
-<tt class="descclassname">nzem.frequent_io.data_import.</tt><tt class="descname">load_map</tt><big>(</big><em>map_fname=None</em><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/data_import.html#load_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.data_import.load_map" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a mapping DataFrame, will default to the Nodal Information
-Dataframe contained in the maps directory</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><strong>map_fname</strong> : Filename containing the path to the directory</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><strong>df</strong> : A pandas dataframe containing the mapping information</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="nzem.frequent_io.data_import.map_data">
-<tt class="descclassname">nzem.frequent_io.data_import.</tt><tt class="descname">map_data</tt><big>(</big><em>df</em>, <em>node_map=None</em>, <em>left_on='Grid Exit Point'</em>, <em>right_on='Node'</em>, <em>map_reference='Island Name'</em><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/data_import.html#map_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.data_import.map_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will map a DataFrame using the given Nodal Map and return the merged
-DataFrame</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><strong>df</strong> : The DataFrame to be matched</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><strong>merged_df</strong> : The df merged with the mapping dataframe</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="nzem.frequent_io.data_import.map_date_period">
-<tt class="descclassname">nzem.frequent_io.data_import.</tt><tt class="descname">map_date_period</tt><big>(</big><em>series</em>, <em>date_map=None</em>, <em>date='Trading Date'</em>, <em>period='Trading Period'</em><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/data_import.html#map_date_period"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.data_import.map_date_period" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will map a trading date and a trading period together in order to form
-a single consistent date time parameter</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>series</strong> : A single series containing information about the row</p>
-<p><strong>date_map</strong> : A dictionary containing mapping information regarding the</p>
-<blockquote>
-<div><p>dates, is used to preparse a single copy of each date as the parse
-function tends to be very CPU intensive</p>
-</div></blockquote>
-<p><strong>date</strong> : The date column name</p>
-<p><strong>period</strong> : The period column name</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>Date Time</strong> : A single value of DataTime format containing the trading period</p>
-<blockquote class="last">
-<div><p>and trading date data as a combined date and time.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="nzem.frequent_io.data_import.query_database">
-<tt class="descclassname">nzem.frequent_io.data_import.</tt><tt class="descname">query_database</tt><big>(</big><em>table</em>, <em>start_date=None</em>, <em>end_date=None</em>, <em>companies=None</em><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/data_import.html#query_database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.data_import.query_database" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructs an SQL query to query a particular table within the Database
-If no dates are specified will default to the current day</p>
-</dd></dl>
-
+<div class="section" id="data-import-module">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">data_import</span></tt> Module<a class="headerlink" href="#data-import-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-nzem.frequent_io.master_set">
-<span id="master-set-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">master_set</span></tt> Module<a class="headerlink" href="#module-nzem.frequent_io.master_set" title="Permalink to this headline">¶</a></h2>
-<p>Generic &#8220;Load All&#8221; function to make creating a merged dataset simpler
-when beginning a new analysis</p>
-<dl class="function">
-<dt id="nzem.frequent_io.master_set.columnise_energy_prices">
-<tt class="descclassname">nzem.frequent_io.master_set.</tt><tt class="descname">columnise_energy_prices</tt><big>(</big><em>df</em>, <em>island_split=True</em><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/master_set.html#columnise_energy_prices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.master_set.columnise_energy_prices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Columnise the energy price dataframe</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="nzem.frequent_io.master_set.columnise_res_prices">
-<tt class="descclassname">nzem.frequent_io.master_set.</tt><tt class="descname">columnise_res_prices</tt><big>(</big><em>df</em>, <em>island_price=True</em>, <em>islandid='Island Id'</em>, <em>longname=False</em><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/master_set.html#columnise_res_prices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.master_set.columnise_res_prices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Columnise the reserve price dataframe</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="nzem.frequent_io.master_set.load_masterset">
-<tt class="descclassname">nzem.frequent_io.master_set.</tt><tt class="descname">load_masterset</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/nzem/frequent_io/master_set.html#load_masterset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nzem.frequent_io.master_set.load_masterset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a master dataset will return a merged DataFrame containing the
-following information time alligned:</p>
-<ol class="arabic simple">
-<li>Energy Prices (Five Nodes)</li>
-<li>Reserve Prices (Two Region, Two Type)</li>
-<li>Hydro Lake Storage</li>
-<li>Hydro Inflow Levels</li>
-<li>National Demand</li>
-</ol>
-</dd></dl>
-
+<div class="section" id="master-set-module">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">master_set</span></tt> Module<a class="headerlink" href="#master-set-module" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -232,8 +70,8 @@ following information time alligned:</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">frequent_io Package</a><ul>
-<li><a class="reference internal" href="#module-nzem.frequent_io.data_import"><tt class="docutils literal"><span class="pre">data_import</span></tt> Module</a></li>
-<li><a class="reference internal" href="#module-nzem.frequent_io.master_set"><tt class="docutils literal"><span class="pre">master_set</span></tt> Module</a></li>
+<li><a class="reference internal" href="#data-import-module"><tt class="docutils literal"><span class="pre">data_import</span></tt> Module</a></li>
+<li><a class="reference internal" href="#master-set-module"><tt class="docutils literal"><span class="pre">master_set</span></tt> Module</a></li>
 </ul>
 </li>
 </ul>
@@ -272,9 +110,6 @@ following information time alligned:</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="nzem.gnash.html" title="gnash Package"
              >next</a> |</li>

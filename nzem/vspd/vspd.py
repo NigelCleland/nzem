@@ -16,6 +16,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Import nzem
+import nzem
+
+# Load the plotting styles
+PLOT_STYLES = nzem.plotting.styles.colour_schemes
 
 # Get the config file
 try:
@@ -510,8 +514,8 @@ class vSPUD(object):
             karg_dict = self._time_keywords(time_aggregation)
             price_report = self._apply_time_filters(price_report, **karg_dict)
             # Aggregate
-            price_report = price_report.groupby(
-                                    time_aggregation).aggregate(np.mean)
+            price_report = price_report.groupby(time_aggregation
+                                               ).aggregate(np.mean)
 
         return price_report
 
@@ -808,13 +812,15 @@ class vSPUD(object):
             df["Year"] = df[DateTime].apply(lambda x: x.year)
 
         if month_year:
-            df["Month_Year"] = df[DateTime].apply(lambda x: datetime.datetime(x.year, x.month, 1))
+            my = lambda x: datetime.datetime(x.year, x.month, 1)
+            df["Month_Year"] = df[DateTime].apply(my)
 
         if dayofyear:
             df["Day_Of_Year"] = df[DateTime].apply(lambda x: x.dayofyear)
 
         if period:
-            df["Period"] = df[DateTime].apply(lambda x: x.hour * 2 + 1 + x.minute / 30)
+            pc = lambda x: x.hour * 2 + 1 + x.minute / 30
+            df["Period"] = df[DateTime].apply(pc)
 
         return df
 
@@ -891,12 +897,11 @@ class vSPUD(object):
 
         """
 
-        if not map_frame:
+        if not isinstance(map_frame, pd.DataFrame):
             map_frame = pd.read_csv(CONFIG['map-location'])
             map_frame = map_frame[["Node", "Region", "Island Name", "Generation Type"]]
 
         return df.merge(map_frame, left_on=left_on, right_on=right_on)
-
 
     def _time_keywords(self, x=None):
         time_dict = {"Month_Year": {'month_year': True},
@@ -913,24 +918,188 @@ class vSPUD(object):
         elif isinstance(x, tuple) or isinstance(x, list):
             return {k: v for i in x for k, v in time_dict[i].iteritems()}
 
-
-
-
     # PLOT COMMANDS
-    # Plot work horses
 
-    def _frequency_plot(self, data, axes, alpha=0.5, bins=50,
-                        facecolor='green'):
+    def frequency_plot(self, axes, colour_dict='greyscale_bar',
+                       freq_name=None, comp='orig'):
+        """ Create a frequency distribution for a reserve type
 
-        return axes.hist(data, bins=bins, alpha=alpha, facecolor=facecolor)
+        Parameters
+        ----------
+        axes:
+        colour_dict:
+        freq_name:
+        comp:
 
-    def _timeseries_plot(self, tdata, ydata, axes, marker='.',
-                         linestyle='-', c='g', alpha=0.5):
+        Returns
+        -------
+        axes: Matplotlib axes with plotted data
 
-        return axes.plot(tdata, ydata, c=c, linestyle=linestyle,
-                          alpha=alpha, marker=marker)
+        """
+        styling = PLOT_STYLES[colour_dict]
 
+        st_name = '_'.join([freq_name.lower(), comp])
+        axes.hist(self.island_results[freq_name], bins=50, **styling[st_name])
 
+        axes.set_xlabel(name)
+        axes.set_ylabel('Frequency')
+
+        return axes
+
+    def mixed_price_plot(self, other, colour_dict='greyscale_line',
+                           time_aggregation='Month_Year', agg_func=np.mean):
+        """ Create a three part plot of energy and reserve prices
+
+        Parameters
+        ----------
+        self: Reserves prices for instance one
+        other: Reserve Prices for the second comparison object
+        colour_dict: What colour dictionary to use
+        time_aggregation: What time aggregation to use
+        agg_func: What aggregation function to use on the prices
+
+        Returns
+        -------
+        fig, axes: A Matplotlib plot object
+
+        """
+
+        # Create two price series to cut down on duplication of effort
+        self_prices = self.price_series(time_aggregation=time_aggregation,
+                                        agg_func=agg_func)
+
+        other_prices = other.price_series(time_aggregation=time_aggregation,
+                                        agg_func=agg_func)
+
+        fig, axes = plt.subplots(3,1, figsize=(9,15))
+
+        self.energy_price_plot(axes[0], prices=self_prices,
+                               colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='orig')
+
+        other.energy_price_plot(axes[0], prices=other_prices,
+                               colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='alt')
+
+        self.reserve_price_plot(axes[1], prices=self_prices,
+                               colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='orig',
+                               island="NI")
+
+        other.reserve_price_plot(axes[1], prices=other_prices,
+                               colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='alt',
+                               island="NI")
+
+        self.reserve_price_plot(axes[2], prices=self_prices,
+                               colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='orig',
+                               island="SI")
+
+        other.reserve_price_plot(axes[2], prices=other_prices,
+                               colour_dict=colour_dict,
+                               time_aggregation=time_aggregation,
+                               agg_func=agg_func, comp='alt',
+                               island="SI")
+
+        return fig, axes
+
+    def energy_price_plot(self, axes, prices=None,
+                          time_aggregation="Month_Year",
+                          colour_dict='greyscale_line', comp='orig',
+                          agg_func=np.mean):
+        """ Plot the Energy Prices on a given Axes
+        Ideal is to pass an aggregation and then let the function take
+        care of the rest.
+
+        Parameters
+        ----------
+        axes: The matplotlib axes to plot the data on
+        prices: Optional, pass a Price report with aggregations.
+        time_aggregation: Aggregation to accomplish
+        colour_dict: The colour styles to use
+        comp: Original or Alternative colour styles
+        agg_func: Aggregation function to apply
+
+        Returns
+        -------
+        axes: Plotted energy price series plot
+
+        """
+        # Grab the colour directory
+        styling = PLOT_STYLES[colour_dict]
+
+        # Get the Prices
+        if not prices:
+            prices = self.price_series(time_aggregation=time_aggregation,
+                                   agg_func=agg_func)
+        haywards = prices["NI ReferencePrice ($/MWh)"]
+        benmore = prices["SI ReferencePrice ($/MWh)"]
+
+        hps = '_'.join(['haywards_price', comp])
+        bps = '_'.join(['benmore_price', comp])
+
+        # Plot the Data
+        haywards.plot(ax=axes, **styling[hps])
+        benmore.plot(ax=axes, **styling[bps])
+
+        # Handle the Axes Labelling
+        axes.set_ylabel('Energy Price ($/MWh)')
+        axes.set_xlabel('')
+
+        return axes
+
+    def reserve_price_plot(self, axes, prices=None,
+                           time_aggregation="Month_Year",
+                           island="NI", colour_dict="greyscale_line",
+                           comp="orig", agg_func=np.mean):
+        """ Create a Reserve Price plot of both FIR and SIR for a
+        particular island
+
+        Parameters
+        ----------
+        axes: The matplotlib axes to plot the data on
+        prices: Optional, pass a price series report
+        time_aggregation: Aggregation to accomplish
+        colour_dict: The colour styles to use
+        comp: Original or Alternative colour styles
+        agg_func: Aggregation function to apply
+        island: What islands reserve prices to plot
+
+        Returns
+        -------
+        axes: Plotted energy price series plot
+
+        """
+
+        styling = PLOT_STYLES[colour_dict]
+
+        # Get the prices
+        if not prices:
+            prices = self.price_series(time_aggregation=time_aggregation,
+                                   agg_func=np.mean)
+
+        # Name the variables
+        fir_name = " ".join([island, "FIR Price ($/MWh)"])
+        sir_name = " ".join([island, "SIR Price ($/MWh)"])
+
+        fps = '_'.join(['fir_price', comp])
+        sps = '_'.join(['sir_price', comp])
+
+        # Plot the Prices
+        prices[fir_name].plot(ax=axes, **styling[fps])
+        prices[sir_name].plot(ax=axes, **styling[sps])
+
+        # Axes Labelling
+        axes.set_ylabel("NI Reserve Prices ($/MWh)")
+        axes.set_xlabel('')
+
+        return axes
 
 def setup_vspd():
     folder = '/home/nigel/data/Pole_Three_Sample_Data'
