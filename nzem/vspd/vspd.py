@@ -16,6 +16,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Import nzem
+import nzem
+
+# Load the plotting styles
+PLOT_STYLES = nzem.plotting.styles.colour_schemes
 
 # Get the config file
 try:
@@ -918,7 +922,7 @@ class vSPUD(object):
 
     # PLOT COMMANDS
 
-    def energy_price_plot(self, axes, time_aggregation="Month_Year"):
+    def energy_price_plot(self, axes, time_aggregation="Month_Year", colour_dict=):
         """ Plot the Energy Prices on a given Axes
         Ideal is to pass an aggregation and then let the function take
         care of the rest.
