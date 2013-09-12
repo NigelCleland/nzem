@@ -510,8 +510,8 @@ class vSPUD(object):
             karg_dict = self._time_keywords(time_aggregation)
             price_report = self._apply_time_filters(price_report, **karg_dict)
             # Aggregate
-            price_report = price_report.groupby(
-                                    time_aggregation).aggregate(np.mean)
+            price_report = price_report.groupby(time_aggregation
+                                               ).aggregate(np.mean)
 
         return price_report
 
@@ -917,6 +917,23 @@ class vSPUD(object):
 
 
     # PLOT COMMANDS
+
+    def energy_price_plot(self, axes, time_aggregation="Month_Year"):
+        """ Plot the Energy Prices on a given Axes
+        Ideal is to pass an aggregation and then let the function take
+        care of the rest.
+        """
+
+        prices = self.price_series(time_aggregation=time_aggregation)
+
+        haywards = prices["NI ReferencePrice ($/MWh)"]
+        benmore = prices["SI ReferencePrice ($/MWh)"]
+
+        haywards.plot(ax=axes, c='')
+
+
+
+
     # Plot work horses
 
     def _frequency_plot(self, data, axes, alpha=0.5, bins=50,
