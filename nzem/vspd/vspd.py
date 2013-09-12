@@ -929,7 +929,7 @@ class vSPUD(object):
         haywards = prices["NI ReferencePrice ($/MWh)"]
         benmore = prices["SI ReferencePrice ($/MWh)"]
 
-        haywards.plot(ax=axes, c='')
+        haywards.plot(ax=axes,
 
 
 

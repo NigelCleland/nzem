@@ -18,3 +18,7 @@ line_dict = {'haywards_price': {'c': 'black', 'alpha': 0.7, 'linestyle': '-'},
              'si_reserve_price': {'c': 'black', 'alpha': 0.3,
                                   'linestyle': '.-'}
              }
+
+scatter_dict = {
+
+                }
