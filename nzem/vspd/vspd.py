@@ -978,7 +978,7 @@ class vSPUD(object):
         other_prices = other.price_series(time_aggregation=time_aggregation,
                                         agg_func=agg_func)
 
-        fig, axes = plt.subplots(3,1, figsize=(9,15))
+        fig, axes = plt.subplots(3,1, figsize=(12,9))
 
         self.energy_price_plot(axes[0], prices=self_prices,
                                colour_dict=colour_dict,
@@ -1019,7 +1019,7 @@ class vSPUD(object):
     def energy_price_plot(self, axes, prices=None,
                           time_aggregation="Month_Year",
                           colour_dict='greyscale_line', comp='orig',
-                          agg_func=np.mean):
+                          agg_func=np.mean, label_dict="Pole3"):
         """ Plot the Energy Prices on a given Axes
         Ideal is to pass an aggregation and then let the function take
         care of the rest.
@@ -1040,6 +1040,7 @@ class vSPUD(object):
         """
         # Grab the colour directory
         styling = PLOT_STYLES[colour_dict]
+        labels = self._label_dict(label_dict)
 
         # Get the Prices
         if not prices:
@@ -1051,20 +1052,26 @@ class vSPUD(object):
         hps = '_'.join(['haywards_price', comp])
         bps = '_'.join(['benmore_price', comp])
 
+        hay_label = " ".join(["Haywards Price", labels[comp]])
+        ben_label = " ".join(["Benmore Price", labels[comp]])
+
         # Plot the Data
-        haywards.plot(ax=axes, **styling[hps])
-        benmore.plot(ax=axes, **styling[bps])
+        haywards.plot(ax=axes, label=hay_label, **styling[hps])
+        benmore.plot(ax=axes, label=ben_label, **styling[bps])
 
         # Handle the Axes Labelling
         axes.set_ylabel('Energy Price ($/MWh)')
         axes.set_xlabel('')
+
+        axes.legend(loc='upper right')
 
         return axes
 
     def reserve_price_plot(self, axes, prices=None,
                            time_aggregation="Month_Year",
                            island="NI", colour_dict="greyscale_line",
-                           comp="orig", agg_func=np.mean):
+                           comp="orig", agg_func=np.mean,
+                           label_dict="Pole3"):
         """ Create a Reserve Price plot of both FIR and SIR for a
         particular island
 
@@ -1085,6 +1092,7 @@ class vSPUD(object):
         """
 
         styling = PLOT_STYLES[colour_dict]
+        labels = self._label_dict(label_dict)
 
         # Get the prices
         if not prices:
@@ -1098,15 +1106,27 @@ class vSPUD(object):
         fps = '_'.join(['fir_price', comp])
         sps = '_'.join(['sir_price', comp])
 
+        fir_label = " ".join(["FIR Price", labels[comp]])
+        sir_label = " ".join(["SIR Price", labels[comp]])
+
         # Plot the Prices
-        prices[fir_name].plot(ax=axes, **styling[fps])
-        prices[sir_name].plot(ax=axes, **styling[sps])
+        prices[fir_name].plot(ax=axes, label=fir_label, **styling[fps])
+        prices[sir_name].plot(ax=axes, label=sir_label, **styling[sps])
 
         # Axes Labelling
-        axes.set_ylabel("NI Reserve Prices ($/MWh)")
+        ylab = " ".join([island, "Reserve Prices ($/MWh)"])
+        axes.set_ylabel(ylab)
         axes.set_xlabel('')
 
+        axes.legend(loc='upper right')
+
         return axes
+
+    def _label_dict(self, label):
+        if label =="Pole3":
+            return {"alt": "w/ Pole Three", "orig": "no Pole Three"}
+        else:
+            return None
 
 def setup_vspd():
     folder = '/home/nigel/data/Pole_Three_Sample_Data'
