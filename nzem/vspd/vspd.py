@@ -65,7 +65,8 @@ class vSPUD_Factory(object):
         # Recursively walk the directories, this handles a nested structure
         # if necessary to the factory operation
         self.sub_folders = [dire for (dire, subdir,
-                files) in os.walk(master_folder) if files and '.csv' in files[3]]
+                files) in os.walk(master_folder) if files and
+                self._match('.csv', files)]
         if patterns:
             self.match_pattern(patterns=patterns)
 
@@ -90,7 +91,7 @@ class vSPUD_Factory(object):
 
         folders = [dire for (dire, subdir,
                 files) in os.walk(self.master_folder) if files and
-                '.csv' in files[3]]
+                self._match('.csv', files)]
         subfolders = [x for x in folders if self._matcher(x, patterns)]
         self.sub_folders = subfolders
 
@@ -100,6 +101,12 @@ class vSPUD_Factory(object):
             if b not in a:
                 return False
         return True
+
+    def _match(self, a, p):
+        for b in p:
+            if a in b:
+                return True
+        return False
 
 
     def load_all(self, pattern=None):
