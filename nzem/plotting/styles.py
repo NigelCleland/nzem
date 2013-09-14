@@ -68,12 +68,14 @@ colour_schemes = {'greyscale_line': gs_line_dict,
                   }
 
 
-style_dict = {'figsize': (16,9),
-              'dpi': 100,
+style_dict = {'figure.figsize': (16,9),
+              'figure.dpi': 100,
               }
 
 
 # Update the Styles
-mpl.rcparam(**style_dict)
+for k, v in style_dict.iteritems():
+  mpl.rcParams[k] = v
 
 if __name__ == '__main__':
+  pass
